@@ -60,9 +60,9 @@ func assertNotNilError(t *testing.T, pError error, pFunctionName string) bool {
 	return false
 }
 
-func assertEqual[T comparable](t *testing.T, pExpected, pReturned T) bool {
-	return assertEqualWithLabel(t, pExpected, pReturned, "")
-}
+// func assertEqual[T comparable](t *testing.T, pExpected, pReturned T) bool {
+// 	return assertEqualWithLabel(t, pExpected, pReturned, "")
+// }
 
 func assertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pLabel string) bool {
 	if pExpected == pReturned {
@@ -75,17 +75,17 @@ func assertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pL
 	return false
 }
 
-func assertNotEqual[T comparable](t *testing.T, pNotExpected, pReturned T) bool {
-	return assertNotEqualWithLabel(t, pNotExpected, pReturned, "")
-}
+// func assertNotEqual[T comparable](t *testing.T, pNotExpected, pReturned T) bool {
+// 	return assertNotEqualWithLabel(t, pNotExpected, pReturned, "")
+// }
 
-func assertNotEqualWithLabel[T comparable](t *testing.T, pNotExpected, pReturned T, pLabel string) bool {
-	if pNotExpected != pReturned {
-		return true
-	}
-	if pLabel != "" && !strings.HasSuffix(pLabel, ": ") {
-		pLabel += ": "
-	}
-	t.Errorf("%s[%v] was not expected", pLabel, pReturned)
-	return false
-}
+// func assertNotEqualWithLabel[T comparable](t *testing.T, pNotExpected, pReturned T, pLabel string) bool {
+// 	if pNotExpected != pReturned {
+// 		return true
+// 	}
+// 	if pLabel != "" && !strings.HasSuffix(pLabel, ": ") {
+// 		pLabel += ": "
+// 	}
+// 	t.Errorf("%s[%v] was not expected", pLabel, pReturned)
+// 	return false
+// }
