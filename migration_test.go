@@ -169,11 +169,11 @@ func (m m001_Create_Table_User) Up(pMigrationManager *ormshift.MigrationManager)
 		return nil
 	}
 	lUserTable.AddColumn(ormshift.NewColumnParams{
-		Name:       "id",
-		Type:       ormshift.Varchar,
-		Size:       32,
-		PrimaryKey: true,
-		NotNull:    true,
+		Name:          "id",
+		Type:          ormshift.Integer,
+		Autoincrement: true,
+		PrimaryKey:    true,
+		NotNull:       true,
 	})
 	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "name",
@@ -192,6 +192,24 @@ func (m m001_Create_Table_User) Up(pMigrationManager *ormshift.MigrationManager)
 	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "active",
 		Type:       ormshift.Boolean,
+		PrimaryKey: false,
+		NotNull:    false,
+	})
+	lUserTable.AddColumn(ormshift.NewColumnParams{
+		Name:       "ammount",
+		Type:       ormshift.Monetary,
+		PrimaryKey: false,
+		NotNull:    false,
+	})
+	lUserTable.AddColumn(ormshift.NewColumnParams{
+		Name:       "percent",
+		Type:       ormshift.Decimal,
+		PrimaryKey: false,
+		NotNull:    false,
+	})
+	lUserTable.AddColumn(ormshift.NewColumnParams{
+		Name:       "photo",
+		Type:       ormshift.Binary,
 		PrimaryKey: false,
 		NotNull:    false,
 	})

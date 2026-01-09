@@ -59,7 +59,7 @@ func (sb sqliteSQLBuilder) ColumnTypeAsString(pColumnType ColumnType) string {
 	case Integer:
 		return "INTEGER"
 	case DateTime:
-		return "REAL"
+		return "DATETIME"
 	case Monetary:
 		return "REAL"
 	case Decimal:

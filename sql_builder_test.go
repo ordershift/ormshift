@@ -79,7 +79,7 @@ func Test_DriverDB_SQLBuilder_CreateTable_ShouldReturnCorrectSQL(t *testing.T) {
 			"password_hash VARCHAR(256),active BIT,created_at DATETIME2(6),user_master BIGINT,master_user_id BIGINT," +
 			"licence_price MONEY,relevance FLOAT,photo VARBINARY(MAX),any VARCHAR,CONSTRAINT PK_user PRIMARY KEY (id,email));",
 		ormshift.DriverSQLite: "CREATE TABLE user (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,email TEXT NOT NULL,name TEXT NOT NULL," +
-			"password_hash TEXT,active INTEGER,created_at REAL,user_master INTEGER,master_user_id INTEGER,licence_price REAL,relevance REAL,photo BLOB,any TEXT);",
+			"password_hash TEXT,active INTEGER,created_at DATETIME,user_master INTEGER,master_user_id INTEGER,licence_price REAL,relevance REAL,photo BLOB,any TEXT);",
 		ormshift.DriverDB(-1): "CREATE TABLE user (id <<TYPE_0>>,email <<TYPE_1>>,name <<TYPE_1>>,password_hash <<TYPE_1>>," +
 			"active <<TYPE_5>>,created_at <<TYPE_3>>,user_master <<TYPE_0>>,master_user_id <<TYPE_0>>," +
 			"licence_price <<TYPE_2>>,relevance <<TYPE_4>>,photo <<TYPE_6>>,any <<TYPE_-1>>,PRIMARY KEY (id,email));",
@@ -134,7 +134,7 @@ func Test_DriverDB_SQLBuilder_AlterTableAddColumn_ShouldReturnCorrectSQL(t *test
 	lDriversDBWithExpectedSQL := map[ormshift.DriverDB]string{
 		ormshift.DriverPostgresql: "ALTER TABLE user ADD COLUMN updated_at TIMESTAMP(6);",
 		ormshift.DriverSQLServer:  "ALTER TABLE user ADD COLUMN updated_at DATETIME2(6);",
-		ormshift.DriverSQLite:     "ALTER TABLE user ADD COLUMN updated_at REAL;",
+		ormshift.DriverSQLite:     "ALTER TABLE user ADD COLUMN updated_at DATETIME;",
 		ormshift.DriverDB(-1):     "ALTER TABLE user ADD COLUMN updated_at <<TYPE_3>>;",
 	}
 	for lDriverDB, lExpectedSQL := range lDriversDBWithExpectedSQL {
