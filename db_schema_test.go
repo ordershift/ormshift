@@ -8,7 +8,7 @@ import (
 	"github.com/ordershift/ormshift"
 )
 
-func Test_DBSchema_NewDBSchema_ShouldReturnError_WhenDBIsNil(t *testing.T) {
+func Test_DBSchema_NewDBSchema_ShouldFail_WhenDBIsNil(t *testing.T) {
 	lDBSchema, lError := ormshift.NewDBSchema(nil)
 	if !assertNilResultAndNotNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
@@ -74,7 +74,7 @@ func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
 	assertEqualWithLabel(t, false, lDBSchema.ExistsTable(lProductAttributeTable.Name()), "DBSchema.ExistsTable")
 }
 
-func Test_DBSchema_NewTable_ShouldReturnError_WhenHasInvalidName(t *testing.T) {
+func Test_DBSchema_NewTable_ShouldFail_WhenHasInvalidName(t *testing.T) {
 	lInvalidTableName := "123456-table"
 	lTable, lError := ormshift.NewTable(lInvalidTableName)
 	if !assertNilResultAndNotNilError(t, lTable, lError, "ormshift.NewTable") {
@@ -83,7 +83,7 @@ func Test_DBSchema_NewTable_ShouldReturnError_WhenHasInvalidName(t *testing.T) {
 	assertErrorMessage(t, fmt.Sprintf("invalid table name: %q", lInvalidTableName), lError, "ormshift.NewTable")
 }
 
-func Test_DBSchema_Table_AddColumn_ShouldReturnError_WhenHasInvalidName(t *testing.T) {
+func Test_DBSchema_Table_AddColumn_ShouldFail_WhenHasInvalidName(t *testing.T) {
 	lProductAttributeTable := fakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
 		return
@@ -99,7 +99,7 @@ func Test_DBSchema_Table_AddColumn_ShouldReturnError_WhenHasInvalidName(t *testi
 	assertErrorMessage(t, fmt.Sprintf("invalid column name: %q", lInvalidColumnName), lError, "Table.AddColumn")
 }
 
-func Test_DBSchema_Table_AddColumn_ShouldReturnError_WhenAlreadyExists(t *testing.T) {
+func Test_DBSchema_Table_AddColumn_ShouldFail_WhenAlreadyExists(t *testing.T) {
 	lProductAttributeTable := fakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
 		return

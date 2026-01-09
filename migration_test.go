@@ -73,7 +73,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 	assertEqualWithLabel(t, 2, len(lMigrationManager.UpedMigrationsNames()), "len(MigrationManager.UpedMigrationsNames)")
 }
 
-func Test_Migrate_ShouldReturnError_WhenNilDB(t *testing.T) {
+func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
 	lMigrationManager, lError := ormshift.Migrate(
 		nil,
 		ormshift.DriverSQLite,
@@ -86,7 +86,7 @@ func Test_Migrate_ShouldReturnError_WhenNilDB(t *testing.T) {
 	assertErrorMessage(t, "sql.DB cannot be nil", lError, "ormshift.Migrate")
 }
 
-func Test_Migrate_ShouldReturnError_WhenInvalidDriverDB(t *testing.T) {
+func Test_Migrate_ShouldFail_WhenInvalidDriverDB(t *testing.T) {
 	lDB, lError := sql.Open(ormshift.DriverSQLite.Name(), ormshift.DriverSQLite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !assertNilError(t, lError, "sql.Open") {
 		return
@@ -105,7 +105,7 @@ func Test_Migrate_ShouldReturnError_WhenInvalidDriverDB(t *testing.T) {
 	assertErrorMessage(t, "driver db should be valid", lError, "ormshift.Migrate")
 }
 
-func Test_Migrate_ShouldReturnError_WhenClosedDB(t *testing.T) {
+func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
 	lDB, lError := sql.Open(ormshift.DriverSQLite.Name(), ormshift.DriverSQLite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !assertNilError(t, lError, "sql.Open") {
 		return
