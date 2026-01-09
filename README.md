@@ -36,7 +36,7 @@ go get github.com/ordershift/ormshift
 
 Quick examples showing common patterns.
 
-Connect (SQLite in-memory with SQLite Driver):
+### Connect (SQLite in-memory with SQLite Driver):
 
 ```go
 db, err := sql.Open(ormshift.DriverSQLite.Name(), ormshift.DriverSQLite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
@@ -46,14 +46,14 @@ if err != nil {
 defer db.Close()
 ```
 
-Postgres and SQL Server Drivers helpers:
+### Postgres and SQL Server Drivers helpers:
 
 ```go
 ormshift.DriverPostgresql.ConnectionString(ormshift.ConnectionParams{User: "pg", Password: "secret", DBname: "my-db"})
 ormshift.DriverSQLServer.ConnectionString(ormshift.ConnectionParams{Host: "host", Port: 1433, Instance: "sqlexpress", User: "sa", Password: "pwd", DBname: "db"})
 ```
 
-Create a table with the SQL builder:
+### Create a table with the SQL builder:
 
 ```go
 tbl, err := ormshift.NewTable("user")
@@ -66,7 +66,7 @@ tbl.AddColumn(ormshift.NewColumnParams{Name: "email", Type: ormshift.Varchar, Si
 db.Exec(ormshift.DriverSQLite.SQLBuilder().CreateTable(*tbl))
 ```
 
-Insert / Update / Select / Delete examples:
+### Insert / Update / Select / Delete examples:
 
 ```go
 // Insert with values (builder returns SQL and driver-compatible args)
@@ -94,7 +94,7 @@ Notes:
 
 - Builders return SQL and argument lists already adapted to the driver: Postgres uses positional values ($1, $2...), while SQL Server and SQLite return named args (`sql.NamedArg`). Pass the returned args directly to `db.Exec`/`db.Query`.
 
-Running migrations:
+### Running migrations:
 
 ```go
 type CreateUserTable struct{}
