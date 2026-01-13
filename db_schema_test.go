@@ -9,7 +9,7 @@ import (
 )
 
 func Test_DBSchema_NewDBSchema_ShouldFail_WhenDBIsNil(t *testing.T) {
-	lDBSchema, lError := ormshift.NewDBSchema(nil)
+	lDBSchema, lError := ormshift.NewDBSchema(nil, ormshift.DriverSQLite)
 	if !assertNilResultAndNotNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}
@@ -30,7 +30,7 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 	if !assertNilError(t, lError, "DB.Exec") {
 		return
 	}
-	lDBSchema, lError := ormshift.NewDBSchema(lDB)
+	lDBSchema, lError := ormshift.NewDBSchema(lDB, ormshift.DriverSQLite)
 	if !assertNotNilResultAndNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}
@@ -67,7 +67,7 @@ func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
 		return
 	}
 	lDB.Close()
-	lDBSchema, lError := ormshift.NewDBSchema(lDB)
+	lDBSchema, lError := ormshift.NewDBSchema(lDB, ormshift.DriverSQLite)
 	if !assertNotNilResultAndNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}

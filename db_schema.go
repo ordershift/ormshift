@@ -7,28 +7,30 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-
-	"github.com/jimsmart/schema"
 )
 
 type DBSchema struct {
-	db *sql.DB
+	db       *sql.DB
+	driverDB DriverDB
 }
 
-func NewDBSchema(pDB *sql.DB) (*DBSchema, error) {
+func NewDBSchema(pDB *sql.DB, pDriverDB DriverDB) (*DBSchema, error) {
 	if pDB == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
-	return &DBSchema{db: pDB}, nil
+	if !pDriverDB.IsValid() {
+		return nil, errors.New("driver db should be valid")
+	}
+	return &DBSchema{db: pDB, driverDB: pDriverDB}, nil
 }
 
 func (s DBSchema) ExistsTable(pTableName TableName) bool {
-	lTables, lError := schema.TableNames(s.db)
+	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
 	}
 	for _, lTable := range lTables {
-		lUpperTableName := strings.ToUpper(lTable[1])
+		lUpperTableName := strings.ToUpper(lTable)
 		if lUpperTableName == strings.ToUpper(pTableName.String()) {
 			return true
 		}
@@ -36,13 +38,74 @@ func (s DBSchema) ExistsTable(pTableName TableName) bool {
 	return false
 }
 
+func (s DBSchema) fetchTableNames() ([]string, error) {
+	lSQLQuery := ""
+	switch s.driverDB {
+	case DriverSQLServer:
+		lSQLQuery = `
+			SELECT
+				t.name
+			FROM
+				sys.tables t
+			LEFT JOIN
+				sys.extended_properties ep
+			ON	ep.major_id = t.[object_id]
+			WHERE
+				t.is_ms_shipped = 0 AND
+				(ep.class_desc IS NULL OR (ep.class_desc <> 'OBJECT_OR_COLUMN' AND
+					ep.[name] <> 'microsoft_database_tools_support'))
+			ORDER BY
+				t.name
+		`
+	case DriverSQLite:
+		lSQLQuery = `
+			SELECT
+				name 
+			FROM
+				sqlite_master
+			WHERE
+				type = 'table'
+			ORDER BY
+				name
+		`
+	case DriverPostgresql:
+		lSQLQuery = `
+			SELECT
+				table_name
+			FROM
+				information_schema.tables
+			WHERE
+				table_type = 'BASE TABLE' AND
+				table_schema NOT IN ('pg_catalog', 'information_schema')
+			ORDER BY
+				table_name
+		`
+	}
+	lRows, lError := s.db.Query(lSQLQuery)
+	if lError != nil {
+		return nil, lError
+	}
+	defer lRows.Close()
+
+	var lTableNames []string
+	lTableName := ""
+	for lRows.Next() {
+		lError = lRows.Scan(&lTableName)
+		if lError != nil {
+			return nil, lError
+		}
+		lTableNames = append(lTableNames, lTableName)
+	}
+	return lTableNames, nil
+}
+
 func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
-	lColumnTypes, lErro := schema.ColumnTypes(s.db, "", pTableName.String())
+	lColumnTypes, lErro := s.fetchColumnTypes(pTableName.String())
 	if lErro != nil {
-		lColumnTypes, lErro = schema.ColumnTypes(s.db, "", strings.ToLower(pTableName.String()))
+		lColumnTypes, lErro = s.fetchColumnTypes(strings.ToLower(pTableName.String()))
 	}
 	if lErro != nil {
-		lColumnTypes, lErro = schema.ColumnTypes(s.db, "", strings.ToUpper(pTableName.String()))
+		lColumnTypes, lErro = s.fetchColumnTypes(strings.ToUpper(pTableName.String()))
 	}
 	if lErro != nil {
 		return nil, lErro
@@ -59,6 +122,15 @@ func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnN
 func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName) bool {
 	_, lError := s.CheckTableColumnType(pTableName, pColumnName)
 	return lError == nil
+}
+
+func (s DBSchema) fetchColumnTypes(pTableName string) ([]*sql.ColumnType, error) {
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName))
+	if lError != nil {
+		return nil, lError
+	}
+	defer lRows.Close()
+	return lRows.ColumnTypes()
 }
 
 var regexValidTableName = regexp.MustCompile(`^([A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*$`)
