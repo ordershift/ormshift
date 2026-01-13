@@ -9,6 +9,45 @@ import (
 	"strings"
 )
 
+const (
+	sqlserverSelectTableNames = `
+		SELECT
+			t.name
+		FROM
+			sys.tables t
+		LEFT JOIN
+			sys.extended_properties ep
+		ON	ep.major_id = t.[object_id]
+		WHERE
+			t.is_ms_shipped = 0 AND
+			(ep.class_desc IS NULL OR (ep.class_desc <> 'OBJECT_OR_COLUMN' AND
+				ep.[name] <> 'microsoft_database_tools_support'))
+		ORDER BY
+			t.name
+	`
+	sqliteSelectTableNames = `
+		SELECT
+			name 
+		FROM
+			sqlite_master
+		WHERE
+			type = 'table'
+		ORDER BY
+			name
+	`
+	postgresqlSelectTableNames = `
+		SELECT
+			table_name
+		FROM
+			information_schema.tables
+		WHERE
+			table_type = 'BASE TABLE' AND
+			table_schema NOT IN ('pg_catalog', 'information_schema')
+		ORDER BY
+			table_name
+	`
+)
+
 type DBSchema struct {
 	db       *sql.DB
 	driverDB DriverDB
@@ -42,44 +81,11 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	lSQLQuery := ""
 	switch s.driverDB {
 	case DriverSQLServer:
-		lSQLQuery = `
-			SELECT
-				t.name
-			FROM
-				sys.tables t
-			LEFT JOIN
-				sys.extended_properties ep
-			ON	ep.major_id = t.[object_id]
-			WHERE
-				t.is_ms_shipped = 0 AND
-				(ep.class_desc IS NULL OR (ep.class_desc <> 'OBJECT_OR_COLUMN' AND
-					ep.[name] <> 'microsoft_database_tools_support'))
-			ORDER BY
-				t.name
-		`
+		lSQLQuery = sqlserverSelectTableNames
 	case DriverSQLite:
-		lSQLQuery = `
-			SELECT
-				name 
-			FROM
-				sqlite_master
-			WHERE
-				type = 'table'
-			ORDER BY
-				name
-		`
+		lSQLQuery = sqliteSelectTableNames
 	case DriverPostgresql:
-		lSQLQuery = `
-			SELECT
-				table_name
-			FROM
-				information_schema.tables
-			WHERE
-				table_type = 'BASE TABLE' AND
-				table_schema NOT IN ('pg_catalog', 'information_schema')
-			ORDER BY
-				table_name
-		`
+		lSQLQuery = postgresqlSelectTableNames
 	}
 	lRows, lError := s.db.Query(lSQLQuery)
 	if lError != nil {
