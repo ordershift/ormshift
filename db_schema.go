@@ -48,6 +48,18 @@ const (
 	`
 )
 
+func selectTableNames(pDriverDB DriverDB) string {
+	switch pDriverDB {
+	case DriverSQLServer:
+		return sqlserverSelectTableNames
+	case DriverSQLite:
+		return sqliteSelectTableNames
+	case DriverPostgresql:
+		return postgresqlSelectTableNames
+	}
+	return ""
+}
+
 type DBSchema struct {
 	db       *sql.DB
 	driverDB DriverDB
@@ -78,16 +90,7 @@ func (s DBSchema) ExistsTable(pTableName TableName) bool {
 }
 
 func (s DBSchema) fetchTableNames() ([]string, error) {
-	lSQLQuery := ""
-	switch s.driverDB {
-	case DriverSQLServer:
-		lSQLQuery = sqlserverSelectTableNames
-	case DriverSQLite:
-		lSQLQuery = sqliteSelectTableNames
-	case DriverPostgresql:
-		lSQLQuery = postgresqlSelectTableNames
-	}
-	lRows, lError := s.db.Query(lSQLQuery)
+	lRows, lError := s.db.Query(selectTableNames(s.driverDB))
 	if lError != nil {
 		return nil, lError
 	}
