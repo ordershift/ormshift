@@ -12,7 +12,7 @@ func Test_DriverSQLServer_Name_ShouldBeValid(t *testing.T) {
 }
 
 func Test_DriverSQLite_Name_ShouldBeValid(t *testing.T) {
-	assertEqualWithLabel(t, "sqlite3", ormshift.DriverSQLite.Name(), "DriverSQLite.Name")
+	assertEqualWithLabel(t, "sqlite", ormshift.DriverSQLite.Name(), "DriverSQLite.Name")
 	assertEqualWithLabel(t, true, ormshift.DriverSQLite.IsValid(), "DriverSQLite.IsValid")
 }
 

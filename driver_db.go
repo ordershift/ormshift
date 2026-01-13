@@ -4,7 +4,7 @@ import (
 	// Import for PostgreSQL
 	_ "github.com/lib/pq"
 	// Import for SQLite
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	// Import for SQL Server
 	_ "github.com/microsoft/go-mssqldb"
 )
@@ -34,7 +34,7 @@ func (d DriverDB) Name() string {
 	case DriverSQLServer:
 		return "sqlserver"
 	case DriverSQLite:
-		return "sqlite3"
+		return "sqlite"
 	case DriverPostgresql:
 		return "postgres"
 	default:

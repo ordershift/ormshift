@@ -39,7 +39,7 @@ func fakeProductAttributeTable(t *testing.T) *ormshift.Table {
 		NotNull:       false,
 		Autoincrement: false,
 	})
-	if !assertNilError(t, lError, "UserTable.AddColumn") {
+	if !assertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
 	}
 	lError = lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
@@ -49,7 +49,7 @@ func fakeProductAttributeTable(t *testing.T) *ormshift.Table {
 		NotNull:       false,
 		Autoincrement: false,
 	})
-	if !assertNilError(t, lError, "UserTable.AddColumn") {
+	if !assertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
 	}
 	return lProductAttributeTable

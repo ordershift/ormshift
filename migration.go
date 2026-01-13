@@ -49,17 +49,18 @@ func NewMigrationManager(pDB *sql.DB, pDriverDB DriverDB) (*MigrationManager, er
 	if !pDriverDB.IsValid() {
 		return nil, errors.New("driver db should be valid")
 	}
-	lUpedMigrationsNames, lError := upedMigrationsNames(pDB, pDriverDB.SQLBuilder())
+	lDBSchema, lError := NewDBSchema(pDB, pDriverDB)
 	if lError != nil {
 		return nil, lError
 	}
-	lDBSchema, lError := NewDBSchema(pDB)
+	lSQLBuilder := pDriverDB.SQLBuilder()
+	lUpedMigrationsNames, lError := upedMigrationsNames(pDB, *lDBSchema, lSQLBuilder)
 	if lError != nil {
 		return nil, lError
 	}
 	return &MigrationManager{
 		db:                  pDB,
-		sqlBuilder:          pDriverDB.SQLBuilder(),
+		sqlBuilder:          lSQLBuilder,
 		dbSchema:            lDBSchema,
 		migrations:          []Migration{},
 		upedMigrationsNames: lUpedMigrationsNames,
@@ -167,17 +168,13 @@ func (mm MigrationManager) deleteDownedMigration(pNomeDaMigracao string) error {
 	return nil
 }
 
-func upedMigrationsNames(pDB *sql.DB, pSQLBuilder SQLBuilder) ([]string, error) {
+func upedMigrationsNames(pDB *sql.DB, pDBSchema DBSchema, pSQLBuilder SQLBuilder) ([]string, error) {
 	lUpedMigrationsNames := []string{}
 	lMigrationsTable, lError := NewTable(migrations_table_name)
 	if lError != nil {
 		return nil, lError
 	}
-	lDBSchema, lError := NewDBSchema(pDB)
-	if lError != nil {
-		return nil, lError
-	}
-	if !lDBSchema.ExistsTable(lMigrationsTable.Name()) {
+	if !pDBSchema.ExistsTable(lMigrationsTable.Name()) {
 		lMigrationsTable.AddColumn(NewColumnParams{
 			Name:       migrations_column_name,
 			Type:       Varchar,
