@@ -16,6 +16,19 @@ func Test_DBSchema_NewDBSchema_ShouldFail_WhenDBIsNil(t *testing.T) {
 	assertErrorMessage(t, "sql.DB cannot be nil", lError, "ormshift.NewDBSchema")
 }
 
+func Test_DBSchema_NewDBSchema_ShouldFail_WhenInvalidDriver(t *testing.T) {
+	lDB, lError := sql.Open(ormshift.DriverSQLite.Name(), ormshift.DriverSQLite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
+	if !assertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
+		return
+	}
+	defer lDB.Close()
+	lDBSchema, lError := ormshift.NewDBSchema(lDB, ormshift.DriverDB(-1))
+	if !assertNilResultAndNotNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
+		return
+	}
+	assertErrorMessage(t, "driver db should be valid", lError, "ormshift.NewDBSchema")
+}
+
 func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 	lDB, lError := sql.Open(ormshift.DriverSQLite.Name(), ormshift.DriverSQLite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !assertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
