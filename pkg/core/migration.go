@@ -1,4 +1,4 @@
-package ormshift
+package core
 
 import (
 	"database/sql"
@@ -19,8 +19,8 @@ type Migration interface {
 	Down(pMigrationManager *MigrationManager) error
 }
 
-func Migrate(pDB *sql.DB, pDriverDB DriverDB, pMigations ...Migration) (*MigrationManager, error) {
-	lMigrationManager, lError := NewMigrationManager(pDB, pDriverDB)
+func Migrate(pDB *sql.DB, pSQLBuilder SQLBuilder, pDBSchema *DBSchema, pMigations ...Migration) (*MigrationManager, error) {
+	lMigrationManager, lError := NewMigrationManager(pDB, pSQLBuilder, pDBSchema)
 	if lError != nil {
 		return nil, lError
 	}
@@ -42,26 +42,18 @@ type MigrationManager struct {
 	upedMigrationsNames []string
 }
 
-func NewMigrationManager(pDB *sql.DB, pDriverDB DriverDB) (*MigrationManager, error) {
+func NewMigrationManager(pDB *sql.DB, pSQLBuilder SQLBuilder, pDBSchema *DBSchema) (*MigrationManager, error) {
 	if pDB == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
-	if !pDriverDB.IsValid() {
-		return nil, errors.New("driver db should be valid")
-	}
-	lDBSchema, lError := NewDBSchema(pDB, pDriverDB)
-	if lError != nil {
-		return nil, lError
-	}
-	lSQLBuilder := pDriverDB.SQLBuilder()
-	lUpedMigrationsNames, lError := upedMigrationsNames(pDB, *lDBSchema, lSQLBuilder)
+	lUpedMigrationsNames, lError := upedMigrationsNames(pDB, *pDBSchema, pSQLBuilder)
 	if lError != nil {
 		return nil, lError
 	}
 	return &MigrationManager{
 		db:                  pDB,
-		sqlBuilder:          lSQLBuilder,
-		dbSchema:            lDBSchema,
+		sqlBuilder:          pSQLBuilder,
+		dbSchema:            pDBSchema,
 		migrations:          []Migration{},
 		upedMigrationsNames: lUpedMigrationsNames,
 	}, nil

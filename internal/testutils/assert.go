@@ -1,11 +1,11 @@
-package ormshift_test
+package testutils
 
 import (
 	"strings"
 	"testing"
 )
 
-func assertErrorMessage(t *testing.T, pExpectedErrorMessage string, pError error, pFunctionName string) {
+func AssertErrorMessage(t *testing.T, pExpectedErrorMessage string, pError error, pFunctionName string) {
 	if pError == nil {
 		t.Errorf("%s should return not nil error", pFunctionName)
 		return
@@ -20,31 +20,31 @@ func assertErrorMessage(t *testing.T, pExpectedErrorMessage string, pError error
 	}
 }
 
-func assertNotNilResultAndNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
+func AssertNotNilResultAndNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
 	lResult := true
 	if pResult == nil {
 		t.Errorf("%s cannot return nil Result", pFunctionName)
 		lResult = false
 	}
-	if !assertNilError(t, pError, pFunctionName) {
+	if !AssertNilError(t, pError, pFunctionName) {
 		lResult = false
 	}
 	return lResult
 }
 
-func assertNilResultAndNotNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
+func AssertNilResultAndNotNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
 	lResult := true
 	if pResult != nil {
 		t.Errorf("%s should return nil Result", pFunctionName)
 		lResult = false
 	}
-	if !assertNotNilError(t, pError, pFunctionName) {
+	if !AssertNotNilError(t, pError, pFunctionName) {
 		lResult = false
 	}
 	return lResult
 }
 
-func assertNilError(t *testing.T, pError error, pFunctionName string) bool {
+func AssertNilError(t *testing.T, pError error, pFunctionName string) bool {
 	if pError == nil {
 		return true
 	}
@@ -52,7 +52,7 @@ func assertNilError(t *testing.T, pError error, pFunctionName string) bool {
 	return false
 }
 
-func assertNotNilError(t *testing.T, pError error, pFunctionName string) bool {
+func AssertNotNilError(t *testing.T, pError error, pFunctionName string) bool {
 	if pError != nil {
 		return true
 	}
@@ -60,11 +60,11 @@ func assertNotNilError(t *testing.T, pError error, pFunctionName string) bool {
 	return false
 }
 
-// func assertEqual[T comparable](t *testing.T, pExpected, pReturned T) bool {
-// 	return assertEqualWithLabel(t, pExpected, pReturned, "")
+// func AssertEqual[T comparable](t *testing.T, pExpected, pReturned T) bool {
+// 	return AssertEqualWithLabel(t, pExpected, pReturned, "")
 // }
 
-func assertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pLabel string) bool {
+func AssertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pLabel string) bool {
 	if pExpected == pReturned {
 		return true
 	}
@@ -75,11 +75,11 @@ func assertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pL
 	return false
 }
 
-// func assertNotEqual[T comparable](t *testing.T, pNotExpected, pReturned T) bool {
-// 	return assertNotEqualWithLabel(t, pNotExpected, pReturned, "")
+// func AssertNotEqual[T comparable](t *testing.T, pNotExpected, pReturned T) bool {
+// 	return AssertNotEqualWithLabel(t, pNotExpected, pReturned, "")
 // }
 
-// func assertNotEqualWithLabel[T comparable](t *testing.T, pNotExpected, pReturned T, pLabel string) bool {
+// func AssertNotEqualWithLabel[T comparable](t *testing.T, pNotExpected, pReturned T, pLabel string) bool {
 // 	if pNotExpected != pReturned {
 // 		return true
 // 	}

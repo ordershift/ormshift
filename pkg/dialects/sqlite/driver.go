@@ -1,10 +1,18 @@
-package ormshift
+package sqlite
 
 import (
 	"fmt"
+
+	_ "modernc.org/sqlite"
+
+	"github.com/ordershift/ormshift/pkg/core"
 )
 
-func (d DriverDB) sqliteConnectionString(pParams ConnectionParams) string {
+func DriverName() string {
+	return "sqlite"
+}
+
+func ConnectionString(pParams core.ConnectionParams) string {
 	if pParams.InMemory {
 		return ":memory:"
 	}
@@ -16,4 +24,8 @@ func (d DriverDB) sqliteConnectionString(pParams ConnectionParams) string {
 		}
 	}
 	return fmt.Sprintf("file:%s.db?%s_locking=NORMAL", pParams.DBname, lConnetionWithAuth)
+}
+
+func SQLBuilder() core.SQLBuilder {
+	return sqliteSQLBuilder{}
 }

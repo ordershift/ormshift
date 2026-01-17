@@ -1,10 +1,18 @@
-package ormshift
+package postgresql
 
 import (
 	"fmt"
+
+	_ "github.com/lib/pq"
+
+	"github.com/ordershift/ormshift/pkg/core"
 )
 
-func (d DriverDB) postgresqlConnectionString(pParams ConnectionParams) string {
+func DriverName() string {
+	return "postgres"
+}
+
+func ConnectionString(pParams core.ConnectionParams) string {
 	lHost := pParams.Host
 	if lHost == "" {
 		lHost = "localhost"
@@ -14,4 +22,8 @@ func (d DriverDB) postgresqlConnectionString(pParams ConnectionParams) string {
 		lPorta = 5432
 	}
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPorta, pParams.User, pParams.Password, pParams.DBname)
+}
+
+func SQLBuilder() core.SQLBuilder {
+	return postgresqlSQLBuilder{}
 }

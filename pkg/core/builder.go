@@ -1,4 +1,4 @@
-package ormshift
+package core
 
 import (
 	"database/sql"

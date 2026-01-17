@@ -1,4 +1,4 @@
-package ormshift
+package core
 
 import (
 	"database/sql"
@@ -9,70 +9,16 @@ import (
 	"strings"
 )
 
-const (
-	sqlserverSelectTableNames = `
-		SELECT
-			t.name
-		FROM
-			sys.tables t
-		LEFT JOIN
-			sys.extended_properties ep
-		ON	ep.major_id = t.[object_id]
-		WHERE
-			t.is_ms_shipped = 0 AND
-			(ep.class_desc IS NULL OR (ep.class_desc <> 'OBJECT_OR_COLUMN' AND
-				ep.[name] <> 'microsoft_database_tools_support'))
-		ORDER BY
-			t.name
-	`
-	sqliteSelectTableNames = `
-		SELECT
-			name 
-		FROM
-			sqlite_master
-		WHERE
-			type = 'table'
-		ORDER BY
-			name
-	`
-	postgresqlSelectTableNames = `
-		SELECT
-			table_name
-		FROM
-			information_schema.tables
-		WHERE
-			table_type = 'BASE TABLE' AND
-			table_schema NOT IN ('pg_catalog', 'information_schema')
-		ORDER BY
-			table_name
-	`
-)
-
-func selectTableNames(pDriverDB DriverDB) string {
-	switch pDriverDB {
-	case DriverSQLServer:
-		return sqlserverSelectTableNames
-	case DriverSQLite:
-		return sqliteSelectTableNames
-	case DriverPostgresql:
-		return postgresqlSelectTableNames
-	}
-	return ""
-}
-
 type DBSchema struct {
-	db       *sql.DB
-	driverDB DriverDB
+	db              *sql.DB
+	tableNamesQuery string
 }
 
-func NewDBSchema(pDB *sql.DB, pDriverDB DriverDB) (*DBSchema, error) {
+func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
 	if pDB == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
-	if !pDriverDB.IsValid() {
-		return nil, errors.New("driver db should be valid")
-	}
-	return &DBSchema{db: pDB, driverDB: pDriverDB}, nil
+	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
 }
 
 func (s DBSchema) ExistsTable(pTableName TableName) bool {
@@ -90,7 +36,7 @@ func (s DBSchema) ExistsTable(pTableName TableName) bool {
 }
 
 func (s DBSchema) fetchTableNames() ([]string, error) {
-	lRows, lError := s.db.Query(selectTableNames(s.driverDB))
+	lRows, lError := s.db.Query(s.tableNamesQuery)
 	if lError != nil {
 		return nil, lError
 	}
