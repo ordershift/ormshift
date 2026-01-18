@@ -55,19 +55,22 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 }
 
 func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
-	lColumnTypes, lErro := s.fetchColumnTypes(pTableName.String())
-	if lErro != nil {
-		lColumnTypes, lErro = s.fetchColumnTypes(strings.ToLower(pTableName.String()))
-	}
-	if lErro != nil {
-		lColumnTypes, lErro = s.fetchColumnTypes(strings.ToUpper(pTableName.String()))
-	}
-	if lErro != nil {
-		return nil, lErro
+	// TODO: Maybe the table match should be case sensitive depending on the DBMS
+	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
+	// if lErro != nil {
+	// 	lColumnTypes, lErro = s.fetchColumnTypes(strings.ToLower(pTableName.String()))
+	// }
+	// if lErro != nil {
+	// 	lColumnTypes, lErro = s.fetchColumnTypes(strings.ToUpper(pTableName.String()))
+	// }
+	if lError != nil {
+		return nil, lError
 	}
 	for _, lColumnType := range lColumnTypes {
-		lColumnName := strings.ToUpper(lColumnType.Name())
-		if lColumnName == strings.ToUpper(pColumnName.String()) {
+		// TODO: Maybe the table match should be case sensitive depending on the DBMS
+		// lColumnName := strings.ToUpper(lColumnType.Name())
+		// if lColumnName == strings.ToUpper(pColumnName.String()) {
+		if lColumnType.Name() == pColumnName.String() {
 			return lColumnType, nil
 		}
 	}
@@ -79,8 +82,8 @@ func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName
 	return lError == nil
 }
 
-func (s DBSchema) fetchColumnTypes(pTableName string) ([]*sql.ColumnType, error) {
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName))
+func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String()))
 	if lError != nil {
 		return nil, lError
 	}
