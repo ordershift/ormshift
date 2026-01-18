@@ -1,4 +1,10 @@
-# ORM Shift: Order Shift's object-relational mapping
+# ormshift
+
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ordershift_ormshift&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ordershift_ormshift)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ordershift_ormshift&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ordershift_ormshift)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=ordershift_ormshift&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=ordershift_ormshift)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ordershift_ormshift&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ordershift_ormshift)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ordershift_ormshift&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ordershift_ormshift)
 
 ## Background
 
