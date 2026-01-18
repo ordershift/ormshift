@@ -83,7 +83,12 @@ func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName
 }
 
 func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String()))
+	lTableName := pTableName.String()
+	if !regexValidTableName.MatchString(lTableName) {
+		return nil, fmt.Errorf("invalid table name: %q", lTableName)
+	}
+
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", lTableName))
 	if lError != nil {
 		return nil, lError
 	}
