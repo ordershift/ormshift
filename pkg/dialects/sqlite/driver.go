@@ -23,7 +23,7 @@ func ConnectionString(pParams core.ConnectionParams) string {
 			lConnetionWithAuth += fmt.Sprintf("_auth_pass=%s&", pParams.Password)
 		}
 	}
-	return fmt.Sprintf("file:%s.db?%s_locking=NORMAL", pParams.DBname, lConnetionWithAuth)
+	return fmt.Sprintf("file:%s.db?%s_locking=NORMAL", pParams.Database, lConnetionWithAuth)
 }
 
 func SQLBuilder() core.SQLBuilder {

@@ -15,7 +15,7 @@ func Test_DriverSQLServer_ConnectionString_ShouldBeValid(t *testing.T) {
 		Instance: "sqlexpress",
 		User:     "sa",
 		Password: "123456",
-		DBname:   "my-db",
+		Database: "my-db",
 	})
 	lExpectedConnectionString := "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db" //NOSONAR go:S2068
 	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "DriverSQLServer.ConnectionString")

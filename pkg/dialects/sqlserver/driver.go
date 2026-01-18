@@ -20,7 +20,7 @@ func ConnectionString(pParams core.ConnectionParams) string {
 	if pParams.Port > 0 {
 		lHostInstanceAndPort += fmt.Sprintf(";port=%d", pParams.Port)
 	}
-	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.DBname)
+	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
 }
 
 func SQLBuilder() core.SQLBuilder {

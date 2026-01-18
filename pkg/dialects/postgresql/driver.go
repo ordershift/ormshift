@@ -21,7 +21,7 @@ func ConnectionString(pParams core.ConnectionParams) string {
 	if lPorta == 0 {
 		lPorta = 5432
 	}
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPorta, pParams.User, pParams.Password, pParams.DBname)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPorta, pParams.User, pParams.Password, pParams.Database)
 }
 
 func SQLBuilder() core.SQLBuilder {

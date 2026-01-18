@@ -6,6 +6,6 @@ type ConnectionParams struct {
 	Port     uint
 	User     string
 	Password string
-	DBname   string
+	Database string
 	InMemory bool
 }
