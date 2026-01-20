@@ -1,17 +1,17 @@
-package core_test
+package ormshift_test
 
 import (
 	"database/sql"
 	"fmt"
 	"testing"
 
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
-	"github.com/ordershift/ormshift/pkg/core"
-	"github.com/ordershift/ormshift/pkg/dialects/sqlite"
 )
 
 func Test_DBSchema_NewDBSchema_ShouldFail_WhenDBIsNil(t *testing.T) {
-	lDBSchema, lError := core.NewDBSchema(nil, "query")
+	lDBSchema, lError := ormshift.NewDBSchema(nil, "query")
 	if !testutils.AssertNilResultAndNotNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}
@@ -19,7 +19,7 @@ func Test_DBSchema_NewDBSchema_ShouldFail_WhenDBIsNil(t *testing.T) {
 }
 
 func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
 	}
@@ -40,12 +40,12 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 	for _, lColumn := range lProductAttributeTable.Columns() {
 		testutils.AssertEqualWithLabel(t, true, lDBSchema.ExistsTableColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.ExistsTableColumn")
 	}
-	lAnyTableName, lError := core.NewTableName("any_table")
+	lAnyTableName, lError := ormshift.NewTableName("any_table")
 	if !testutils.AssertNotNilResultAndNilError(t, lAnyTableName, lError, "ormshift.NewTableName") {
 		return
 	}
 	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTable(*lAnyTableName), "DBSchema.ExistsTable")
-	lAnyColumnName, lError := core.NewColumnName("any_col")
+	lAnyColumnName, lError := ormshift.NewColumnName("any_col")
 	if !testutils.AssertNotNilResultAndNilError(t, lAnyColumnName, lError, "ormshift.NewTableName") {
 		return
 	}
@@ -54,7 +54,7 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 }
 
 func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
 	}
@@ -78,7 +78,7 @@ func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
 
 func Test_DBSchema_NewTable_ShouldFail_WhenHasInvalidName(t *testing.T) {
 	lInvalidTableName := "123456-table"
-	lTable, lError := core.NewTable(lInvalidTableName)
+	lTable, lError := ormshift.NewTable(lInvalidTableName)
 	if !testutils.AssertNilResultAndNotNilError(t, lTable, lError, "ormshift.NewTable") {
 		return
 	}
@@ -91,9 +91,9 @@ func Test_DBSchema_Table_AddColumn_ShouldFail_WhenHasInvalidName(t *testing.T) {
 		return
 	}
 	lInvalidColumnName := "123456-column"
-	lError := lProductAttributeTable.AddColumn(core.NewColumnParams{
+	lError := lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
 		Name: lInvalidColumnName,
-		Type: core.Integer,
+		Type: ormshift.Integer,
 	})
 	if !testutils.AssertNotNilError(t, lError, "Table.AddColumn") {
 		return
@@ -106,9 +106,9 @@ func Test_DBSchema_Table_AddColumn_ShouldFail_WhenAlreadyExists(t *testing.T) {
 	if lProductAttributeTable == nil {
 		return
 	}
-	lError := lProductAttributeTable.AddColumn(core.NewColumnParams{
+	lError := lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
 		Name: "value",
-		Type: core.Integer,
+		Type: ormshift.Integer,
 	})
 	if !testutils.AssertNotNilError(t, lError, "Table.AddColumn") {
 		return

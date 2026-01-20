@@ -1,12 +1,14 @@
-package core
+package internal
 
 import (
 	"database/sql"
 	"fmt"
 	"strings"
+
+	"github.com/ordershift/ormshift"
 )
 
-type ColumnDefinitionFunc func(Column) string
+type ColumnDefinitionFunc func(ormshift.Column) string
 
 type InteroperateSQLCommandWithNamedArgsFunc func(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
 
@@ -22,7 +24,7 @@ func NewGenericSQLBuilder(pColumnDefinitionFunc ColumnDefinitionFunc, pInteroper
 	}
 }
 
-func (sb GenericSQLBuilder) CreateTable(pTable Table) string {
+func (sb GenericSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	for _, lColumn := range pTable.Columns() {
@@ -48,24 +50,24 @@ func (sb GenericSQLBuilder) CreateTable(pTable Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb GenericSQLBuilder) DropTable(pTableName TableName) string {
+func (sb GenericSQLBuilder) DropTable(pTableName ormshift.TableName) string {
 	return fmt.Sprintf("DROP TABLE %s;", pTableName.String())
 }
 
-func (sb GenericSQLBuilder) AlterTableAddColumn(pTableName TableName, pColumn Column) string {
+func (sb GenericSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
 	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", pTableName.String(), sb.columnDefinition(pColumn))
 }
 
-func (sb GenericSQLBuilder) AlterTableDropColumn(pTableName TableName, pColumnName ColumnName) string {
+func (sb GenericSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", pTableName.String(), pColumnName.String())
 }
 
-func (sb GenericSQLBuilder) ColumnTypeAsString(pColumnType ColumnType) string {
+func (sb GenericSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
 	// Generic implementation, should be overridden by specific SQL builders
 	return fmt.Sprintf("<<TYPE_%d>>", pColumnType)
 }
 
-func (sb GenericSQLBuilder) columnDefinition(pColumn Column) string {
+func (sb GenericSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
 		return sb.ColumnDefinitionFunc(pColumn)
 	}
@@ -76,7 +78,7 @@ func (sb GenericSQLBuilder) Insert(pTableName string, pColumns []string) string 
 	return fmt.Sprintf("insert into %s (%s) values (%s)", pTableName, sb.columnsList(pColumns), sb.namesList(pColumns))
 }
 
-func (sb GenericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ColumnsValues) (string, []any) {
+func (sb GenericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
 	lInsertSQL := sb.Insert(pTableName, pColumnsValues.ToColumns())
 	lInsertArgs := pColumnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(lInsertSQL, lInsertArgs...)
@@ -90,7 +92,7 @@ func (sb GenericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []
 	return lUpdate
 }
 
-func (sb GenericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ColumnsValues) (string, []any) {
+func (sb GenericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
 	lUpdateSQL := sb.Update(pTableName, pColumns, pColumnsWhere)
 	lUpdateArgs := pValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(lUpdateSQL, lUpdateArgs...)
@@ -104,7 +106,7 @@ func (sb GenericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) st
 	return lDelete
 }
 
-func (sb GenericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ColumnsValues) (string, []any) {
+func (sb GenericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	lDeleteSQL := sb.Delete(pTableName, pWhereColumnsValues.ToColumns())
 	lDeleteArgs := pWhereColumnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(lDeleteSQL, lDeleteArgs...)
@@ -118,7 +120,7 @@ func (sb GenericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []
 	return lUpdate
 }
 
-func (sb GenericSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ColumnsValues) (string, []any) {
+func (sb GenericSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	lSelectSQL := sb.Select(pTableName, pColumns, pWhereColumnsValues.ToColumns())
 	lSelectArgs := pWhereColumnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(lSelectSQL, lSelectArgs...)

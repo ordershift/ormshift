@@ -3,13 +3,13 @@ package sqlserver_test
 import (
 	"testing"
 
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal/sqlserver"
 	"github.com/ordershift/ormshift/internal/testutils"
-	"github.com/ordershift/ormshift/pkg/core"
-	"github.com/ordershift/ormshift/pkg/dialects/sqlserver"
 )
 
 func Test_DriverSQLServer_ConnectionString_ShouldBeValid(t *testing.T) {
-	lReturnedConnectionString := sqlserver.ConnectionString(core.ConnectionParams{
+	lReturnedConnectionString := sqlserver.ConnectionString(ormshift.ConnectionParams{
 		Host:     "my-server",
 		Port:     1433,
 		Instance: "sqlexpress",

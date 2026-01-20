@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	_ "github.com/microsoft/go-mssqldb"
-
-	"github.com/ordershift/ormshift/pkg/core"
+	"github.com/ordershift/ormshift"
 )
 
 func DriverName() string {
 	return "sqlserver"
 }
 
-func ConnectionString(pParams core.ConnectionParams) string {
+func ConnectionString(pParams ormshift.ConnectionParams) string {
 	lHostInstanceAndPort := pParams.Host
 	if pParams.Instance != "" {
 		lHostInstanceAndPort = fmt.Sprintf("%s\\%s", pParams.Host, pParams.Instance)
@@ -23,6 +22,6 @@ func ConnectionString(pParams core.ConnectionParams) string {
 	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
 }
 
-func SQLBuilder() core.SQLBuilder {
+func SQLBuilder() ormshift.SQLBuilder {
 	return sqlserverSQLBuilder{}
 }

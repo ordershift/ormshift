@@ -1,16 +1,16 @@
-package core_test
+package ormshift_test
 
 import (
 	"database/sql"
 	"testing"
 
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
-	"github.com/ordershift/ormshift/pkg/core"
-	"github.com/ordershift/ormshift/pkg/dialects/sqlite"
 )
 
 func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNilError(t, lError, "sql.Open") {
 		return
 	}
@@ -23,23 +23,23 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrator, lError := core.Migrate(
+	lMigrator, lError := ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "ormshift.Migrate") {
 		return
 	}
-	lUserTableName, lError := core.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "core.NewTableName") {
+	lUserTableName, lError := ormshift.NewTableName("user")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewTableName") {
 		return
 	}
-	lUpdatedAtColumnName, lError := core.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
+	lUpdatedAtColumnName, lError := ormshift.NewColumnName("updated_at")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewColumnName") {
 		return
 	}
 	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
@@ -47,7 +47,7 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 }
 
 func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNilError(t, lError, "sql.Open") {
 		return
 	}
@@ -60,36 +60,36 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 		return
 	}
 
-	lMigrator, lError := core.Migrate(
+	lMigrator, lError := ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "ormshift.Migrate") {
 		return
 	}
 
-	lMigrator, lError = core.Migrate(
+	lMigrator, lError = ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "ormshift.Migrate") {
 		return
 	}
 
-	lUserTableName, lError := core.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "core.NewTableName") {
+	lUserTableName, lError := ormshift.NewTableName("user")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewTableName") {
 		return
 	}
-	lUpdatedAtColumnName, lError := core.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
+	lUpdatedAtColumnName, lError := ormshift.NewColumnName("updated_at")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewColumnName") {
 		return
 	}
 	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
@@ -97,22 +97,22 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 }
 
 func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
-	lMigrator, lError := core.Migrate(
+	lMigrator, lError := ormshift.Migrate(
 		nil,
 		sqlite.SQLBuilder(),
 		nil,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "core.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "ormshift.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "core.Migrate")
+	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "ormshift.Migrate")
 }
 
 func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNilError(t, lError, "sql.Open") {
 		return
 	}
@@ -126,22 +126,22 @@ func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
 
 	lDB.Close()
 
-	lMigrator, lError := core.Migrate(
+	lMigrator, lError := ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "core.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "ormshift.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "core.Migrate")
+	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "ormshift.Migrate")
 }
 
 func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
+	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNilError(t, lError, "sql.Open") {
 		return
 	}
@@ -154,20 +154,20 @@ func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrator, lError := core.Migrate(
+	lMigrator, lError := ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.NewMigrator") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "ormshift.NewMigrator") {
 		return
 	}
 
-	lUserTableName, lError := core.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "core.NewTableName") {
+	lUserTableName, lError := ormshift.NewTableName("user")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewTableName") {
 		return
 	}
 	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
@@ -176,8 +176,8 @@ func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "Migrator.DownLast") {
 		return
 	}
-	lUpdatedAtColumnName, lError := core.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
+	lUpdatedAtColumnName, lError := ormshift.NewColumnName("updated_at")
+	if !testutils.AssertNilError(t, lError, "ormshift.NewColumnName") {
 		return
 	}
 	testutils.AssertEqualWithLabel(t, false, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
@@ -185,56 +185,56 @@ func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 
 type m001_Create_Table_User struct{}
 
-func (m m001_Create_Table_User) Up(pMigrator *core.Migrator) error {
-	lUserTable, lError := core.NewTable("user")
+func (m m001_Create_Table_User) Up(pMigrator *ormshift.Migrator) error {
+	lUserTable, lError := ormshift.NewTable("user")
 	if lError != nil {
 		return lError
 	}
 	if pMigrator.DBSchema().ExistsTable(lUserTable.Name()) {
 		return nil
 	}
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:          "id",
-		Type:          core.Integer,
+		Type:          ormshift.Integer,
 		Autoincrement: true,
 		PrimaryKey:    true,
 		NotNull:       true,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "name",
-		Type:       core.Varchar,
+		Type:       ormshift.Varchar,
 		Size:       50,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "email",
-		Type:       core.Varchar,
+		Type:       ormshift.Varchar,
 		Size:       120,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "active",
-		Type:       core.Boolean,
+		Type:       ormshift.Boolean,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "ammount",
-		Type:       core.Monetary,
+		Type:       ormshift.Monetary,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "percent",
-		Type:       core.Decimal,
+		Type:       ormshift.Decimal,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	lUserTable.AddColumn(core.NewColumnParams{
+	lUserTable.AddColumn(ormshift.NewColumnParams{
 		Name:       "photo",
-		Type:       core.Binary,
+		Type:       ormshift.Binary,
 		PrimaryKey: false,
 		NotNull:    false,
 	})
@@ -245,8 +245,8 @@ func (m m001_Create_Table_User) Up(pMigrator *core.Migrator) error {
 	return nil
 }
 
-func (m m001_Create_Table_User) Down(pMigrator *core.Migrator) error {
-	lUserTableName, lError := core.NewTableName("user")
+func (m m001_Create_Table_User) Down(pMigrator *ormshift.Migrator) error {
+	lUserTableName, lError := ormshift.NewTableName("user")
 	if lError != nil {
 		return lError
 	}
@@ -262,14 +262,14 @@ func (m m001_Create_Table_User) Down(pMigrator *core.Migrator) error {
 
 type m002_Alter_Table_Usaer_Add_Column_UpdatedAt struct{}
 
-func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *core.Migrator) error {
-	lUserTableName, lError := core.NewTableName("user")
+func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *ormshift.Migrator) error {
+	lUserTableName, lError := ormshift.NewTableName("user")
 	if lError != nil {
 		return lError
 	}
-	lUpdatedAtColumn, lError := core.NewColumn(core.NewColumnParams{
+	lUpdatedAtColumn, lError := ormshift.NewColumn(ormshift.NewColumnParams{
 		Name: "updated_at",
-		Type: core.DateTime,
+		Type: ormshift.DateTime,
 	})
 	if lError != nil {
 		return lError
@@ -284,12 +284,12 @@ func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *core.Migrator
 	return nil
 }
 
-func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrator *core.Migrator) error {
-	lUserTableName, lError := core.NewTableName("user")
+func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrator *ormshift.Migrator) error {
+	lUserTableName, lError := ormshift.NewTableName("user")
 	if lError != nil {
 		return lError
 	}
-	lUpdatedAtColumnName, lError := core.NewColumnName("updated_at")
+	lUpdatedAtColumnName, lError := ormshift.NewColumnName("updated_at")
 	if lError != nil {
 		return lError
 	}

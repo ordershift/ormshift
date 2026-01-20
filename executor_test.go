@@ -1,13 +1,13 @@
-package core_test
+package ormshift_test
 
 import (
 	"database/sql"
 	"testing"
 	"time"
 
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
-	"github.com/ordershift/ormshift/pkg/core"
-	"github.com/ordershift/ormshift/pkg/dialects/sqlite"
 )
 
 type userRow struct {
@@ -22,7 +22,7 @@ type userRow struct {
 }
 
 func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
-	var lConnectionParams core.ConnectionParams = core.ConnectionParams{InMemory: true}
+	var lConnectionParams ormshift.ConnectionParams = ormshift.ConnectionParams{InMemory: true}
 	var lConnectionString string = sqlite.ConnectionString(lConnectionParams)
 
 	//MIGRATE
@@ -39,11 +39,11 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrationManager, lError := core.Migrate(
+	lMigrationManager, lError := ormshift.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		core.NewMigratorConfig(),
+		ormshift.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
@@ -51,10 +51,10 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		return
 	}
 
-	var lSQLExecutor core.SQLExecutor = lDB
+	var lSQLExecutor ormshift.SQLExecutor = lDB
 
 	//INSERT
-	lValues := core.ColumnsValues{
+	lValues := ormshift.ColumnsValues{
 		"name":       "Jonh Doe",
 		"email":      "jonh.doe@mail.com",
 		"updated_at": time.Date(2026, time.January, 9, 12, 15, 52, 100952002, time.UTC),
@@ -81,7 +81,7 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 	lSQLSelect, lArgs := lSQLBuilder.SelectWithValues(
 		"user",
 		[]string{"id", "name", "email", "updated_at", "active", "ammount", "percent", "photo"},
-		core.ColumnsValues{"id": i},
+		ormshift.ColumnsValues{"id": i},
 	)
 	lUserRows, lError := lSQLExecutor.Query(lSQLSelect, lArgs...)
 	if !testutils.AssertNotNilResultAndNilError(t, lUserRows, lError, "sqlExecutor.Query") {

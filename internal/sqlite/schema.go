@@ -3,7 +3,7 @@ package sqlite
 import (
 	"database/sql"
 
-	"github.com/ordershift/ormshift/pkg/core"
+	"github.com/ordershift/ormshift"
 )
 
 const tableNamesQuery = `
@@ -17,6 +17,6 @@ const tableNamesQuery = `
 			name
 	`
 
-func DBSchema(pDB *sql.DB) (*core.DBSchema, error) {
-	return core.NewDBSchema(pDB, tableNamesQuery)
+func DBSchema(pDB *sql.DB) (*ormshift.DBSchema, error) {
+	return ormshift.NewDBSchema(pDB, tableNamesQuery)
 }

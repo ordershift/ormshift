@@ -6,56 +6,57 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ordershift/ormshift/pkg/core"
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal"
 )
 
 type postgresqlSQLBuilder struct {
-	generic *core.GenericSQLBuilder
+	generic *internal.GenericSQLBuilder
 }
 
-func (sb postgresqlSQLBuilder) CreateTable(pTable core.Table) string {
+func (sb postgresqlSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	return sb.withGeneric().CreateTable(pTable)
 }
 
-func (sb postgresqlSQLBuilder) DropTable(pTableName core.TableName) string {
+func (sb postgresqlSQLBuilder) DropTable(pTableName ormshift.TableName) string {
 	return sb.withGeneric().DropTable(pTableName)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableAddColumn(pTableName core.TableName, pColumn core.Column) string {
+func (sb postgresqlSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
 	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableDropColumn(pTableName core.TableName, pColumnName core.ColumnName) string {
+func (sb postgresqlSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
 	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType core.ColumnType) string {
+func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
 	switch pColumnType {
-	case core.Varchar:
+	case ormshift.Varchar:
 		return "VARCHAR"
-	case core.Boolean:
+	case ormshift.Boolean:
 		return "SMALLINT"
-	case core.Integer:
+	case ormshift.Integer:
 		return "BIGINT"
-	case core.DateTime:
+	case ormshift.DateTime:
 		return "TIMESTAMP(6)"
-	case core.Monetary:
+	case ormshift.Monetary:
 		return "NUMERIC(17,2)"
-	case core.Decimal:
+	case ormshift.Decimal:
 		return "DOUBLE PRECISION"
-	case core.Binary:
+	case ormshift.Binary:
 		return "BYTEA"
 	default:
 		return "VARCHAR"
 	}
 }
 
-func (sb postgresqlSQLBuilder) columnDefinition(pColumn core.Column) string {
+func (sb postgresqlSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
 	lColumnDef := pColumn.Name().String()
 	if pColumn.Autoincrement() {
 		lColumnDef += " BIGSERIAL"
 	} else {
-		if pColumn.Type() == core.Varchar {
+		if pColumn.Type() == ormshift.Varchar {
 			lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 		} else {
 			lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
@@ -71,7 +72,7 @@ func (sb postgresqlSQLBuilder) Insert(pTableName string, pColumns []string) stri
 	return sb.withGeneric().Insert(pTableName, pColumns)
 }
 
-func (sb postgresqlSQLBuilder) InsertWithValues(pTableName string, pColumnsValues core.ColumnsValues) (string, []any) {
+func (sb postgresqlSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().InsertWithValues(pTableName, pColumnsValues)
 }
 
@@ -79,7 +80,7 @@ func (sb postgresqlSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere
 	return sb.withGeneric().Update(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues core.ColumnsValues) (string, []any) {
+func (sb postgresqlSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
 }
 
@@ -87,7 +88,7 @@ func (sb postgresqlSQLBuilder) Delete(pTableName string, pColumnsWhere []string)
 	return sb.withGeneric().Delete(pTableName, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues core.ColumnsValues) (string, []any) {
+func (sb postgresqlSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().DeleteWithValues(pTableName, pWhereColumnsValues)
 }
 
@@ -95,7 +96,7 @@ func (sb postgresqlSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere
 	return sb.withGeneric().Select(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues core.ColumnsValues) (string, []any) {
+func (sb postgresqlSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
 }
 
@@ -131,9 +132,9 @@ func (sb postgresqlSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand s
 	return lSQLCommand, lArgs
 }
 
-func (sb postgresqlSQLBuilder) withGeneric() core.GenericSQLBuilder {
+func (sb postgresqlSQLBuilder) withGeneric() internal.GenericSQLBuilder {
 	if sb.generic == nil {
-		temp := core.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
+		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
 		sb.generic = &temp
 	}
 	return *sb.generic

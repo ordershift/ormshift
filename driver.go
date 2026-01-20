@@ -1,4 +1,4 @@
-package core
+package ormshift
 
 type ConnectionParams struct {
 	Host     string

@@ -3,13 +3,13 @@ package postgresql_test
 import (
 	"testing"
 
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal/postgresql"
 	"github.com/ordershift/ormshift/internal/testutils"
-	"github.com/ordershift/ormshift/pkg/core"
-	"github.com/ordershift/ormshift/pkg/dialects/postgresql"
 )
 
 func Test_DriverPostgresql_ConnectionString_ShouldBeValid(t *testing.T) {
-	lReturnedConnectionString := postgresql.ConnectionString(core.ConnectionParams{
+	lReturnedConnectionString := postgresql.ConnectionString(ormshift.ConnectionParams{
 		User:     "pg",
 		Password: "123456",
 		Database: "my-db",

@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ordershift/ormshift/pkg/core"
+	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/internal"
 )
 
 type sqlserverSQLBuilder struct {
-	generic *core.GenericSQLBuilder
+	generic *internal.GenericSQLBuilder
 }
 
-func (sb sqlserverSQLBuilder) CreateTable(pTable core.Table) string {
+func (sb sqlserverSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	for _, lColumn := range pTable.Columns() {
@@ -37,42 +38,42 @@ func (sb sqlserverSQLBuilder) CreateTable(pTable core.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb sqlserverSQLBuilder) DropTable(pTableName core.TableName) string {
+func (sb sqlserverSQLBuilder) DropTable(pTableName ormshift.TableName) string {
 	return sb.withGeneric().DropTable(pTableName)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableAddColumn(pTableName core.TableName, pColumn core.Column) string {
+func (sb sqlserverSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
 	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableDropColumn(pTableName core.TableName, pColumnName core.ColumnName) string {
+func (sb sqlserverSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
 	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType core.ColumnType) string {
+func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
 	switch pColumnType {
-	case core.Varchar:
+	case ormshift.Varchar:
 		return "VARCHAR"
-	case core.Boolean:
+	case ormshift.Boolean:
 		return "BIT"
-	case core.Integer:
+	case ormshift.Integer:
 		return "BIGINT"
-	case core.DateTime:
+	case ormshift.DateTime:
 		return "DATETIME2(6)"
-	case core.Monetary:
+	case ormshift.Monetary:
 		return "MONEY"
-	case core.Decimal:
+	case ormshift.Decimal:
 		return "FLOAT"
-	case core.Binary:
+	case ormshift.Binary:
 		return "VARBINARY(MAX)"
 	default:
 		return "VARCHAR"
 	}
 }
 
-func (sb sqlserverSQLBuilder) columnDefinition(pColumn core.Column) string {
+func (sb sqlserverSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
 	lColumnDef := pColumn.Name().String()
-	if pColumn.Type() == core.Varchar {
+	if pColumn.Type() == ormshift.Varchar {
 		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 	} else {
 		lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
@@ -90,7 +91,7 @@ func (sb sqlserverSQLBuilder) Insert(pTableName string, pColumns []string) strin
 	return sb.withGeneric().Insert(pTableName, pColumns)
 }
 
-func (sb sqlserverSQLBuilder) InsertWithValues(pTableName string, pColumnsValues core.ColumnsValues) (string, []any) {
+func (sb sqlserverSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().InsertWithValues(pTableName, pColumnsValues)
 }
 
@@ -98,7 +99,7 @@ func (sb sqlserverSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere 
 	return sb.withGeneric().Update(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues core.ColumnsValues) (string, []any) {
+func (sb sqlserverSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
 }
 
@@ -106,7 +107,7 @@ func (sb sqlserverSQLBuilder) Delete(pTableName string, pColumnsWhere []string) 
 	return sb.withGeneric().Delete(pTableName, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues core.ColumnsValues) (string, []any) {
+func (sb sqlserverSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().DeleteWithValues(pTableName, pWhereColumnsValues)
 }
 
@@ -114,7 +115,7 @@ func (sb sqlserverSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere 
 	return sb.withGeneric().Select(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues core.ColumnsValues) (string, []any) {
+func (sb sqlserverSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.withGeneric().SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
 }
 
@@ -134,9 +135,9 @@ func (sb sqlserverSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand st
 	return sb.withGeneric().InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
 }
 
-func (sb sqlserverSQLBuilder) withGeneric() core.GenericSQLBuilder {
+func (sb sqlserverSQLBuilder) withGeneric() internal.GenericSQLBuilder {
 	if sb.generic == nil {
-		temp := core.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
+		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
 		sb.generic = &temp
 	}
 	return *sb.generic
