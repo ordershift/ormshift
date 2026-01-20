@@ -46,7 +46,7 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "migrations.Migrate") {
 		return

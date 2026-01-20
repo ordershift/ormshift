@@ -82,9 +82,9 @@ func (m M001_Create_Table_User) Down(pMigrator *migrations.Migrator) error {
 	return nil
 }
 
-type M002_Alter_Table_Usaer_Add_Column_UpdatedAt struct{}
+type M002_Alter_Table_User_Add_Column_UpdatedAt struct{}
 
-func (m M002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *migrations.Migrator) error {
+func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Up(pMigrator *migrations.Migrator) error {
 	lUserTableName, lError := schema.NewTableName("user")
 	if lError != nil {
 		return lError
@@ -106,7 +106,7 @@ func (m M002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *migrations.Mi
 	return nil
 }
 
-func (m M002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrator *migrations.Migrator) error {
+func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Down(pMigrator *migrations.Migrator) error {
 	lUserTableName, lError := schema.NewTableName("user")
 	if lError != nil {
 		return lError

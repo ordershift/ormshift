@@ -32,7 +32,7 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
@@ -70,7 +70,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
@@ -82,7 +82,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
@@ -108,7 +108,7 @@ func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
 		nil,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
@@ -138,7 +138,7 @@ func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
@@ -167,7 +167,7 @@ func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 		lDBSchema,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
 		return
