@@ -3,7 +3,7 @@ package core
 type ConnectionParams struct {
 	Host     string
 	Instance string
-	Port     uint
+	Port     uint16
 	User     string
 	Password string
 	Database string
