@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/ordershift/ormshift"
-	"github.com/ordershift/ormshift/internal/postgresql"
+	"github.com/ordershift/ormshift/dialects/postgresql"
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
 func Test_DriverPostgresql_ConnectionString_ShouldBeValid(t *testing.T) {
-	lReturnedConnectionString := postgresql.ConnectionString(ormshift.ConnectionParams{
+	lDriver := postgresql.PostgreSQLDriver{}
+	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		User:     "pg",
 		Password: "123456",
 		Database: "my-db",
 	})
 	lExpectedConnectionString := "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "DriverPostgresql.ConnectionString")
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
 }

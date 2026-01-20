@@ -8,55 +8,56 @@ import (
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
+	"github.com/ordershift/ormshift/schema"
 )
 
 type postgresqlSQLBuilder struct {
 	generic *internal.GenericSQLBuilder
 }
 
-func (sb postgresqlSQLBuilder) CreateTable(pTable ormshift.Table) string {
+func (sb postgresqlSQLBuilder) CreateTable(pTable schema.Table) string {
 	return sb.withGeneric().CreateTable(pTable)
 }
 
-func (sb postgresqlSQLBuilder) DropTable(pTableName ormshift.TableName) string {
+func (sb postgresqlSQLBuilder) DropTable(pTableName schema.TableName) string {
 	return sb.withGeneric().DropTable(pTableName)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
+func (sb postgresqlSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
 	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
+func (sb postgresqlSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
 	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
+func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
-	case ormshift.Varchar:
+	case schema.Varchar:
 		return "VARCHAR"
-	case ormshift.Boolean:
+	case schema.Boolean:
 		return "SMALLINT"
-	case ormshift.Integer:
+	case schema.Integer:
 		return "BIGINT"
-	case ormshift.DateTime:
+	case schema.DateTime:
 		return "TIMESTAMP(6)"
-	case ormshift.Monetary:
+	case schema.Monetary:
 		return "NUMERIC(17,2)"
-	case ormshift.Decimal:
+	case schema.Decimal:
 		return "DOUBLE PRECISION"
-	case ormshift.Binary:
+	case schema.Binary:
 		return "BYTEA"
 	default:
 		return "VARCHAR"
 	}
 }
 
-func (sb postgresqlSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
+func (sb postgresqlSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := pColumn.Name().String()
 	if pColumn.Autoincrement() {
 		lColumnDef += " BIGSERIAL"
 	} else {
-		if pColumn.Type() == ormshift.Varchar {
+		if pColumn.Type() == schema.Varchar {
 			lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 		} else {
 			lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))

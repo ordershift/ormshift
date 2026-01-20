@@ -3,17 +3,17 @@ package testutils
 import (
 	"testing"
 
-	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/schema"
 )
 
-func FakeProductAttributeTable(t *testing.T) *ormshift.Table {
-	lProductAttributeTable, lError := ormshift.NewTable("product_attribute")
-	if !AssertNotNilResultAndNilError(t, lProductAttributeTable, lError, "ormshift.NewTable") {
+func FakeProductAttributeTable(t *testing.T) *schema.Table {
+	lProductAttributeTable, lError := schema.NewTable("product_attribute")
+	if !AssertNotNilResultAndNilError(t, lProductAttributeTable, lError, "schema.NewTable") {
 		return nil
 	}
-	lError = lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
+	lError = lProductAttributeTable.AddColumn(schema.NewColumnParams{
 		Name:          "product_id",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
 		Autoincrement: false,
@@ -21,9 +21,9 @@ func FakeProductAttributeTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
 	}
-	lError = lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
+	lError = lProductAttributeTable.AddColumn(schema.NewColumnParams{
 		Name:          "attribute_id",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
 		Autoincrement: false,
@@ -31,9 +31,9 @@ func FakeProductAttributeTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
 	}
-	lError = lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
+	lError = lProductAttributeTable.AddColumn(schema.NewColumnParams{
 		Name:          "value",
-		Type:          ormshift.Varchar,
+		Type:          schema.Varchar,
 		Size:          75,
 		PrimaryKey:    false,
 		NotNull:       false,
@@ -42,9 +42,9 @@ func FakeProductAttributeTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
 	}
-	lError = lProductAttributeTable.AddColumn(ormshift.NewColumnParams{
+	lError = lProductAttributeTable.AddColumn(schema.NewColumnParams{
 		Name:          "position",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -55,14 +55,14 @@ func FakeProductAttributeTable(t *testing.T) *ormshift.Table {
 	return lProductAttributeTable
 }
 
-func FakeUserTable(t *testing.T) *ormshift.Table {
-	lUserTable, lError := ormshift.NewTable("user")
-	if !AssertNotNilResultAndNilError(t, lUserTable, lError, "ormshift.NewTable") {
+func FakeUserTable(t *testing.T) *schema.Table {
+	lUserTable, lError := schema.NewTable("user")
+	if !AssertNotNilResultAndNilError(t, lUserTable, lError, "schema.NewTable") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "id",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
 		Autoincrement: true,
@@ -70,9 +70,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "email",
-		Type:          ormshift.Varchar,
+		Type:          schema.Varchar,
 		Size:          80,
 		PrimaryKey:    true,
 		NotNull:       true,
@@ -81,9 +81,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "name",
-		Type:          ormshift.Varchar,
+		Type:          schema.Varchar,
 		Size:          50,
 		PrimaryKey:    false,
 		NotNull:       true,
@@ -92,9 +92,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "password_hash",
-		Type:          ormshift.Varchar,
+		Type:          schema.Varchar,
 		Size:          256,
 		PrimaryKey:    false,
 		NotNull:       false,
@@ -103,9 +103,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "active",
-		Type:          ormshift.Boolean,
+		Type:          schema.Boolean,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -113,9 +113,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "created_at",
-		Type:          ormshift.DateTime,
+		Type:          schema.DateTime,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -123,9 +123,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "user_master",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -133,9 +133,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "master_user_id",
-		Type:          ormshift.Integer,
+		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -143,9 +143,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "licence_price",
-		Type:          ormshift.Monetary,
+		Type:          schema.Monetary,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -153,9 +153,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "relevance",
-		Type:          ormshift.Decimal,
+		Type:          schema.Decimal,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -163,9 +163,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "photo",
-		Type:          ormshift.Binary,
+		Type:          schema.Binary,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -173,9 +173,9 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
 	}
-	lError = lUserTable.AddColumn(ormshift.NewColumnParams{
+	lError = lUserTable.AddColumn(schema.NewColumnParams{
 		Name:          "any",
-		Type:          ormshift.ColumnType(-1),
+		Type:          schema.ColumnType(-1),
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
@@ -186,31 +186,31 @@ func FakeUserTable(t *testing.T) *ormshift.Table {
 	return lUserTable
 }
 
-func FakeUserTableName(t *testing.T) *ormshift.TableName {
-	lUserTableName, lError := ormshift.NewTableName("user")
-	if !AssertNotNilResultAndNilError(t, lUserTableName, lError, "ormshift.NewTableName") {
+func FakeUserTableName(t *testing.T) *schema.TableName {
+	lUserTableName, lError := schema.NewTableName("user")
+	if !AssertNotNilResultAndNilError(t, lUserTableName, lError, "schema.NewTableName") {
 		return nil
 	}
 	return lUserTableName
 }
 
-func FakeUpdatedAtColumn(t *testing.T) *ormshift.Column {
-	lUpdatedAtColumn, lError := ormshift.NewColumn(ormshift.NewColumnParams{
+func FakeUpdatedAtColumn(t *testing.T) *schema.Column {
+	lUpdatedAtColumn, lError := schema.NewColumn(schema.NewColumnParams{
 		Name:          "updated_at",
-		Type:          ormshift.DateTime,
+		Type:          schema.DateTime,
 		PrimaryKey:    false,
 		NotNull:       false,
 		Autoincrement: false,
 	})
-	if !AssertNotNilResultAndNilError(t, lUpdatedAtColumn, lError, "ormshift.NewColumn") {
+	if !AssertNotNilResultAndNilError(t, lUpdatedAtColumn, lError, "schema.NewColumn") {
 		return nil
 	}
 	return lUpdatedAtColumn
 }
 
-func FakeUpdatedAtColumnName(t *testing.T) *ormshift.ColumnName {
-	lUpdatedAtColumnName, lError := ormshift.NewColumnName("updated_at")
-	if !AssertNotNilResultAndNilError(t, lUpdatedAtColumnName, lError, "ormshift.NewColumnName") {
+func FakeUpdatedAtColumnName(t *testing.T) *schema.ColumnName {
+	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
+	if !AssertNotNilResultAndNilError(t, lUpdatedAtColumnName, lError, "schema.NewColumnName") {
 		return nil
 	}
 	return lUpdatedAtColumnName

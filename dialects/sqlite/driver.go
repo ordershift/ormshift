@@ -1,17 +1,22 @@
 package sqlite
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/schema"
+
 	_ "modernc.org/sqlite"
 )
 
-func DriverName() string {
+type SQLiteDriver struct{}
+
+func (d SQLiteDriver) Name() string {
 	return "sqlite"
 }
 
-func ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d SQLiteDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	if pParams.InMemory {
 		return ":memory:"
 	}
@@ -25,6 +30,10 @@ func ConnectionString(pParams ormshift.ConnectionParams) string {
 	return fmt.Sprintf("file:%s.db?%s_locking=NORMAL", pParams.Database, lConnetionWithAuth)
 }
 
-func SQLBuilder() ormshift.SQLBuilder {
+func (d SQLiteDriver) SQLBuilder() ormshift.SQLBuilder {
 	return sqliteSQLBuilder{}
+}
+
+func (d SQLiteDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+	return schema.NewDBSchema(pDB, tableNamesQuery)
 }

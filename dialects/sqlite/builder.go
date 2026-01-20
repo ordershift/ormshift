@@ -6,13 +6,14 @@ import (
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
+	"github.com/ordershift/ormshift/schema"
 )
 
 type sqliteSQLBuilder struct {
 	generic *internal.GenericSQLBuilder
 }
 
-func (sb sqliteSQLBuilder) CreateTable(pTable ormshift.Table) string {
+func (sb sqliteSQLBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	lTemColunaComAutoIncremento := false
@@ -43,40 +44,40 @@ func (sb sqliteSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb sqliteSQLBuilder) DropTable(pTableName ormshift.TableName) string {
+func (sb sqliteSQLBuilder) DropTable(pTableName schema.TableName) string {
 	return sb.withGeneric().DropTable(pTableName)
 }
 
-func (sb sqliteSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
+func (sb sqliteSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
 	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqliteSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
+func (sb sqliteSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
 	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb sqliteSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
+func (sb sqliteSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
-	case ormshift.Varchar:
+	case schema.Varchar:
 		return "TEXT"
-	case ormshift.Boolean:
+	case schema.Boolean:
 		return "INTEGER"
-	case ormshift.Integer:
+	case schema.Integer:
 		return "INTEGER"
-	case ormshift.DateTime:
+	case schema.DateTime:
 		return "DATETIME"
-	case ormshift.Monetary:
+	case schema.Monetary:
 		return "REAL"
-	case ormshift.Decimal:
+	case schema.Decimal:
 		return "REAL"
-	case ormshift.Binary:
+	case schema.Binary:
 		return "BLOB"
 	default:
 		return "TEXT"
 	}
 }
 
-func (sb sqliteSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
+func (sb sqliteSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := fmt.Sprintf("%s %s", pColumn.Name().String(), sb.ColumnTypeAsString(pColumn.Type()))
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"

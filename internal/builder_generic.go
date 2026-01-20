@@ -6,9 +6,10 @@ import (
 	"strings"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/schema"
 )
 
-type ColumnDefinitionFunc func(ormshift.Column) string
+type ColumnDefinitionFunc func(schema.Column) string
 
 type InteroperateSQLCommandWithNamedArgsFunc func(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
 
@@ -24,7 +25,7 @@ func NewGenericSQLBuilder(pColumnDefinitionFunc ColumnDefinitionFunc, pInteroper
 	}
 }
 
-func (sb GenericSQLBuilder) CreateTable(pTable ormshift.Table) string {
+func (sb GenericSQLBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	for _, lColumn := range pTable.Columns() {
@@ -50,24 +51,24 @@ func (sb GenericSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb GenericSQLBuilder) DropTable(pTableName ormshift.TableName) string {
+func (sb GenericSQLBuilder) DropTable(pTableName schema.TableName) string {
 	return fmt.Sprintf("DROP TABLE %s;", pTableName.String())
 }
 
-func (sb GenericSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
+func (sb GenericSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
 	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", pTableName.String(), sb.columnDefinition(pColumn))
 }
 
-func (sb GenericSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
+func (sb GenericSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", pTableName.String(), pColumnName.String())
 }
 
-func (sb GenericSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
+func (sb GenericSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	// Generic implementation, should be overridden by specific SQL builders
 	return fmt.Sprintf("<<TYPE_%d>>", pColumnType)
 }
 
-func (sb GenericSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
+func (sb GenericSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
 		return sb.ColumnDefinitionFunc(pColumn)
 	}

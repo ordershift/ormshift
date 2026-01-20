@@ -3,15 +3,17 @@ package ormshift
 import (
 	"database/sql"
 	"slices"
+
+	"github.com/ordershift/ormshift/schema"
 )
 
 // DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
-	CreateTable(pTable Table) string
-	DropTable(pTableName TableName) string
-	AlterTableAddColumn(pTableName TableName, pColumn Column) string
-	AlterTableDropColumn(pTableName TableName, pColumnName ColumnName) string
-	ColumnTypeAsString(pColumnType ColumnType) string
+	CreateTable(pTable schema.Table) string
+	DropTable(pTableName schema.TableName) string
+	AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string
+	AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string
+	ColumnTypeAsString(pColumnType schema.ColumnType) string
 }
 
 // ColumnsValues represents a mapping between column names and their corresponding values.

@@ -1,5 +1,11 @@
 package ormshift
 
+import (
+	"database/sql"
+
+	"github.com/ordershift/ormshift/schema"
+)
+
 type ConnectionParams struct {
 	Host     string
 	Instance string
@@ -8,4 +14,11 @@ type ConnectionParams struct {
 	Password string
 	Database string
 	InMemory bool
+}
+
+type DatabaseDriver interface {
+	Name() string
+	ConnectionString(pParams ConnectionParams) string
+	SQLBuilder() SQLBuilder
+	DBSchema(pDB *sql.DB) (*schema.DBSchema, error)
 }

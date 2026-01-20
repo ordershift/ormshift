@@ -6,13 +6,14 @@ import (
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
+	"github.com/ordershift/ormshift/schema"
 )
 
 type sqlserverSQLBuilder struct {
 	generic *internal.GenericSQLBuilder
 }
 
-func (sb sqlserverSQLBuilder) CreateTable(pTable ormshift.Table) string {
+func (sb sqlserverSQLBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	for _, lColumn := range pTable.Columns() {
@@ -38,42 +39,42 @@ func (sb sqlserverSQLBuilder) CreateTable(pTable ormshift.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb sqlserverSQLBuilder) DropTable(pTableName ormshift.TableName) string {
+func (sb sqlserverSQLBuilder) DropTable(pTableName schema.TableName) string {
 	return sb.withGeneric().DropTable(pTableName)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableAddColumn(pTableName ormshift.TableName, pColumn ormshift.Column) string {
+func (sb sqlserverSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
 	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableDropColumn(pTableName ormshift.TableName, pColumnName ormshift.ColumnName) string {
+func (sb sqlserverSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
 	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType ormshift.ColumnType) string {
+func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
-	case ormshift.Varchar:
+	case schema.Varchar:
 		return "VARCHAR"
-	case ormshift.Boolean:
+	case schema.Boolean:
 		return "BIT"
-	case ormshift.Integer:
+	case schema.Integer:
 		return "BIGINT"
-	case ormshift.DateTime:
+	case schema.DateTime:
 		return "DATETIME2(6)"
-	case ormshift.Monetary:
+	case schema.Monetary:
 		return "MONEY"
-	case ormshift.Decimal:
+	case schema.Decimal:
 		return "FLOAT"
-	case ormshift.Binary:
+	case schema.Binary:
 		return "VARBINARY(MAX)"
 	default:
 		return "VARCHAR"
 	}
 }
 
-func (sb sqlserverSQLBuilder) columnDefinition(pColumn ormshift.Column) string {
+func (sb sqlserverSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := pColumn.Name().String()
-	if pColumn.Type() == ormshift.Varchar {
+	if pColumn.Type() == schema.Varchar {
 		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 	} else {
 		lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))

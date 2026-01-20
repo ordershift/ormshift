@@ -1,11 +1,5 @@
 package sqlserver
 
-import (
-	"database/sql"
-
-	"github.com/ordershift/ormshift"
-)
-
 const tableNamesQuery = `
 		SELECT
 			t.name
@@ -21,7 +15,3 @@ const tableNamesQuery = `
 		ORDER BY
 			t.name
 	`
-
-func DBSchema(pDB *sql.DB) (*ormshift.DBSchema, error) {
-	return ormshift.NewDBSchema(pDB, tableNamesQuery)
-}

@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/ordershift/ormshift"
-	"github.com/ordershift/ormshift/internal/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
+	"github.com/ordershift/ormshift/migrations"
+	"github.com/ordershift/ormshift/sqlite"
 )
 
 type userRow struct {
@@ -39,15 +40,15 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrationManager, lError := ormshift.Migrate(
+	lMigrationManager, lError := migrations.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
-		ormshift.NewMigratorConfig(),
-		m001_Create_Table_User{},
-		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
+		migrations.NewMigratorConfig(),
+		testutils.M001_Create_Table_User{},
+		testutils.M002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "ormshift.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "migrations.Migrate") {
 		return
 	}
 

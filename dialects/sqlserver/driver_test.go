@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/ordershift/ormshift"
-	"github.com/ordershift/ormshift/internal/sqlserver"
+	"github.com/ordershift/ormshift/dialects/sqlserver"
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
 func Test_DriverSQLServer_ConnectionString_ShouldBeValid(t *testing.T) {
-	lReturnedConnectionString := sqlserver.ConnectionString(ormshift.ConnectionParams{
+	lDriver := sqlserver.SQLServerDriver{}
+	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		Host:     "my-server",
 		Port:     1433,
 		Instance: "sqlexpress",
@@ -18,5 +19,5 @@ func Test_DriverSQLServer_ConnectionString_ShouldBeValid(t *testing.T) {
 		Database: "my-db",
 	})
 	lExpectedConnectionString := "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "DriverSQLServer.ConnectionString")
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
 }

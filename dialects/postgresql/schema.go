@@ -1,11 +1,5 @@
 package postgresql
 
-import (
-	"database/sql"
-
-	"github.com/ordershift/ormshift"
-)
-
 const tableNamesQuery = `
 		SELECT
 			table_name
@@ -17,7 +11,3 @@ const tableNamesQuery = `
 		ORDER BY
 			table_name
 	`
-
-func DBSchema(pDB *sql.DB) (*ormshift.DBSchema, error) {
-	return ormshift.NewDBSchema(pDB, tableNamesQuery)
-}
