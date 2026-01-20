@@ -1,0 +1,239 @@
+package core
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"reflect"
+	"slices"
+	"time"
+)
+
+type Migration interface {
+	Up(pMigrator *Migrator) error
+	Down(pMigrator *Migrator) error
+}
+
+type MigratorConfig struct {
+	tableName              string
+	migrationNameColumn    string
+	appliedAtColumn        string
+	maxMigrationNameLength uint
+}
+
+func NewMigratorConfig(pOptions ...func(*MigratorConfig)) MigratorConfig {
+	lConfig := MigratorConfig{
+		tableName:              "__ormshift_migrations",
+		migrationNameColumn:    "name",
+		appliedAtColumn:        "applied_at",
+		maxMigrationNameLength: 250,
+	}
+	for _, o := range pOptions {
+		o(&lConfig)
+	}
+	return lConfig
+}
+
+func WithTableName(pTableName string) func(*MigratorConfig) {
+	return func(mc *MigratorConfig) {
+		mc.tableName = pTableName
+	}
+}
+
+func WithColumnNames(pMigrationNameColumn, pAppliedAtColumn string) func(*MigratorConfig) {
+	return func(mc *MigratorConfig) {
+		mc.migrationNameColumn = pMigrationNameColumn
+		mc.appliedAtColumn = pAppliedAtColumn
+	}
+}
+
+func WithMaxMigrationNameLength(pMaxLength uint) func(*MigratorConfig) {
+	return func(mc *MigratorConfig) {
+		mc.maxMigrationNameLength = pMaxLength
+	}
+}
+
+func Migrate(pDB *sql.DB, pSQLBuilder SQLBuilder, pDBSchema *DBSchema, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
+	lMigrator, lError := NewMigrator(pDB, pSQLBuilder, pDBSchema, pConfig)
+	if lError != nil {
+		return nil, lError
+	}
+	for _, lMigration := range pMigrations {
+		lMigrator.Add(lMigration)
+	}
+	lError = lMigrator.ApplyAllMigrations()
+	if lError != nil {
+		return nil, lError
+	}
+	return lMigrator, nil
+}
+
+type Migrator struct {
+	db         *sql.DB
+	sqlBuilder SQLBuilder
+	dbSchema   *DBSchema
+	config     MigratorConfig
+	// TODO: Can't this be a dictionary / set for faster lookups?
+	migrations            []Migration
+	appliedMigrationNames []string
+}
+
+func NewMigrator(pDB *sql.DB, pSQLBuilder SQLBuilder, pDBSchema *DBSchema, pConfig MigratorConfig) (*Migrator, error) {
+	if pDB == nil {
+		return nil, errors.New("sql.DB cannot be nil")
+	}
+	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDB, *pDBSchema, pSQLBuilder, pConfig)
+	if lError != nil {
+		return nil, lError
+	}
+	return &Migrator{
+		db:                    pDB,
+		sqlBuilder:            pSQLBuilder,
+		dbSchema:              pDBSchema,
+		config:                pConfig,
+		migrations:            []Migration{},
+		appliedMigrationNames: lAppliedMigrationNames,
+	}, nil
+}
+
+func (m *Migrator) Add(pMigration Migration) {
+	m.migrations = append(m.migrations, pMigration)
+}
+
+func (m *Migrator) ApplyAllMigrations() error {
+	for _, lMigration := range m.migrations {
+		lMigrationName := reflect.TypeOf(lMigration).Name()
+		if !m.isApplied(lMigrationName) {
+			lError := lMigration.Up(m)
+			if lError != nil {
+				return fmt.Errorf("on migration up %q: %w", lMigrationName, lError)
+			}
+			lError = m.recordAppliedMigration(lMigrationName)
+			if lError != nil {
+				return fmt.Errorf("on recording migration %q: %w", lMigrationName, lError)
+			}
+			m.appliedMigrationNames = append(m.appliedMigrationNames, lMigrationName)
+		}
+	}
+	return nil
+}
+
+func (m *Migrator) RevertLatestMigration() error {
+	if len(m.appliedMigrationNames) > 0 {
+		lLatestMigrationIndex := len(m.appliedMigrationNames) - 1
+		lLatestMigrationName := m.appliedMigrationNames[lLatestMigrationIndex]
+		for _, lMigration := range m.migrations {
+			lMigrationName := reflect.TypeOf(lMigration).Name()
+			if lMigrationName == lLatestMigrationName {
+				lError := lMigration.Down(m)
+				if lError != nil {
+					return fmt.Errorf("on migration down %q: %w", lMigrationName, lError)
+				}
+				lError = m.deleteAppliedMigration(lMigrationName)
+				if lError != nil {
+					return fmt.Errorf("on deleting applied migration %q: %w", lMigrationName, lError)
+				}
+				m.appliedMigrationNames = m.appliedMigrationNames[:lLatestMigrationIndex]
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func (m Migrator) DB() *sql.DB {
+	return m.db
+}
+
+func (m Migrator) SQLBuilder() SQLBuilder {
+	return m.sqlBuilder
+}
+
+func (m Migrator) DBSchema() *DBSchema {
+	return m.dbSchema
+}
+
+func (m Migrator) AppliedMigrationNames() []string {
+	return m.appliedMigrationNames
+}
+
+func (m Migrator) isApplied(pMigrationName string) bool {
+	return slices.Contains(m.appliedMigrationNames, pMigrationName)
+}
+
+func (m Migrator) recordAppliedMigration(pMigrationName string) error {
+	q, p := m.sqlBuilder.InsertWithValues(
+		m.config.tableName,
+		ColumnsValues{
+			m.config.migrationNameColumn: pMigrationName,
+			m.config.appliedAtColumn:     time.Now().UTC(),
+		},
+	)
+	_, lError := m.db.Exec(q, p...)
+	return lError
+}
+
+func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
+	q, p := m.sqlBuilder.DeleteWithValues(
+		m.config.tableName,
+		ColumnsValues{
+			m.config.migrationNameColumn: pMigrationName,
+		},
+	)
+	_, lError := m.db.Exec(q, p...)
+	return lError
+}
+
+func getAppliedMigrationNames(pDB *sql.DB, pDBSchema DBSchema, pSQLBuilder SQLBuilder, pConfig MigratorConfig) ([]string, error) {
+	var lAppliedMigrationNames []string
+
+	lError := ensureMigrationsTableExists(pDB, pDBSchema, pSQLBuilder, pConfig)
+	if lError != nil {
+		return nil, lError
+	}
+
+	q, p := pSQLBuilder.InteroperateSQLCommandWithNamedArgs(
+		fmt.Sprintf(
+			"select %s from %s order by %s",
+			pConfig.migrationNameColumn,
+			pConfig.tableName,
+			pConfig.migrationNameColumn,
+		),
+	)
+	lMigrationsRows, lError := pDB.Query(q, p...)
+	if lError != nil {
+		return nil, lError
+	}
+	defer lMigrationsRows.Close()
+	for lMigrationsRows.Next() {
+		var lMigrationName string
+		lError = lMigrationsRows.Scan(&lMigrationName)
+		if lError != nil {
+			break
+		}
+		lAppliedMigrationNames = append(lAppliedMigrationNames, lMigrationName)
+	}
+	return lAppliedMigrationNames, nil
+}
+
+func ensureMigrationsTableExists(pDB *sql.DB, pDBSchema DBSchema, pSQLBuilder SQLBuilder, pConfig MigratorConfig) error {
+	lMigrationsTable, lError := NewTable(pConfig.tableName)
+	if !pDBSchema.ExistsTable(lMigrationsTable.Name()) {
+		// TODO: Include some "applied at" timestamp
+		lMigrationsTable.AddColumn(NewColumnParams{
+			Name:       pConfig.migrationNameColumn,
+			Type:       Varchar,
+			Size:       pConfig.maxMigrationNameLength,
+			PrimaryKey: true,
+			NotNull:    true,
+		})
+		lMigrationsTable.AddColumn(NewColumnParams{
+			Name:    pConfig.appliedAtColumn,
+			Type:    DateTime,
+			NotNull: true,
+		})
+		_, lError = pDB.Exec(pSQLBuilder.CreateTable(*lMigrationsTable))
+		return lError
+	}
+	return nil
+}

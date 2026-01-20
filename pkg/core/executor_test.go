@@ -43,6 +43,7 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)

@@ -23,14 +23,15 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrationManager, lError := core.Migrate(
+	lMigrator, lError := core.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
 		return
 	}
 	lUserTableName, lError := core.NewTableName("user")
@@ -41,8 +42,8 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrationManager.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "MigrationManager.DBSchema.ExistsTableColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrationManager.UpedMigrationsNames()), "len(MigrationManager.UpedMigrationsNames)")
+	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
 }
 
 func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
@@ -59,25 +60,27 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 		return
 	}
 
-	lMigrationManager, lError := core.Migrate(
+	lMigrator, lError := core.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
 		return
 	}
 
-	lMigrationManager, lError = core.Migrate(
+	lMigrator, lError = core.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "core.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.Migrate") {
 		return
 	}
 
@@ -89,19 +92,20 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrationManager.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "MigrationManager.DBSchema.ExistsTableColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrationManager.UpedMigrationsNames()), "len(MigrationManager.UpedMigrationsNames)")
+	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
 }
 
 func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
-	lMigrationManager, lError := core.Migrate(
+	lMigrator, lError := core.Migrate(
 		nil,
 		sqlite.SQLBuilder(),
 		nil,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrationManager, lError, "core.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "core.Migrate") {
 		return
 	}
 	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "core.Migrate")
@@ -122,20 +126,21 @@ func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
 
 	lDB.Close()
 
-	lMigrationManager, lError := core.Migrate(
+	lMigrator, lError := core.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrationManager, lError, "core.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "core.Migrate") {
 		return
 	}
 	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "core.Migrate")
 }
 
-func Test_MigrationManager_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
+func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(core.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNilError(t, lError, "sql.Open") {
 		return
@@ -149,14 +154,15 @@ func Test_MigrationManager_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 		return
 	}
 
-	lMigrationManager, lError := core.Migrate(
+	lMigrator, lError := core.Migrate(
 		lDB,
 		lSQLBuilder,
 		lDBSchema,
+		core.NewMigratorConfig(),
 		m001_Create_Table_User{},
 		m002_Alter_Table_Usaer_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrationManager, lError, "core.NewMigrationManager") {
+	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "core.NewMigrator") {
 		return
 	}
 
@@ -164,27 +170,27 @@ func Test_MigrationManager_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "core.NewTableName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrationManager.DBSchema().ExistsTable(*lUserTableName), "MigrationManager.DBSchema.ExistsTable[user]")
+	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
 
-	lError = lMigrationManager.DownLast()
-	if !testutils.AssertNilError(t, lError, "MigrationManager.DownLast") {
+	lError = lMigrator.RevertLatestMigration()
+	if !testutils.AssertNilError(t, lError, "Migrator.DownLast") {
 		return
 	}
 	lUpdatedAtColumnName, lError := core.NewColumnName("updated_at")
 	if !testutils.AssertNilError(t, lError, "core.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, false, lMigrationManager.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "MigrationManager.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, false, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
 }
 
 type m001_Create_Table_User struct{}
 
-func (m m001_Create_Table_User) Up(pMigrationManager *core.MigrationManager) error {
+func (m m001_Create_Table_User) Up(pMigrator *core.Migrator) error {
 	lUserTable, lError := core.NewTable("user")
 	if lError != nil {
 		return lError
 	}
-	if pMigrationManager.DBSchema().ExistsTable(lUserTable.Name()) {
+	if pMigrator.DBSchema().ExistsTable(lUserTable.Name()) {
 		return nil
 	}
 	lUserTable.AddColumn(core.NewColumnParams{
@@ -232,22 +238,22 @@ func (m m001_Create_Table_User) Up(pMigrationManager *core.MigrationManager) err
 		PrimaryKey: false,
 		NotNull:    false,
 	})
-	_, lError = pMigrationManager.DB().Exec(pMigrationManager.SQLBuilder().CreateTable(*lUserTable))
+	_, lError = pMigrator.DB().Exec(pMigrator.SQLBuilder().CreateTable(*lUserTable))
 	if lError != nil {
 		return lError
 	}
 	return nil
 }
 
-func (m m001_Create_Table_User) Down(pMigrationManager *core.MigrationManager) error {
+func (m m001_Create_Table_User) Down(pMigrator *core.Migrator) error {
 	lUserTableName, lError := core.NewTableName("user")
 	if lError != nil {
 		return lError
 	}
-	if !pMigrationManager.DBSchema().ExistsTable(*lUserTableName) {
+	if !pMigrator.DBSchema().ExistsTable(*lUserTableName) {
 		return nil
 	}
-	_, lError = pMigrationManager.DB().Exec(pMigrationManager.SQLBuilder().DropTable(*lUserTableName))
+	_, lError = pMigrator.DB().Exec(pMigrator.SQLBuilder().DropTable(*lUserTableName))
 	if lError != nil {
 		return lError
 	}
@@ -256,7 +262,7 @@ func (m m001_Create_Table_User) Down(pMigrationManager *core.MigrationManager) e
 
 type m002_Alter_Table_Usaer_Add_Column_UpdatedAt struct{}
 
-func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrationManager *core.MigrationManager) error {
+func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrator *core.Migrator) error {
 	lUserTableName, lError := core.NewTableName("user")
 	if lError != nil {
 		return lError
@@ -268,17 +274,17 @@ func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Up(pMigrationManager *core.
 	if lError != nil {
 		return lError
 	}
-	if pMigrationManager.DBSchema().ExistsTableColumn(*lUserTableName, lUpdatedAtColumn.Name()) {
+	if pMigrator.DBSchema().ExistsTableColumn(*lUserTableName, lUpdatedAtColumn.Name()) {
 		return nil
 	}
-	_, lError = pMigrationManager.DB().Exec(pMigrationManager.SQLBuilder().AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn))
+	_, lError = pMigrator.DB().Exec(pMigrator.SQLBuilder().AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn))
 	if lError != nil {
 		return lError
 	}
 	return nil
 }
 
-func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrationManager *core.MigrationManager) error {
+func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrator *core.Migrator) error {
 	lUserTableName, lError := core.NewTableName("user")
 	if lError != nil {
 		return lError
@@ -287,10 +293,10 @@ func (m m002_Alter_Table_Usaer_Add_Column_UpdatedAt) Down(pMigrationManager *cor
 	if lError != nil {
 		return lError
 	}
-	if !pMigrationManager.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName) {
+	if !pMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName) {
 		return nil
 	}
-	_, lError = pMigrationManager.DB().Exec(pMigrationManager.SQLBuilder().AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName))
+	_, lError = pMigrator.DB().Exec(pMigrator.SQLBuilder().AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName))
 	if lError != nil {
 		return lError
 	}
