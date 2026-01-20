@@ -5,8 +5,7 @@ import (
 	"slices"
 )
 
-// DDLSQLBuilder cria comandos DDL (Data Definition Language) em SQL para definição de dados em SGBD.
-// Os principais comandos DDL são CREATE, ALTER e DROP
+// DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
 	CreateTable(pTable Table) string
 	DropTable(pTableName TableName) string
@@ -15,9 +14,10 @@ type DDLSQLBuilder interface {
 	ColumnTypeAsString(pColumnType ColumnType) string
 }
 
+// ColumnsValues represents a mapping between column names and their corresponding values.
 type ColumnsValues map[string]any
 
-// ToNamedArgs transforms ColumnsValues to an ordened by name sql.NamedArg array. Eg.:
+// ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
 //	lColumnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
 //	lNamedArgs := lColumnsValues.ToNamedArgs()
@@ -36,6 +36,7 @@ func (cv ColumnsValues) ToNamedArgs() []sql.NamedArg {
 	return lNamedArgs
 }
 
+// ToColumns returns the column names from ColumnsValues as a string array ordered by name, e.g.:
 func (cv ColumnsValues) ToColumns() []string {
 	lColumns := []string{}
 	for c := range cv {
@@ -45,8 +46,7 @@ func (cv ColumnsValues) ToColumns() []string {
 	return lColumns
 }
 
-// DMLSQLBuilder cria comandos DML (Data Manipulation Language) em SQL para manipulação de dados em SGBD.
-// Os principais comandos DML são INSERT, UPDATE, DELETE e SELECT
+// DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.
 type DMLSQLBuilder interface {
 	Insert(pTableName string, pColumns []string) string
 	InsertWithValues(pTableName string, pColumnsValues ColumnsValues) (string, []any)
@@ -58,37 +58,28 @@ type DMLSQLBuilder interface {
 	SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ColumnsValues) (string, []any)
 	SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string
 
-	// InteroperateSQLCommandWithNamedArgs serve para padronizar os comandos SQL
-	// com parâmetros de acordo com o driver de conexão com banco de dados.
-	//
-	// Atualmente está preparado para os drivers Postgresql, SQLite e SQLServer.
-	//
-	// Os drivers para SQLite e SQLServer aceitam NamedArgs como parâmetros do
-	// comando SQL, mas o driver para PostgreSQL aceita apenas parâmetros numerados
-	// com prefixo $ (exemplo $1, $2, $3). Esta função transforma o comando SQL
-	// com NamedArgs para o formato suportado pelo respectivo driver. Exemplo:
+	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,
 	//
 	//	pSQLCommand := "select * from user where id = @id"
 	//	pNamedArg := sql.Named("id", 123)
 	//
-	//	//POSTGRESQL:
+	// PostgreSQL:
 	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
 	//	//q == "select * from user where id = $1"
 	//	//p == 123
 	//
-	//	//SQLITE:
+	// SQLite:
 	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
-	//	//SQLSERVER:
+	// SQL Server:
 	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
-	// Futuramente, para suportar o driver para MySQL, que espera interrogação nos parâmetros
+	// MySQL (not yet supported, expects question marks in parameters):
 	//
-	//	//MYSQL:
 	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
 	//	//q == "select * from user where id = ?"
 	//	//p == 123
