@@ -6,9 +6,8 @@ import (
 	"strings"
 )
 
-const whereClauseFormat string = "where %s"
-
 type ColumnDefinitionFunc func(Column) string
+
 type InteroperateSQLCommandWithNamedArgsFunc func(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
 
 type GenericSQLBuilder struct {
@@ -62,6 +61,7 @@ func (sb GenericSQLBuilder) AlterTableDropColumn(pTableName TableName, pColumnNa
 }
 
 func (sb GenericSQLBuilder) ColumnTypeAsString(pColumnType ColumnType) string {
+	// Generic implementation, should be overridden by specific SQL builders
 	return fmt.Sprintf("<<TYPE_%d>>", pColumnType)
 }
 
@@ -85,7 +85,7 @@ func (sb GenericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues C
 func (sb GenericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
 	lUpdate := fmt.Sprintf("update %s set %s ", pTableName, sb.columnEqualNameList(pColumns, ","))
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf(whereClauseFormat, sb.columnEqualNameList(pColumnsWhere, " and "))
+		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
 	}
 	return lUpdate
 }
@@ -99,7 +99,7 @@ func (sb GenericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColum
 func (sb GenericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
 	lDelete := fmt.Sprintf("delete from %s ", pTableName)
 	if len(pColumnsWhere) > 0 {
-		lDelete += fmt.Sprintf(whereClauseFormat, sb.columnEqualNameList(pColumnsWhere, " and "))
+		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
 	}
 	return lDelete
 }
@@ -113,7 +113,7 @@ func (sb GenericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsVal
 func (sb GenericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
 	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), pTableName)
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf(whereClauseFormat, sb.columnEqualNameList(pColumnsWhere, " and "))
+		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
 	}
 	return lUpdate
 }
