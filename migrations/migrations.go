@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"reflect"
 	"slices"
@@ -56,8 +55,8 @@ func WithMaxMigrationNameLength(pMaxLength uint) func(*MigratorConfig) {
 	}
 }
 
-func Migrate(pDB *sql.DB, pSQLBuilder ormshift.SQLBuilder, pDBSchema *schema.DBSchema, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
-	lMigrator, lError := NewMigrator(pDB, pSQLBuilder, pDBSchema, pConfig)
+func Migrate(pDatabase ormshift.Database, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
+	lMigrator, lError := NewMigrator(pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError
 	}
@@ -74,7 +73,7 @@ func Migrate(pDB *sql.DB, pSQLBuilder ormshift.SQLBuilder, pDBSchema *schema.DBS
 type Migrator struct {
 	db         *sql.DB
 	sqlBuilder ormshift.SQLBuilder
-	dbSchema   *schema.DBSchema
+	dbSchema   schema.DBSchema
 	config     MigratorConfig
 	// TODO: Can't this be a dictionary / set for faster lookups?
 	migrations            []Migration
@@ -82,18 +81,19 @@ type Migrator struct {
 }
 
 // TODO: Wrap parameters by something that ensures they are about the same driver/database
-func NewMigrator(pDB *sql.DB, pSQLBuilder ormshift.SQLBuilder, pDBSchema *schema.DBSchema, pConfig MigratorConfig) (*Migrator, error) {
-	if pDB == nil {
-		return nil, errors.New("sql.DB cannot be nil")
+func NewMigrator(pDatabase ormshift.Database, pConfig MigratorConfig) (*Migrator, error) {
+	lError := pDatabase.Validate()
+	if lError != nil {
+		return nil, fmt.Errorf("invalid database: %w", lError)
 	}
-	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDB, pDBSchema, pSQLBuilder, pConfig)
+	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError
 	}
 	return &Migrator{
-		db:                    pDB,
-		sqlBuilder:            pSQLBuilder,
-		dbSchema:              pDBSchema,
+		db:                    pDatabase.DB(),
+		sqlBuilder:            pDatabase.SQLBuilder(),
+		dbSchema:              pDatabase.DBSchema(),
 		config:                pConfig,
 		migrations:            []Migration{},
 		appliedMigrationNames: lAppliedMigrationNames,
@@ -153,7 +153,7 @@ func (m Migrator) SQLBuilder() ormshift.SQLBuilder {
 	return m.sqlBuilder
 }
 
-func (m Migrator) DBSchema() *schema.DBSchema {
+func (m Migrator) DBSchema() schema.DBSchema {
 	return m.dbSchema
 }
 
@@ -188,15 +188,15 @@ func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
 	return lError
 }
 
-func getAppliedMigrationNames(pDB *sql.DB, pDBSchema *schema.DBSchema, pSQLBuilder ormshift.SQLBuilder, pConfig MigratorConfig) ([]string, error) {
+func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfig) ([]string, error) {
 	var lAppliedMigrationNames []string
 
-	lError := ensureMigrationsTableExists(pDB, pDBSchema, pSQLBuilder, pConfig)
+	lError := ensureMigrationsTableExists(pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError
 	}
 
-	q, p := pSQLBuilder.InteroperateSQLCommandWithNamedArgs(
+	q, p := pDatabase.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
 		fmt.Sprintf(
 			"select %s from %s order by %s",
 			pConfig.migrationNameColumn,
@@ -204,7 +204,7 @@ func getAppliedMigrationNames(pDB *sql.DB, pDBSchema *schema.DBSchema, pSQLBuild
 			pConfig.migrationNameColumn,
 		),
 	)
-	lMigrationsRows, lError := pDB.Query(q, p...)
+	lMigrationsRows, lError := pDatabase.DB().Query(q, p...)
 	if lError != nil {
 		return nil, lError
 	}
@@ -220,9 +220,9 @@ func getAppliedMigrationNames(pDB *sql.DB, pDBSchema *schema.DBSchema, pSQLBuild
 	return lAppliedMigrationNames, nil
 }
 
-func ensureMigrationsTableExists(pDB *sql.DB, pDBSchema *schema.DBSchema, pSQLBuilder ormshift.SQLBuilder, pConfig MigratorConfig) error {
+func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorConfig) error {
 	lMigrationsTable, lError := schema.NewTable(pConfig.tableName)
-	if !pDBSchema.ExistsTable(lMigrationsTable.Name()) {
+	if !pDatabase.DBSchema().ExistsTable(lMigrationsTable.Name()) {
 		// TODO: Include some "applied at" timestamp
 		lMigrationsTable.AddColumn(schema.NewColumnParams{
 			Name:       pConfig.migrationNameColumn,
@@ -236,7 +236,7 @@ func ensureMigrationsTableExists(pDB *sql.DB, pDBSchema *schema.DBSchema, pSQLBu
 			Type:    schema.DateTime,
 			NotNull: true,
 		})
-		_, lError = pDB.Exec(pSQLBuilder.CreateTable(*lMigrationsTable))
+		_, lError = pDatabase.DB().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable))
 		return lError
 	}
 	return nil

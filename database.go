@@ -1,0 +1,90 @@
+package ormshift
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+
+	"github.com/ordershift/ormshift/schema"
+)
+
+type ConnectionParams struct {
+	Host     string
+	Instance string
+	Port     uint16
+	User     string
+	Password string
+	Database string
+	InMemory bool
+}
+
+type DatabaseDriver interface {
+	Name() string
+	ConnectionString(pParams ConnectionParams) string
+	SQLBuilder() SQLBuilder
+	DBSchema(pDB *sql.DB) (*schema.DBSchema, error)
+}
+
+type Database struct {
+	driver           DatabaseDriver
+	db               *sql.DB
+	connectionParams ConnectionParams
+	connectionString string
+	sqlBuilder       SQLBuilder
+	schema           schema.DBSchema
+}
+
+func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, error) {
+	lConnectionString := pDriver.ConnectionString(pParams)
+	lDB, lError := sql.Open(pDriver.Name(), lConnectionString)
+	if lError != nil {
+		return nil, fmt.Errorf("sql.Open failed: %w", lError)
+	}
+	lSchema, lError := pDriver.DBSchema(lDB)
+	if lError != nil {
+		return nil, fmt.Errorf("failed to get DB schema: %w", lError)
+	}
+	return &Database{
+		driver:           pDriver,
+		db:               lDB,
+		connectionParams: pParams,
+		connectionString: lConnectionString,
+		sqlBuilder:       pDriver.SQLBuilder(),
+		schema:           *lSchema,
+	}, nil
+}
+
+func (d *Database) Validate() error {
+	if d.db == nil {
+		return errors.New("sql.DB cannot be nil")
+	}
+	if err := d.db.Ping(); err != nil {
+		return fmt.Errorf("database ping failed: %w", err)
+	}
+	return nil
+}
+
+func (d *Database) Close() error {
+	return d.db.Close()
+}
+
+func (d *Database) DB() *sql.DB {
+	return d.db
+}
+
+func (d *Database) DriverName() string {
+	return d.driver.Name()
+}
+
+func (d *Database) ConnectionString() string {
+	// ConnectionParams is mutable for simplicity, so we store the connection string used to open the database
+	return d.connectionString
+}
+
+func (d *Database) SQLBuilder() SQLBuilder {
+	return d.sqlBuilder
+}
+
+func (d *Database) DBSchema() schema.DBSchema {
+	return d.schema
+}

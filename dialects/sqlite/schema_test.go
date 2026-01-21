@@ -5,13 +5,14 @@ import (
 	"testing"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
 	"github.com/ordershift/ormshift/schema"
-	"github.com/ordershift/ormshift/sqlite"
 )
 
 func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
+	lDriver := sqlite.SQLiteDriver{}
+	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
 	}
@@ -20,11 +21,11 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 	if lProductAttributeTable == nil {
 		return
 	}
-	_, lError = lDB.Exec(sqlite.SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.Exec(lDriver.SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
-	lDBSchema, lError := sqlite.DBSchema(lDB)
+	lDBSchema, lError := lDriver.DBSchema(lDB)
 	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}
@@ -46,7 +47,8 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 }
 
 func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
-	lDB, lError := sql.Open(sqlite.DriverName(), sqlite.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
+	lDriver := sqlite.SQLiteDriver{}
+	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
 	}
@@ -55,13 +57,13 @@ func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDBIsClosed(t *testing.T) {
 		lDB.Close()
 		return
 	}
-	_, lError = lDB.Exec(sqlite.SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.Exec(lDriver.SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		lDB.Close()
 		return
 	}
 	lDB.Close()
-	lDBSchema, lError := sqlite.DBSchema(lDB)
+	lDBSchema, lError := lDriver.DBSchema(lDB)
 	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "ormshift.NewDBSchema") {
 		return
 	}

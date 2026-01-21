@@ -1,7 +1,6 @@
 package migrations_test
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/ordershift/ormshift"
@@ -12,24 +11,15 @@ import (
 )
 
 func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
-	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
-	if !testutils.AssertNilError(t, lError, "sql.Open") {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDB.Close()
-
-	lSQLBuilder := lDriver.SQLBuilder()
-
-	lDBSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "sqlite.DBSchema") {
-		return
-	}
+	defer lDatabase.Close()
 
 	lMigrator, lError := migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -50,24 +40,15 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 }
 
 func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
-	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
-	if !testutils.AssertNilError(t, lError, "sql.Open") {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDB.Close()
-
-	lSQLBuilder := lDriver.SQLBuilder()
-
-	lDBSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "sqlite.DBSchema") {
-		return
-	}
+	defer lDatabase.Close()
 
 	lMigrator, lError := migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -77,9 +58,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 	}
 
 	lMigrator, lError = migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -100,12 +79,15 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
 }
 
-func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
+func Test_Migrate_ShouldFail_WhenDatabaseIsInvalid(t *testing.T) {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+		return
+	}
+	lDatabase.Close()
 	lMigrator, lError := migrations.Migrate(
-		nil,
-		lDriver.SQLBuilder(),
-		nil,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -113,58 +95,19 @@ func Test_Migrate_ShouldFail_WhenNilDB(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "migrations.Migrate")
-}
-
-func Test_Migrate_ShouldFail_WhenClosedDB(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
-	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
-	if !testutils.AssertNilError(t, lError, "sql.Open") {
-		return
-	}
-
-	lSQLBuilder := lDriver.SQLBuilder()
-
-	lDBSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "sqlite.DBSchema") {
-		return
-	}
-
-	lDB.Close()
-
-	lMigrator, lError := migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
-		migrations.NewMigratorConfig(),
-		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
-	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
-		return
-	}
-	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "migrations.Migrate")
+	testutils.AssertErrorMessage(t, "invalid database: database ping failed: sql: database is closed", lError, "migrations.Migrate")
 }
 
 func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
-	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
-	if !testutils.AssertNilError(t, lError, "sql.Open") {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDB.Close()
-
-	lSQLBuilder := lDriver.SQLBuilder()
-
-	lDBSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "sqlite.DBSchema") {
-		return
-	}
+	defer lDatabase.Close()
 
 	lMigrator, lError := migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},

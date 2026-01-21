@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
 	"github.com/ordershift/ormshift/migrations"
-	"github.com/ordershift/ormshift/sqlite"
 )
 
 type userRow struct {
@@ -23,27 +23,16 @@ type userRow struct {
 }
 
 func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
-	var lConnectionParams ormshift.ConnectionParams = ormshift.ConnectionParams{InMemory: true}
-	var lConnectionString string = sqlite.ConnectionString(lConnectionParams)
-
-	//MIGRATE
-	lDB, lError := sql.Open(sqlite.DriverName(), lConnectionString)
-	if !testutils.AssertNilError(t, lError, "sql.Open") {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDB.Close()
 
-	lSQLBuilder := sqlite.SQLBuilder()
-
-	lDBSchema, lError := sqlite.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "sqlite.DBSchema") {
-		return
-	}
+	defer lDatabase.Close()
 
 	lMigrationManager, lError := migrations.Migrate(
-		lDB,
-		lSQLBuilder,
-		lDBSchema,
+		*lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -52,7 +41,8 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		return
 	}
 
-	var lSQLExecutor ormshift.SQLExecutor = lDB
+	var lSQLExecutor ormshift.SQLExecutor = lDatabase.DB()
+	lSQLBuilder := lDatabase.SQLBuilder()
 
 	//INSERT
 	lValues := ormshift.ColumnsValues{
