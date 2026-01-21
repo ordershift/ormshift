@@ -12,7 +12,11 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/checkout-and-setup-go
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: ./.github/actions/setup-go
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
@@ -23,7 +27,11 @@ jobs:
     name: Test and Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/checkout-and-setup-go
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: ./.github/actions/setup-go
       
       - name: Run unit tests
         run: |
