@@ -8,8 +8,17 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  test-and-analyze:
-    name: Test & Scan
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.8
+
+  test-and-scan:
+    name: Test and Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,11 +29,6 @@ jobs:
         with:
           go-version: '1.25'
           cache: true
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
-        with:
-          version: v2.8
       
       - name: Run unit tests
         run: |
@@ -38,6 +42,6 @@ jobs:
       #     args: -no-fail -fmt=sonarqube -out gosec.json ./...
       
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
