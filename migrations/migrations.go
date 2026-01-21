@@ -208,7 +208,11 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 	if lError != nil {
 		return nil, lError
 	}
-	defer lMigrationsRows.Close()
+	defer func() {
+		if err := lMigrationsRows.Close(); err != nil && lError == nil {
+			lError = err
+		}
+	}()
 	for lMigrationsRows.Next() {
 		var lMigrationName string
 		lError = lMigrationsRows.Scan(&lMigrationName)
@@ -217,27 +221,37 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 		}
 		lAppliedMigrationNames = append(lAppliedMigrationNames, lMigrationName)
 	}
-	return lAppliedMigrationNames, nil
+	return lAppliedMigrationNames, lError
 }
 
 func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorConfig) error {
 	lMigrationsTable, lError := schema.NewTable(pConfig.tableName)
-	if !pDatabase.DBSchema().ExistsTable(lMigrationsTable.Name()) {
-		// TODO: Include some "applied at" timestamp
-		lMigrationsTable.AddColumn(schema.NewColumnParams{
-			Name:       pConfig.migrationNameColumn,
-			Type:       schema.Varchar,
-			Size:       pConfig.maxMigrationNameLength,
-			PrimaryKey: true,
-			NotNull:    true,
-		})
-		lMigrationsTable.AddColumn(schema.NewColumnParams{
-			Name:    pConfig.appliedAtColumn,
-			Type:    schema.DateTime,
-			NotNull: true,
-		})
-		_, lError = pDatabase.DB().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable))
+	if lError != nil {
 		return lError
 	}
-	return nil
+	if !pDatabase.DBSchema().ExistsTable(lMigrationsTable.Name()) {
+		columns := []schema.NewColumnParams{
+			{
+				Name:       pConfig.migrationNameColumn,
+				Type:       schema.Varchar,
+				Size:       pConfig.maxMigrationNameLength,
+				PrimaryKey: true,
+				NotNull:    true,
+			},
+			{
+				Name:    pConfig.appliedAtColumn,
+				Type:    schema.DateTime,
+				NotNull: true,
+			},
+		}
+
+		for _, col := range columns {
+			if err := lMigrationsTable.AddColumn(col); err != nil {
+				return err
+			}
+		}
+
+		_, lError = pDatabase.DB().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable))
+	}
+	return lError
 }

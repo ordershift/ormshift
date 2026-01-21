@@ -16,7 +16,7 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDatabase.Close()
+	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
 		*lDatabase,
@@ -45,7 +45,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDatabase.Close()
+	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
 		*lDatabase,
@@ -85,7 +85,7 @@ func Test_Migrate_ShouldFail_WhenDatabaseIsInvalid(t *testing.T) {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	lDatabase.Close()
+	_ = lDatabase.Close()
 	lMigrator, lError := migrations.Migrate(
 		*lDatabase,
 		migrations.NewMigratorConfig(),
@@ -104,7 +104,7 @@ func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer lDatabase.Close()
+	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
 		*lDatabase,

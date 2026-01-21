@@ -15,51 +15,60 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 	if pMigrator.DBSchema().ExistsTable(lUserTable.Name()) {
 		return nil
 	}
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:          "id",
-		Type:          schema.Integer,
-		Autoincrement: true,
-		PrimaryKey:    true,
-		NotNull:       true,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "name",
-		Type:       schema.Varchar,
-		Size:       50,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "email",
-		Type:       schema.Varchar,
-		Size:       120,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "active",
-		Type:       schema.Boolean,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "ammount",
-		Type:       schema.Monetary,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "percent",
-		Type:       schema.Decimal,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
-	lUserTable.AddColumn(schema.NewColumnParams{
-		Name:       "photo",
-		Type:       schema.Binary,
-		PrimaryKey: false,
-		NotNull:    false,
-	})
+	columns := []schema.NewColumnParams{
+		{
+			Name:          "id",
+			Type:          schema.Integer,
+			Autoincrement: true,
+			PrimaryKey:    true,
+			NotNull:       true,
+		},
+		{
+			Name:       "name",
+			Type:       schema.Varchar,
+			Size:       50,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+		{
+			Name:       "email",
+			Type:       schema.Varchar,
+			Size:       120,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+		{
+			Name:       "active",
+			Type:       schema.Boolean,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+		{
+			Name:       "ammount",
+			Type:       schema.Monetary,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+		{
+			Name:       "percent",
+			Type:       schema.Decimal,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+		{
+			Name:       "photo",
+			Type:       schema.Binary,
+			PrimaryKey: false,
+			NotNull:    false,
+		},
+	}
+
+	for _, col := range columns {
+		if err := lUserTable.AddColumn(col); err != nil {
+			return err
+		}
+	}
+
 	_, lError = pMigrator.DB().Exec(pMigrator.SQLBuilder().CreateTable(*lUserTable))
 	if lError != nil {
 		return lError

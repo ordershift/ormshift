@@ -28,8 +28,7 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-
-	defer lDatabase.Close()
+	defer func() { _ = lDatabase.Close() }()
 
 	lMigrationManager, lError := migrations.Migrate(
 		*lDatabase,
@@ -78,7 +77,7 @@ func Test_DBExecQuery_MigrateInsertSelectScan_ShouldSuccess(t *testing.T) {
 	if !testutils.AssertNotNilResultAndNilError(t, lUserRows, lError, "sqlExecutor.Query") {
 		return
 	}
-	defer lUserRows.Close()
+	defer func() { _ = lUserRows.Close() }()
 	if !testutils.AssertEqualWithLabel(t, true, lUserRows.Next(), "Next") {
 		return
 	}

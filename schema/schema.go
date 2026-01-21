@@ -38,8 +38,11 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	if lError != nil {
 		return nil, lError
 	}
-	defer lRows.Close()
-
+	defer func() {
+		if err := lRows.Close(); err != nil && lError == nil {
+			lError = err
+		}
+	}()
 	var lTableNames []string
 	lTableName := ""
 	for lRows.Next() {
@@ -49,7 +52,7 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 		}
 		lTableNames = append(lTableNames, lTableName)
 	}
-	return lTableNames, nil
+	return lTableNames, lError
 }
 
 func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
@@ -90,6 +93,10 @@ func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, err
 	if lError != nil {
 		return nil, lError
 	}
-	defer lRows.Close()
+	defer func() {
+		if err := lRows.Close(); err != nil && lError == nil {
+			lError = err
+		}
+	}()
 	return lRows.ColumnTypes()
 }
