@@ -89,6 +89,7 @@ func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, err
 		return nil, fmt.Errorf("invalid table name: %q", lTableName)
 	}
 
+	// NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", lTableName))
 	if lError != nil {
 		return nil, lError

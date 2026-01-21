@@ -251,6 +251,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 			}
 		}
 
+		// NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 		_, lError = pDatabase.DB().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable))
 	}
 	return lError
