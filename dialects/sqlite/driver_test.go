@@ -8,7 +8,7 @@ import (
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
-func Test_DriverSQLite_ConnectionString_ShouldBeValid(t *testing.T) {
+func TestConnectionString(t *testing.T) {
 	lDriver := sqlite.SQLiteDriver{}
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		User:     "user",
@@ -19,7 +19,7 @@ func Test_DriverSQLite_ConnectionString_ShouldBeValid(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
 }
 
-func Test_DriverSQLite_ConnectionString_ShouldBeValid_WhenInMemory(t *testing.T) {
+func TestConnectionStringInMemory(t *testing.T) {
 	lDriver := sqlite.SQLiteDriver{}
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true})
 	lExpectedConnectionString := ":memory:"

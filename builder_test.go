@@ -7,7 +7,7 @@ import (
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
-func Test_ColumnsValues_ToNamedArgs_ShouldReturnDefault(t *testing.T) {
+func TestColumnsValuesToNamedArgs(t *testing.T) {
 	lColumnsValues := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234", "active": true}
 	lNamedArgs := lColumnsValues.ToNamedArgs()
 	testutils.AssertEqualWithLabel(t, 3, len(lNamedArgs), "ColumnsValues.ToNamedArgs")
@@ -19,7 +19,7 @@ func Test_ColumnsValues_ToNamedArgs_ShouldReturnDefault(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, lNamedArgs[2].Value, "ABC1234", "ColumnsValues.ToNamedArgs[2].Value")
 }
 
-func Test_ColumnsValues_ToColumns_ShouldReturnDefault(t *testing.T) {
+func TestColumnsValuesToColumns(t *testing.T) {
 	lColumnsValues := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234"}
 	lColumns := lColumnsValues.ToColumns()
 	testutils.AssertEqualWithLabel(t, 2, len(lColumns), "ColumnsValues.ToColumns")

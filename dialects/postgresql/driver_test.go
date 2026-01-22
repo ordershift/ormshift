@@ -8,7 +8,7 @@ import (
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
-func Test_DriverPostgresql_ConnectionString_ShouldBeValid(t *testing.T) {
+func TestConnectionString(t *testing.T) {
 	lDriver := postgresql.PostgreSQLDriver{}
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		User:     "pg",

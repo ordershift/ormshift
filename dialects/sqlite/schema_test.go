@@ -9,7 +9,7 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
+func TestExistsTableColumn(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -45,7 +45,7 @@ func Test_DBSchema_TableAndColumnExists_ShouldReturnTrue(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTableColumn(*lAnyTableName, *lAnyColumnName), "DBSchema.ExistsTableColumn")
 }
 
-func Test_DBSchema_TableExists_ShouldReturnFalse_WhenDatabaseIsInvalid(t *testing.T) {
+func TestTableExistsReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)

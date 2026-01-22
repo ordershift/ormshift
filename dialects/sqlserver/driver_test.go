@@ -8,7 +8,7 @@ import (
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
-func Test_DriverSQLServer_ConnectionString_ShouldBeValid(t *testing.T) {
+func TestConnectionString(t *testing.T) {
 	lDriver := sqlserver.SQLServerDriver{}
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		Host:     "my-server",

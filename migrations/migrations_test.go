@@ -10,7 +10,7 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
+func TestMigrate(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -39,7 +39,7 @@ func Test_Migrate_ShouldExecuteWithSuccess(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
 }
 
-func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
+func TestMigrateTwice(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -79,7 +79,7 @@ func Test_Migrate_ShouldExecuteWithSuccess_WhenTwiceExecute(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
 }
 
-func Test_Migrate_ShouldFail_WhenDatabaseIsInvalid(t *testing.T) {
+func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -98,7 +98,7 @@ func Test_Migrate_ShouldFail_WhenDatabaseIsInvalid(t *testing.T) {
 	testutils.AssertErrorMessage(t, "invalid database: database ping failed: sql: database is closed", lError, "migrations.Migrate")
 }
 
-func Test_Migrator_DownLast_ShouldExecuteWithSuccess(t *testing.T) {
+func TestRevertLatestMigration(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
