@@ -35,6 +35,9 @@ type Database struct {
 }
 
 func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, error) {
+	if pDriver == nil {
+		return nil, errors.New("DatabaseDriver cannot be nil")
+	}
 	lConnectionString := pDriver.ConnectionString(pParams)
 	lDB, lError := sql.Open(pDriver.Name(), lConnectionString)
 	if lError != nil {
