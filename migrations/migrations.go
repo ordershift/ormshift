@@ -80,7 +80,6 @@ type Migrator struct {
 	appliedMigrationNames []string
 }
 
-// TODO: Wrap parameters by something that ensures they are about the same driver/database
 func NewMigrator(pDatabase ormshift.Database, pConfig MigratorConfig) (*Migrator, error) {
 	lError := pDatabase.Validate()
 	if lError != nil {

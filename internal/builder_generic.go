@@ -88,7 +88,7 @@ func (sb GenericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues o
 func (sb GenericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
 	lUpdate := fmt.Sprintf("update %s set %s ", pTableName, sb.columnEqualNameList(pColumns, ","))
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
+		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return lUpdate
 }
@@ -102,7 +102,7 @@ func (sb GenericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColum
 func (sb GenericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
 	lDelete := fmt.Sprintf("delete from %s ", pTableName)
 	if len(pColumnsWhere) > 0 {
-		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
+		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return lDelete
 }
@@ -116,7 +116,7 @@ func (sb GenericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsVal
 func (sb GenericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
 	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), pTableName)
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and "))
+		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return lUpdate
 }

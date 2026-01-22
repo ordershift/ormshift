@@ -1,7 +1,5 @@
 package ormshift_test
 
-// TODO: Move tests to dialects packages instead
-
 import (
 	"testing"
 
