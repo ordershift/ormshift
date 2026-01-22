@@ -1,10 +1,8 @@
 package migrations
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
-	"slices"
 	"time"
 
 	"github.com/ordershift/ormshift"
@@ -55,7 +53,7 @@ func WithMaxMigrationNameLength(pMaxLength uint) func(*MigratorConfig) {
 	}
 }
 
-func Migrate(pDatabase ormshift.Database, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
+func Migrate(pDatabase *ormshift.Database, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
 	lMigrator, lError := NewMigrator(pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError
@@ -71,31 +69,35 @@ func Migrate(pDatabase ormshift.Database, pConfig MigratorConfig, pMigrations ..
 }
 
 type Migrator struct {
-	db         *sql.DB
-	sqlBuilder ormshift.SQLBuilder
-	dbSchema   schema.DBSchema
-	config     MigratorConfig
-	// TODO: Can't this be a dictionary / set for faster lookups?
-	migrations            []Migration
-	appliedMigrationNames []string
+	database          *ormshift.Database
+	config            MigratorConfig
+	migrations        []Migration
+	appliedMigrations map[string]bool
 }
 
-func NewMigrator(pDatabase ormshift.Database, pConfig MigratorConfig) (*Migrator, error) {
+func NewMigrator(pDatabase *ormshift.Database, pConfig MigratorConfig) (*Migrator, error) {
+	if pDatabase == nil {
+		return nil, fmt.Errorf("database cannot be nil")
+	}
 	lError := pDatabase.Validate()
 	if lError != nil {
 		return nil, fmt.Errorf("invalid database: %w", lError)
 	}
-	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDatabase, pConfig)
+
+	lAppliedMigrationNames, lError := getAppliedMigrationNames(*pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError
 	}
+	lAppliedMigrations := make(map[string]bool, len(lAppliedMigrationNames))
+	for _, name := range lAppliedMigrationNames {
+		lAppliedMigrations[name] = true
+	}
+
 	return &Migrator{
-		db:                    pDatabase.DB(),
-		sqlBuilder:            pDatabase.SQLBuilder(),
-		dbSchema:              pDatabase.DBSchema(),
-		config:                pConfig,
-		migrations:            []Migration{},
-		appliedMigrationNames: lAppliedMigrationNames,
+		database:          pDatabase,
+		config:            pConfig,
+		migrations:        []Migration{},
+		appliedMigrations: lAppliedMigrations,
 	}, nil
 }
 
@@ -115,75 +117,77 @@ func (m *Migrator) ApplyAllMigrations() error {
 			if lError != nil {
 				return fmt.Errorf("on recording migration %q: %w", lMigrationName, lError)
 			}
-			m.appliedMigrationNames = append(m.appliedMigrationNames, lMigrationName)
+			m.appliedMigrations[lMigrationName] = true
 		}
 	}
 	return nil
 }
 
 func (m *Migrator) RevertLatestMigration() error {
-	if len(m.appliedMigrationNames) > 0 {
-		lLatestMigrationIndex := len(m.appliedMigrationNames) - 1
-		lLatestMigrationName := m.appliedMigrationNames[lLatestMigrationIndex]
-		for _, lMigration := range m.migrations {
-			lMigrationName := reflect.TypeOf(lMigration).Name()
-			if lMigrationName == lLatestMigrationName {
-				lError := lMigration.Down(m)
-				if lError != nil {
-					return fmt.Errorf("on migration down %q: %w", lMigrationName, lError)
-				}
-				lError = m.deleteAppliedMigration(lMigrationName)
-				if lError != nil {
-					return fmt.Errorf("on deleting applied migration %q: %w", lMigrationName, lError)
-				}
-				m.appliedMigrationNames = m.appliedMigrationNames[:lLatestMigrationIndex]
-				break
+	for i := len(m.migrations) - 1; i >= 0; i-- {
+		lMigration := m.migrations[i]
+		lMigrationName := reflect.TypeOf(lMigration).Name()
+		if m.isApplied(lMigrationName) {
+			lError := lMigration.Down(m)
+			if lError != nil {
+				return fmt.Errorf("on migration down %q: %w", lMigrationName, lError)
 			}
+			lError = m.deleteAppliedMigration(lMigrationName)
+			if lError != nil {
+				return fmt.Errorf("on deleting applied migration %q: %w", lMigrationName, lError)
+			}
+			delete(m.appliedMigrations, lMigrationName)
+			return nil
 		}
 	}
 	return nil
 }
 
-func (m Migrator) DB() *sql.DB {
-	return m.db
+func (m Migrator) Database() *ormshift.Database {
+	return m.database
 }
 
-func (m Migrator) SQLBuilder() ormshift.SQLBuilder {
-	return m.sqlBuilder
+func (m Migrator) Migrations() []Migration {
+	return m.migrations
 }
 
-func (m Migrator) DBSchema() schema.DBSchema {
-	return m.dbSchema
-}
+func (m Migrator) AppliedMigrations() []Migration {
 
-func (m Migrator) AppliedMigrationNames() []string {
-	return m.appliedMigrationNames
+	lMigrations := []Migration{}
+	for _, migration := range m.Migrations() {
+		name := reflect.TypeOf(migration).Name()
+		if m.appliedMigrations[name] {
+			lMigrations = append(lMigrations, migration)
+		}
+	}
+	return lMigrations
 }
 
 func (m Migrator) isApplied(pMigrationName string) bool {
-	return slices.Contains(m.appliedMigrationNames, pMigrationName)
+	_, exists := m.appliedMigrations[pMigrationName]
+	return exists
 }
 
 func (m Migrator) recordAppliedMigration(pMigrationName string) error {
-	q, p := m.sqlBuilder.InsertWithValues(
+	q, p := m.database.SQLBuilder().InsertWithValues(
 		m.config.tableName,
 		ormshift.ColumnsValues{
 			m.config.migrationNameColumn: pMigrationName,
 			m.config.appliedAtColumn:     time.Now().UTC(),
 		},
 	)
-	_, lError := m.db.Exec(q, p...)
+	_, lError := m.database.DB().Exec(q, p...)
 	return lError
 }
 
 func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
-	q, p := m.sqlBuilder.DeleteWithValues(
+	q, p := m.database.SQLBuilder().DeleteWithValues(
 		m.config.tableName,
 		ormshift.ColumnsValues{
 			m.config.migrationNameColumn: pMigrationName,
 		},
 	)
-	_, lError := m.db.Exec(q, p...)
+	_, lError := m.database.DB().Exec(q, p...)
 	return lError
 }
 

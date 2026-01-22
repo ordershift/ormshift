@@ -31,7 +31,7 @@ func TestExecutor(t *testing.T) {
 	defer func() { _ = lDatabase.Close() }()
 
 	lMigrationManager, lError := migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},

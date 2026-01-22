@@ -19,7 +19,7 @@ func TestMigrate(t *testing.T) {
 	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -35,8 +35,8 @@ func TestMigrate(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
+	testutils.AssertEqualWithLabel(t, true, lDatabase.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrationNames)")
 }
 
 func TestMigrateTwice(t *testing.T) {
@@ -48,7 +48,7 @@ func TestMigrateTwice(t *testing.T) {
 	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -58,7 +58,7 @@ func TestMigrateTwice(t *testing.T) {
 	}
 
 	lMigrator, lError = migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -75,8 +75,8 @@ func TestMigrateTwice(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrationNames()), "len(Migrator.AppliedMigrationNames)")
+	testutils.AssertEqualWithLabel(t, true, lDatabase.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 
 func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
@@ -87,7 +87,7 @@ func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
 	}
 	_ = lDatabase.Close()
 	lMigrator, lError := migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -107,7 +107,7 @@ func TestRevertLatestMigration(t *testing.T) {
 	defer func() { _ = lDatabase.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
-		*lDatabase,
+		lDatabase,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -120,7 +120,7 @@ func TestRevertLatestMigration(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lMigrator.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
+	testutils.AssertEqualWithLabel(t, true, lDatabase.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
 
 	lError = lMigrator.RevertLatestMigration()
 	if !testutils.AssertNilError(t, lError, "Migrator.DownLast") {
@@ -130,5 +130,5 @@ func TestRevertLatestMigration(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, false, lMigrator.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, false, lDatabase.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
 }
