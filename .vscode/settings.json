@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "ordershift",
+        "projectKey": "ordershift_ormshift"
+    }
+}
