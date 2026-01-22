@@ -108,24 +108,24 @@ func (sb postgresqlSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pR
 func (sb postgresqlSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
 	lSQLCommand := pSQLCommand
 	lArgs := []any{}
-	lIndices := map[string]int{}
-	for i, lParametro := range pNamedArgs {
-		lIndices[strings.ToLower(lParametro.Name)] = i + 1
-		lValorBooleano, ok := lParametro.Value.(bool)
-		if ok {
-			if lValorBooleano {
+	lIndexes := map[string]int{}
+	for i, lParam := range pNamedArgs {
+		lIndexes[strings.ToLower(lParam.Name)] = i + 1
+		lBooleanValue, lIsBoolean := lParam.Value.(bool)
+		if lIsBoolean {
+			if lBooleanValue {
 				lArgs = append(lArgs, int(1))
 			} else {
 				lArgs = append(lArgs, int(0))
 			}
 		} else {
-			lArgs = append(lArgs, lParametro.Value)
+			lArgs = append(lArgs, lParam.Value)
 		}
 	}
 	lRegex := regexp.MustCompile(`@([a-zA-Z_][a-zA-Z0-9_]*)`)
 	lSQLCommand = lRegex.ReplaceAllStringFunc(lSQLCommand, func(m string) string {
-		lNome := m[1:]
-		if idx, ok := lIndices[strings.ToLower(lNome)]; ok {
+		lName := m[1:]
+		if idx, ok := lIndexes[strings.ToLower(lName)]; ok {
 			return fmt.Sprintf("$%d", idx)
 		}
 		return m

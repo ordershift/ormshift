@@ -167,8 +167,8 @@ func (sb GenericSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand stri
 	}
 	lSQLCommand := pSQLCommand
 	lArgs := []any{}
-	for _, lParametro := range pNamedArgs {
-		lArgs = append(lArgs, lParametro)
+	for _, lParam := range pNamedArgs {
+		lArgs = append(lArgs, lParam)
 	}
 	return lSQLCommand, lArgs
 }

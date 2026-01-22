@@ -16,7 +16,7 @@ type sqliteSQLBuilder struct {
 func (sb sqliteSQLBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
-	lTemColunaComAutoIncremento := false
+	lHasAutoIncrementColumn := false
 	for _, lColumn := range pTable.Columns() {
 		if lColumns != "" {
 			lColumns += ","
@@ -30,12 +30,12 @@ func (sb sqliteSQLBuilder) CreateTable(pTable schema.Table) string {
 			lPKColumns += lColumn.Name().String()
 		}
 
-		if !lTemColunaComAutoIncremento {
-			lTemColunaComAutoIncremento = lColumn.Autoincrement()
+		if !lHasAutoIncrementColumn {
+			lHasAutoIncrementColumn = lColumn.Autoincrement()
 		}
 	}
 
-	if !lTemColunaComAutoIncremento && lPKColumns != "" {
+	if !lHasAutoIncrementColumn && lPKColumns != "" {
 		if lColumns != "" {
 			lColumns += ","
 		}

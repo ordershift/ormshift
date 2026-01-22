@@ -58,11 +58,11 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
 	// TODO: Maybe the table match should be case sensitive depending on the DBMS
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
-	// if lErro != nil {
-	// 	lColumnTypes, lErro = s.fetchColumnTypes(strings.ToLower(pTableName.String()))
+	// if lError != nil {
+	// 	lColumnTypes, lError = s.fetchColumnTypes(strings.ToLower(pTableName.String()))
 	// }
-	// if lErro != nil {
-	// 	lColumnTypes, lErro = s.fetchColumnTypes(strings.ToUpper(pTableName.String()))
+	// if lError != nil {
+	// 	lColumnTypes, lError = s.fetchColumnTypes(strings.ToUpper(pTableName.String()))
 	// }
 	if lError != nil {
 		return nil, lError
