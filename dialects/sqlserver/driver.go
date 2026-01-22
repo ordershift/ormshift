@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	// Blank import to register the SQL Server driver
 	_ "github.com/microsoft/go-mssqldb"
 
 	"github.com/ordershift/ormshift"

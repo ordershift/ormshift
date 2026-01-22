@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 
+	// Blank import to register the SQLite driver
+	_ "modernc.org/sqlite"
+
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/schema"
-
-	_ "modernc.org/sqlite"
 )
 
 type SQLiteDriver struct{}

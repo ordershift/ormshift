@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	// Blank import to register the PostgreSQL driver
 	_ "github.com/lib/pq"
 
 	"github.com/ordershift/ormshift"
