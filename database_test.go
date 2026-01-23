@@ -19,6 +19,11 @@ func TestOpenDatabase(t *testing.T) {
 	testutils.AssertNotNilResultAndNilError(t, lDB.DB(), nil, "Database.DB")
 	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
 	testutils.AssertEqualWithLabel(t, "sqlite", lDB.DriverName(), "Database.ConnectionString")
+
+	lUnderlyingDB := lDB.DB()
+	if !testutils.AssertNotNilResultAndNilError(t, lUnderlyingDB, nil, "Database.DB") {
+		return
+	}
 }
 
 func TestOpenDatabaseWithNilDriver(t *testing.T) {
@@ -47,6 +52,25 @@ func TestOpenDatabaseWithBadSchema(t *testing.T) {
 	testutils.AssertErrorMessage(t, "failed to get DB schema: intentionally bad schema", lError, "ormshift.OpenDatabase")
 }
 
+func TestClose(t *testing.T) {
+	lDB, lError := ormshift.OpenDatabase(&sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+
+	lError = lDB.DB().Ping()
+	if !testutils.AssertNilError(t, lError, "Database.DB.Ping") {
+		_ = lDB.Close()
+		return
+	}
+
+	lError = lDB.Close()
+	testutils.AssertNilError(t, lError, "Database.Close")
+
+	lError = lDB.DB().Ping()
+	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "Database.DB.Ping")
+}
+
 func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
 	lDriver := testutils.NewFakeDriverInvalidConnectionString(&postgresql.PostgreSQLDriver{})
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
@@ -55,4 +79,20 @@ func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
 	}
 	lError = lDB.Validate()
 	testutils.AssertErrorMessage(t, "database ping failed: missing \"=\" after \"invalid-connection-string\" in connection info string\"", lError, "ormshift.OpenDatabase")
+}
+
+func TestConnectionStringWithNoParams(t *testing.T) {
+	lDriver := sqlite.SQLiteDriver{}
+	lConnectionParams := ormshift.ConnectionParams{InMemory: true}
+	lDB, lError := ormshift.OpenDatabase(&lDriver, lConnectionParams)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+	defer func() { _ = lDB.Close() }()
+
+	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
+
+	// Connection string should not be modified if the connection params is changed
+	lConnectionParams.InMemory = false
+	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
 }
