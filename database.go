@@ -56,9 +56,6 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 }
 
 func (d *Database) Validate() error {
-	if d.db == nil {
-		return errors.New("sql.DB cannot be nil")
-	}
 	if err := d.db.Ping(); err != nil {
 		return fmt.Errorf("database ping failed: %w", err)
 	}
