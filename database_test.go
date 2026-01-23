@@ -29,6 +29,15 @@ func TestOpenDatabaseWithNilDriver(t *testing.T) {
 	testutils.AssertErrorMessage(t, "DatabaseDriver cannot be nil", lError, "ormshift.OpenDatabase")
 }
 
+func TestOpenDatabaseWithBadDriver(t *testing.T) {
+	lDriver := testutils.NewFakeDriverBadName(&sqlite.SQLiteDriver{})
+	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
+	if !testutils.AssertNilResultAndNotNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+	testutils.AssertErrorMessage(t, "sql.Open failed: sql: unknown driver \"bad-driver-name\" (forgotten import?)", lError, "ormshift.OpenDatabase")
+}
+
 func TestOpenDatabaseWithBadSchema(t *testing.T) {
 	lDriver := testutils.NewFakeDriverBadSchema(&sqlite.SQLiteDriver{})
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
