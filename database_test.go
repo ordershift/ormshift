@@ -13,7 +13,7 @@ import (
 )
 
 func TestOpenDatabase(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -38,7 +38,7 @@ func TestOpenDatabaseWithNilDriver(t *testing.T) {
 }
 
 func TestOpenDatabaseWithBadDriver(t *testing.T) {
-	lDriver := testutils.NewFakeDriverBadName(sqlite.SQLiteDriver{})
+	lDriver := testutils.NewFakeDriverBadName(sqlite.Driver())
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNilResultAndNotNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -47,7 +47,7 @@ func TestOpenDatabaseWithBadDriver(t *testing.T) {
 }
 
 func TestOpenDatabaseWithBadSchema(t *testing.T) {
-	lDriver := testutils.NewFakeDriverBadSchema(sqlite.SQLiteDriver{})
+	lDriver := testutils.NewFakeDriverBadSchema(sqlite.Driver())
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNilResultAndNotNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -56,7 +56,7 @@ func TestOpenDatabaseWithBadSchema(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -75,7 +75,7 @@ func TestClose(t *testing.T) {
 }
 
 func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
-	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.PostgreSQLDriver{})
+	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -86,7 +86,7 @@ func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
 
 func TestConnectionStringWithNoParams(t *testing.T) {
 	lConnectionParams := ormshift.ConnectionParams{InMemory: true}
-	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, lConnectionParams)
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), lConnectionParams)
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -104,13 +104,13 @@ func TestConnectionStringWithNoParams(t *testing.T) {
 
 func TestDriverName(t *testing.T) {
 	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
-	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	lDriver = testutils.NewFakeDriver(sqlite.Driver())
 	testutils.AssertEqualWithLabel(t, "sqlite", lDriver.Name(), "FakeDriver.Name")
 }
 
 func TestDriverConnectionString(t *testing.T) {
 	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
-	lDriver = testutils.NewFakeDriver(sqlserver.SQLServerDriver{})
+	lDriver = testutils.NewFakeDriver(sqlserver.Driver())
 	lConnectionParams := ormshift.ConnectionParams{
 		Host:     "localhost",
 		Port:     1433,
@@ -136,14 +136,14 @@ func TestDriverConnectionString(t *testing.T) {
 
 func TestDriverSQLBuilder(t *testing.T) {
 	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
-	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	lDriver = testutils.NewFakeDriver(sqlite.Driver())
 	lSQLBuilder := lDriver.SQLBuilder()
 	testutils.AssertEqualWithLabel(t, "sqliteSQLBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
 }
 
 func TestDriverDBSchema(t *testing.T) {
 	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
-	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	lDriver = testutils.NewFakeDriver(sqlite.Driver())
 	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return

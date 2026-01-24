@@ -10,12 +10,12 @@ import (
 )
 
 func TestName(t *testing.T) {
-	lDriver := sqlserver.SQLServerDriver{}
+	lDriver := sqlserver.Driver()
 	testutils.AssertEqualWithLabel(t, "sqlserver", lDriver.Name(), "lDriver.Name")
 }
 
 func TestConnectionString(t *testing.T) {
-	lDriver := sqlserver.SQLServerDriver{}
+	lDriver := sqlserver.Driver()
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		Host:     "my-server",
 		Port:     1433,
@@ -29,7 +29,7 @@ func TestConnectionString(t *testing.T) {
 }
 
 func TestDBSchema(t *testing.T) {
-	lDriver := sqlserver.SQLServerDriver{}
+	lDriver := sqlserver.Driver()
 	lDB, lError := sql.Open(lDriver.Name(), "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db")
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
@@ -43,7 +43,7 @@ func TestDBSchema(t *testing.T) {
 }
 
 func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDriver := sqlserver.SQLServerDriver{}
+	lDriver := sqlserver.Driver()
 	lSchema, lError := lDriver.DBSchema(nil)
 	if !testutils.AssertNilResultAndNotNilError(t, lSchema, lError, "lDriver.DBSchema") {
 		return

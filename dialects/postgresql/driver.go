@@ -11,13 +11,17 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type PostgreSQLDriver struct{}
+type postgresqlDriver struct{}
 
-func (d PostgreSQLDriver) Name() string {
+func Driver() ormshift.DatabaseDriver {
+	return postgresqlDriver{}
+}
+
+func (d postgresqlDriver) Name() string {
 	return "postgres"
 }
 
-func (d PostgreSQLDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	lHost := pParams.Host
 	if lHost == "" {
 		lHost = "localhost"
@@ -29,10 +33,10 @@ func (d PostgreSQLDriver) ConnectionString(pParams ormshift.ConnectionParams) st
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPort, pParams.User, pParams.Password, pParams.Database)
 }
 
-func (d PostgreSQLDriver) SQLBuilder() ormshift.SQLBuilder {
+func (d postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {
 	return postgresqlSQLBuilder{}
 }
 
-func (d PostgreSQLDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+func (d postgresqlDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
 	return schema.NewDBSchema(pDB, tableNamesQuery)
 }

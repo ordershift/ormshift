@@ -10,12 +10,12 @@ import (
 )
 
 func TestName(t *testing.T) {
-	lDriver := postgresql.PostgreSQLDriver{}
+	lDriver := postgresql.Driver()
 	testutils.AssertEqualWithLabel(t, "postgres", lDriver.Name(), "lDriver.Name")
 }
 
 func TestConnectionString(t *testing.T) {
-	lDriver := postgresql.PostgreSQLDriver{}
+	lDriver := postgresql.Driver()
 	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
 		User:     "pg",
 		Password: "123456",
@@ -26,7 +26,7 @@ func TestConnectionString(t *testing.T) {
 }
 
 func TestDBSchema(t *testing.T) {
-	lDriver := postgresql.PostgreSQLDriver{}
+	lDriver := postgresql.Driver()
 	lDB, lError := sql.Open(lDriver.Name(), "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable")
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
@@ -40,7 +40,7 @@ func TestDBSchema(t *testing.T) {
 }
 
 func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDriver := postgresql.PostgreSQLDriver{}
+	lDriver := postgresql.Driver()
 	lSchema, lError := lDriver.DBSchema(nil)
 	if !testutils.AssertNilResultAndNotNilError(t, lSchema, lError, "lDriver.DBSchema") {
 		return

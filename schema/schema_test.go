@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewDBSchema(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -31,7 +31,7 @@ func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
 }
 
 func TestExistsTableColumn(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
@@ -43,7 +43,7 @@ func TestExistsTableColumn(t *testing.T) {
 		return
 	}
 
-	_, lError = lDatabase.DB().Exec(sqlite.SQLiteDriver{}.SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDatabase.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
@@ -67,7 +67,7 @@ func TestExistsTableColumn(t *testing.T) {
 }
 
 func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
@@ -80,7 +80,7 @@ func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 		return
 	}
 
-	_, lError = lDatabase.DB().Exec(sqlite.SQLiteDriver{}.SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDatabase.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		_ = lDatabase.Close()
 		return

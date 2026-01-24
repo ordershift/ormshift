@@ -11,13 +11,17 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type SQLiteDriver struct{}
+type sqliteDriver struct{}
 
-func (d SQLiteDriver) Name() string {
+func Driver() ormshift.DatabaseDriver {
+	return sqliteDriver{}
+}
+
+func (d sqliteDriver) Name() string {
 	return "sqlite"
 }
 
-func (d SQLiteDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d sqliteDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	if pParams.InMemory {
 		return ":memory:"
 	}
@@ -31,10 +35,10 @@ func (d SQLiteDriver) ConnectionString(pParams ormshift.ConnectionParams) string
 	return fmt.Sprintf("file:%s.db?%s_locking=NORMAL", pParams.Database, lConnetionWithAuth)
 }
 
-func (d SQLiteDriver) SQLBuilder() ormshift.SQLBuilder {
+func (d sqliteDriver) SQLBuilder() ormshift.SQLBuilder {
 	return sqliteSQLBuilder{}
 }
 
-func (d SQLiteDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+func (d sqliteDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
 	return schema.NewDBSchema(pDB, tableNamesQuery)
 }

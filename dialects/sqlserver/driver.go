@@ -11,13 +11,17 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type SQLServerDriver struct{}
+type sqlserverDriver struct{}
 
-func (d SQLServerDriver) Name() string {
+func Driver() ormshift.DatabaseDriver {
+	return sqlserverDriver{}
+}
+
+func (d sqlserverDriver) Name() string {
 	return "sqlserver"
 }
 
-func (d SQLServerDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	lHostInstanceAndPort := pParams.Host
 	if pParams.Instance != "" {
 		lHostInstanceAndPort = fmt.Sprintf("%s\\%s", pParams.Host, pParams.Instance)
@@ -28,10 +32,10 @@ func (d SQLServerDriver) ConnectionString(pParams ormshift.ConnectionParams) str
 	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
 }
 
-func (d SQLServerDriver) SQLBuilder() ormshift.SQLBuilder {
+func (d sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {
 	return sqlserverSQLBuilder{}
 }
 
-func (d SQLServerDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+func (d sqlserverDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
 	return schema.NewDBSchema(pDB, tableNamesQuery)
 }

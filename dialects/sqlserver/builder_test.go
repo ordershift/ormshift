@@ -10,7 +10,7 @@ import (
 )
 
 func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
-	lDriver := sqlserver.SQLServerDriver{}
+	lDriver := sqlserver.Driver()
 	lReturnedSQL, lReturnedValue := lDriver.SQLBuilder().InteroperateSQLCommandWithNamedArgs("select * from table where id = @id", sql.Named("id", 1))
 	lExpectedSQL := "select * from table where id = @id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, lDriver.Name()+".InteroperateSQLCommandWithNamedArgs.SQL")
@@ -19,7 +19,7 @@ func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
 }
 
 func TestCreateTable(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTable := testutils.FakeUserTable(t)
 	lExpectedSQL := "CREATE TABLE user (id BIGINT NOT NULL IDENTITY (1, 1),email VARCHAR(80) NOT NULL,name VARCHAR(50) NOT NULL," +
@@ -35,7 +35,7 @@ func TestCreateTable(t *testing.T) {
 }
 
 func TestDropTable(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lExpectedSQL := "DROP TABLE user;"
@@ -44,7 +44,7 @@ func TestDropTable(t *testing.T) {
 }
 
 func TestAlterTableAddColumn(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumn := testutils.FakeUpdatedAtColumn(t)
@@ -54,7 +54,7 @@ func TestAlterTableAddColumn(t *testing.T) {
 }
 
 func TestAlterTableDropColumn(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumnName := testutils.FakeUpdatedAtColumnName(t)
@@ -64,7 +64,7 @@ func TestAlterTableDropColumn(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Insert("product", []string{"id", "sku", "name", "description"})
 	lExpectedSQL := "insert into product (id,sku,name,description) values (@id,@sku,@name,@description)"
@@ -72,7 +72,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestInsertWithValues(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.InsertWithValues("product", ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.9", "name": "Trufa Sabor Amarula 30g Cacaushow"})
 	lExpectedSQL := "insert into product (id,name,sku) values (@id,@name,@sku)"
@@ -84,7 +84,7 @@ func TestInsertWithValues(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Update("product", []string{"sku", "name", "description"}, []string{"id"})
 	lExpectedSQL := "update product set sku = @sku,name = @name,description = @description where id = @id"
@@ -92,7 +92,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdateWithValues(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.UpdateWithValues("product", []string{"sku", "name"}, []string{"id"}, ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.5", "name": "Trufa Sabor Amarula 18g Cacaushow"})
 	lExpectedSQL := "update product set sku = @sku,name = @name where id = @id"
@@ -104,7 +104,7 @@ func TestUpdateWithValues(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Delete("product", []string{"id"})
 	lExpectedSQL := "delete from product where id = @id"
@@ -112,7 +112,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteWithValues(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.DeleteWithValues("product", ormshift.ColumnsValues{"id": 1})
 	lExpectedSQL := "delete from product where id = @id"
@@ -122,7 +122,7 @@ func TestDeleteWithValues(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Select("product", []string{"id", "name", "description"}, []string{"sku", "active"})
 	lExpectedSQL := "select id,name,description from product where sku = @sku and active = @active"
@@ -130,7 +130,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestSelectWithValues(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.SelectWithValues("product", []string{"id", "sku", "name", "description"}, ormshift.ColumnsValues{"category_id": 1, "active": true})
 	lExpectedSQL := "select id,sku,name,description from product where active = @active and category_id = @category_id"
@@ -141,7 +141,7 @@ func TestSelectWithValues(t *testing.T) {
 }
 
 func TestSelectWithPagination(t *testing.T) {
-	lSQLBuilder := sqlserver.SQLServerDriver{}.SQLBuilder()
+	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.SelectWithPagination("select * from product", 10, 5)
 	lExpectedSQL := "select * from product OFFSET 40 ROWS FETCH NEXT 10 ROWS ONLY"
