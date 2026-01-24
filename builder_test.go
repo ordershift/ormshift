@@ -27,45 +27,6 @@ func TestColumnsValuesToColumns(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, lColumns[1], "sku", "ColumnsValues.ToColumns[1]")
 }
 
-// func Test_DriverDB_SQLBuilder_InteroperateSQLCommandWithNamedArgs_ShouldReturnDefault(t *testing.T) {
-// 	lDriversDB := []ormshift.DriverDB{&sqlserver.DriverDB{}, &sqlite.DriverDB{}}
-// 	for _, lDriverDB := range lDriversDB {
-// 		lReturnedSQL, lReturnedValue := lDriverDB.SQLBuilder().InteroperateSQLCommandWithNamedArgs("select * from table where id = @id", sql.Named("id", 1))
-// 		lExpectedSQL := "select * from table where id = @id"
-// 		testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, lDriverDB.Name()+".InteroperateSQLCommandWithNamedArgs.SQL")
-// 		testutils.AssertEqualWithLabel(t, "id", lReturnedValue[0].(sql.NamedArg).Name, lDriverDB.Name()+".InteroperateSQLCommandWithNamedArgs.Name")
-// 		testutils.AssertEqualWithLabel(t, 1, lReturnedValue[0].(sql.NamedArg).Value.(int), lDriverDB.Name()+".InteroperateSQLCommandWithNamedArgs.Value")
-// 	}
-// }
-
-// func Test_DriverPostgresql_SQLBuilder_InteroperateSQLCommandWithNamedArgs_ShouldReturnValid(t *testing.T) {
-// 	lReturnedSQL, lReturnedValue := postgresql.DriverPostgresql.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
-// 		"select * from user where role = @role and active = @active and master = @master",
-// 		sql.Named("role", "admin"),
-// 		sql.Named("active", true),
-// 		sql.Named("master", false),
-// 	)
-// 	lExpectedSQL := "select * from user where role = $1 and active = $2 and master = $3"
-// 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.SQL")
-// 	testutils.AssertEqualWithLabel(t, "admin", lReturnedValue[0].(string), "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.Value.1")
-// 	testutils.AssertEqualWithLabel(t, 1, lReturnedValue[1].(int), "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.Value.2")
-// 	testutils.AssertEqualWithLabel(t, 0, lReturnedValue[2].(int), "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.Value.3")
-// 	lReturnedSQL, lReturnedValue = postgresql.DriverPostgresql.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
-// 		"update user set role = @role where role = @role",
-// 		sql.Named("role", "admin"),
-// 	)
-// 	lExpectedSQL = "update user set role = $1 where role = $1"
-// 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.SQL")
-// 	testutils.AssertEqualWithLabel(t, "admin", lReturnedValue[0].(string), "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.Value.1")
-// 	lReturnedSQL, lReturnedValue = postgresql.DriverPostgresql.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
-// 		"delete from user where id = @id",
-// 		sql.Named("role", "admin"),
-// 	)
-// 	lExpectedSQL = "delete from user where id = @id"
-// 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.SQL")
-// 	testutils.AssertEqualWithLabel(t, "admin", lReturnedValue[0].(string), "DriverPostgresql.InteroperateSQLCommandWithNamedArgs.Value.1")
-// }
-
 // func Test_DriverDB_SQLBuilder_CreateTable_ShouldReturnCorrectSQL(t *testing.T) {
 // 	lUserTable := testutils.FakeUserTable(t)
 // 	if lUserTable == nil {
