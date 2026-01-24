@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"database/sql"
 	"testing"
 
 	"github.com/ordershift/ormshift/schema"
@@ -214,4 +215,12 @@ func FakeUpdatedAtColumnName(t *testing.T) *schema.ColumnName {
 		return nil
 	}
 	return lUpdatedAtColumnName
+}
+
+func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, namedArgs ...sql.NamedArg) (string, []any) {
+	lArgs := make([]any, len(namedArgs))
+	for i, v := range namedArgs {
+		lArgs[i] = v
+	}
+	return "command has been modified", lArgs
 }

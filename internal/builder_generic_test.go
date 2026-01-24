@@ -138,3 +138,12 @@ func TestSelectWithPagination(t *testing.T) {
 	lExpectedSQL := "select * from product LIMIT 10 OFFSET 40"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.SelectWithPagination")
 }
+
+func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, testutils.FakeInteroperateSQLCommandWithNamedArgsFunc)
+	lReturnedSQL, lReturnedNamedArgs := lSQLBuilder.InteroperateSQLCommandWithNamedArgs("original command", sql.NamedArg{Name: "param1", Value: 1})
+	lExpectedSQL := "command has been modified"
+	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.InteroperateSQLCommandWithNamedArgs.SQL")
+	testutils.AssertEqualWithLabel(t, 1, len(lReturnedNamedArgs), "SQLBuilder.InteroperateSQLCommandWithNamedArgs.NamedArgs")
+	testutils.AssertNamedArgEqualWithLabel(t, lReturnedNamedArgs[0], sql.NamedArg{Name: "param1", Value: 1}, "SQLBuilder.InteroperateSQLCommandWithNamedArgs.NamedArgs[0]")
+}
