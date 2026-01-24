@@ -103,13 +103,13 @@ func TestConnectionStringWithNoParams(t *testing.T) {
 }
 
 func TestDriverName(t *testing.T) {
-	var lDriver ormshift.DatabaseDriver
+	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
 	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	testutils.AssertEqualWithLabel(t, "sqlite", lDriver.Name(), "FakeDriver.Name")
 }
 
 func TestDriverConnectionString(t *testing.T) {
-	var lDriver ormshift.DatabaseDriver
+	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
 	lDriver = testutils.NewFakeDriver(sqlserver.SQLServerDriver{})
 	lConnectionParams := ormshift.ConnectionParams{
 		Host:     "localhost",
@@ -135,14 +135,14 @@ func TestDriverConnectionString(t *testing.T) {
 }
 
 func TestDriverSQLBuilder(t *testing.T) {
-	var lDriver ormshift.DatabaseDriver
+	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
 	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	lSQLBuilder := lDriver.SQLBuilder()
 	testutils.AssertEqualWithLabel(t, "sqliteSQLBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
 }
 
 func TestDriverDBSchema(t *testing.T) {
-	var lDriver ormshift.DatabaseDriver
+	var lDriver ormshift.DatabaseDriver //nolint:staticcheck
 	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
