@@ -1,11 +1,14 @@
 package ormshift_test
 
 import (
+	"database/sql"
+	"reflect"
 	"testing"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/dialects/postgresql"
 	"github.com/ordershift/ormshift/dialects/sqlite"
+	"github.com/ordershift/ormshift/dialects/sqlserver"
 	"github.com/ordershift/ormshift/internal/testutils"
 )
 
@@ -94,4 +97,54 @@ func TestConnectionStringWithNoParams(t *testing.T) {
 	// Connection string should not be modified if the connection params is changed
 	lConnectionParams.InMemory = false
 	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
+}
+
+func TestDriverName(t *testing.T) {
+	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	testutils.AssertEqualWithLabel(t, "sqlite", lDriver.Name(), "FakeDriver.Name")
+}
+
+func TestDriverConnectionString(t *testing.T) {
+	lDriver := testutils.NewFakeDriver(sqlserver.SQLServerDriver{})
+	lConnectionParams := ormshift.ConnectionParams{
+		Host:     "localhost",
+		Port:     1433,
+		User:     "sa",
+		Password: "your_password",
+		Database: "testdb",
+	}
+
+	lReturnedConnectionString := lDriver.ConnectionString(lConnectionParams)
+	lExpectedConnectionString := "server=localhost;port=1433;user id=sa;password=your_password;database=testdb"
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "FakeDriver.ConnectionString")
+
+	lConnectionParams = ormshift.ConnectionParams{
+		Instance: "myServerName\\myInstanceName",
+		User:     "sa",
+		Password: "your_password",
+		Database: "testdb",
+	}
+	lReturnedConnectionString = lDriver.ConnectionString(lConnectionParams)
+	lExpectedConnectionString = "server=\\myServerName\\myInstanceName;user id=sa;password=your_password;database=testdb"
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "FakeDriver.ConnectionString")
+}
+
+func TestDriverSQLBuilder(t *testing.T) {
+	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	lSQLBuilder := lDriver.SQLBuilder()
+	testutils.AssertEqualWithLabel(t, "sqliteSQLBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
+}
+
+func TestDriverDBSchema(t *testing.T) {
+	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
+		return
+	}
+	defer func() { _ = lDB.Close() }()
+
+	lSchema, lError := lDriver.DBSchema(lDB)
+	if !testutils.AssertNotNilResultAndNilError(t, lSchema, lError, "FakeDriver.DBSchema") {
+		return
+	}
 }

@@ -8,6 +8,29 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
+// FakeDriver always returns the underlying driver behavior.
+type FakeDriver struct {
+	underlyingDriver ormshift.DatabaseDriver
+}
+
+func NewFakeDriver(underlyingDriver ormshift.DatabaseDriver) *FakeDriver {
+	return &FakeDriver{
+		underlyingDriver: underlyingDriver,
+	}
+}
+func (d *FakeDriver) ConnectionString(params ormshift.ConnectionParams) string {
+	return d.underlyingDriver.ConnectionString(params)
+}
+func (d *FakeDriver) Name() string {
+	return d.underlyingDriver.Name()
+}
+func (d *FakeDriver) SQLBuilder() ormshift.SQLBuilder {
+	return d.underlyingDriver.SQLBuilder()
+}
+func (d *FakeDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+	return d.underlyingDriver.DBSchema(pDB)
+}
+
 // FakeDriverInvalidConnectionString always returns an empty connection string.
 type FakeDriverInvalidConnectionString struct {
 	underlyingDriver ormshift.DatabaseDriver
