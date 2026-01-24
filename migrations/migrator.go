@@ -48,11 +48,11 @@ func (m *Migrator) ApplyAllMigrations() error {
 		if !m.isApplied(lMigrationName) {
 			lError := lMigration.Up(m)
 			if lError != nil {
-				return fmt.Errorf("on migration up %q: %w", lMigrationName, lError)
+				return fmt.Errorf("failed to apply migration %q: %w", lMigrationName, lError)
 			}
 			lError = m.recordAppliedMigration(lMigrationName)
 			if lError != nil {
-				return fmt.Errorf("on recording migration %q: %w", lMigrationName, lError)
+				return fmt.Errorf("failed to record applied migration %q: %w", lMigrationName, lError)
 			}
 			m.appliedMigrations[lMigrationName] = true
 		}
@@ -67,11 +67,11 @@ func (m *Migrator) RevertLatestMigration() error {
 		if m.isApplied(lMigrationName) {
 			lError := lMigration.Down(m)
 			if lError != nil {
-				return fmt.Errorf("on migration down %q: %w", lMigrationName, lError)
+				return fmt.Errorf("failed to revert migration %q: %w", lMigrationName, lError)
 			}
 			lError = m.deleteAppliedMigration(lMigrationName)
 			if lError != nil {
-				return fmt.Errorf("on deleting applied migration %q: %w", lMigrationName, lError)
+				return fmt.Errorf("failed to delete applied migration %q: %w", lMigrationName, lError)
 			}
 			delete(m.appliedMigrations, lMigrationName)
 			return nil

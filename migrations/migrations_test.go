@@ -86,6 +86,7 @@ func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 		return
 	}
 	_ = lDatabase.Close()
+
 	lMigrator, lError := migrations.Migrate(
 		lDatabase,
 		migrations.NewMigratorConfig(),
@@ -96,4 +97,23 @@ func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 		return
 	}
 	testutils.AssertErrorMessage(t, "failed to get applied migration names: sql: database is closed", lError, "migrations.Migrate")
+}
+
+func TestMigrateFailsWhenMigrationUpFails(t *testing.T) {
+	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if lError != nil {
+		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+		return
+	}
+	defer func() { _ = lDatabase.Close() }()
+
+	lMigrator, lError := migrations.Migrate(
+		lDatabase,
+		migrations.NewMigratorConfig(),
+		testutils.M003_Bad_Migration_Fails_To_Apply{},
+	)
+	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
+		return
+	}
+	testutils.AssertErrorMessage(t, "failed to apply migration \"M003_Bad_Migration_Fails_To_Apply\": intentionally failed to Up", lError, "migrations.Migrate")
 }

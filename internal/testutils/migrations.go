@@ -1,10 +1,13 @@
 package testutils
 
 import (
+	"fmt"
+
 	"github.com/ordershift/ormshift/migrations"
 	"github.com/ordershift/ormshift/schema"
 )
 
+// M001 Create_Table_User creates the "user" table.
 type M001_Create_Table_User struct{}
 
 func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
@@ -91,6 +94,7 @@ func (m M001_Create_Table_User) Down(pMigrator *migrations.Migrator) error {
 	return nil
 }
 
+// M002_Alter_Table_User_Add_Column_UpdatedAt adds the "updated_at" column to the "user" table.
 type M002_Alter_Table_User_Add_Column_UpdatedAt struct{}
 
 func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Up(pMigrator *migrations.Migrator) error {
@@ -131,5 +135,35 @@ func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Down(pMigrator *migrations.M
 	if lError != nil {
 		return lError
 	}
+	return nil
+}
+
+// M003_Bad_Migration_Fails_To_Apply is a migration that always fails to apply.
+type M003_Bad_Migration_Fails_To_Apply struct{}
+
+func (m M003_Bad_Migration_Fails_To_Apply) Up(pMigrator *migrations.Migrator) error {
+	return fmt.Errorf("intentionally failed to Up")
+}
+func (m M003_Bad_Migration_Fails_To_Apply) Down(pMigrator *migrations.Migrator) error {
+	return nil
+}
+
+// M004_Bad_Migration_Fails_To_Revert is a migration that always fails to revert.
+type M004_Bad_Migration_Fails_To_Revert struct{}
+
+func (m M004_Bad_Migration_Fails_To_Revert) Up(pMigrator *migrations.Migrator) error {
+	return nil
+}
+func (m M004_Bad_Migration_Fails_To_Revert) Down(pMigrator *migrations.Migrator) error {
+	return fmt.Errorf("intentionally failed to Down")
+}
+
+// M005_Blank_Migration is a migration that does nothing, always succeeding regardless of direction and database state.
+type M005_Blank_Migration struct{}
+
+func (m M005_Blank_Migration) Up(pMigrator *migrations.Migrator) error {
+	return nil
+}
+func (m M005_Blank_Migration) Down(pMigrator *migrations.Migrator) error {
 	return nil
 }
