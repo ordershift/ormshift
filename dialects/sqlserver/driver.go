@@ -33,7 +33,7 @@ func (d sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) str
 }
 
 func (d sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {
-	return sqlserverSQLBuilder{}
+	return newSQLServerBuilder()
 }
 
 func (d sqlserverDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {

@@ -34,7 +34,7 @@ func (d postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) st
 }
 
 func (d postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {
-	return postgresqlSQLBuilder{}
+	return newPostgreSQLBuilder()
 }
 
 func (d postgresqlDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {

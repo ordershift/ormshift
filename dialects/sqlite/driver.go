@@ -36,7 +36,7 @@ func (d sqliteDriver) ConnectionString(pParams ormshift.ConnectionParams) string
 }
 
 func (d sqliteDriver) SQLBuilder() ormshift.SQLBuilder {
-	return sqliteSQLBuilder{}
+	return newSQLiteBuilder()
 }
 
 func (d sqliteDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {

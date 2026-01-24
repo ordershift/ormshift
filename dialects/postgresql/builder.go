@@ -11,27 +11,33 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type postgresqlSQLBuilder struct {
-	generic *internal.GenericSQLBuilder
+type postgresqlBuilder struct {
+	generic ormshift.SQLBuilder
 }
 
-func (sb postgresqlSQLBuilder) CreateTable(pTable schema.Table) string {
-	return sb.withGeneric().CreateTable(pTable)
+func newPostgreSQLBuilder() ormshift.SQLBuilder {
+	lBuilder := postgresqlBuilder{}
+	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, lBuilder.InteroperateSQLCommandWithNamedArgs)
+	return lBuilder
 }
 
-func (sb postgresqlSQLBuilder) DropTable(pTableName schema.TableName) string {
-	return sb.withGeneric().DropTable(pTableName)
+func (sb postgresqlBuilder) CreateTable(pTable schema.Table) string {
+	return sb.generic.CreateTable(pTable)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
-	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
+func (sb postgresqlBuilder) DropTable(pTableName schema.TableName) string {
+	return sb.generic.DropTable(pTableName)
 }
 
-func (sb postgresqlSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
-	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
+func (sb postgresqlBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
+func (sb postgresqlBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
+}
+
+func (sb postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
 	case schema.Varchar:
 		return "VARCHAR"
@@ -52,7 +58,7 @@ func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType)
 	}
 }
 
-func (sb postgresqlSQLBuilder) columnDefinition(pColumn schema.Column) string {
+func (sb postgresqlBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := pColumn.Name().String()
 	if pColumn.AutoIncrement() {
 		lColumnDef += " BIGSERIAL"
@@ -69,43 +75,43 @@ func (sb postgresqlSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	return lColumnDef
 }
 
-func (sb postgresqlSQLBuilder) Insert(pTableName string, pColumns []string) string {
-	return sb.withGeneric().Insert(pTableName, pColumns)
+func (sb postgresqlBuilder) Insert(pTableName string, pColumns []string) string {
+	return sb.generic.Insert(pTableName, pColumns)
 }
 
-func (sb postgresqlSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().InsertWithValues(pTableName, pColumnsValues)
+func (sb postgresqlBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
 }
 
-func (sb postgresqlSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.withGeneric().Update(pTableName, pColumns, pColumnsWhere)
+func (sb postgresqlBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
+	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
+func (sb postgresqlBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
 }
 
-func (sb postgresqlSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	return sb.withGeneric().Delete(pTableName, pColumnsWhere)
+func (sb postgresqlBuilder) Delete(pTableName string, pColumnsWhere []string) string {
+	return sb.generic.Delete(pTableName, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().DeleteWithValues(pTableName, pWhereColumnsValues)
+func (sb postgresqlBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
 }
 
-func (sb postgresqlSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.withGeneric().Select(pTableName, pColumns, pColumnsWhere)
+func (sb postgresqlBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
+	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb postgresqlSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
+func (sb postgresqlBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
 }
 
-func (sb postgresqlSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	return sb.withGeneric().SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
+func (sb postgresqlBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
+	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
 }
 
-func (sb postgresqlSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+func (sb postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
 	lSQLCommand := pSQLCommand
 	lArgs := []any{}
 	lIndexes := map[string]int{}
@@ -131,12 +137,4 @@ func (sb postgresqlSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand s
 		return m
 	})
 	return lSQLCommand, lArgs
-}
-
-func (sb postgresqlSQLBuilder) withGeneric() internal.GenericSQLBuilder {
-	if sb.generic == nil {
-		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
-		sb.generic = &temp
-	}
-	return *sb.generic
 }

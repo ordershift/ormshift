@@ -135,7 +135,7 @@ func TestDriverConnectionString(t *testing.T) {
 func TestDriverSQLBuilder(t *testing.T) {
 	lDriver := testutils.NewFakeDriver(sqlite.Driver())
 	lSQLBuilder := lDriver.SQLBuilder()
-	testutils.AssertEqualWithLabel(t, "sqliteSQLBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
+	testutils.AssertEqualWithLabel(t, "sqliteBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
 }
 
 func TestDriverDBSchema(t *testing.T) {

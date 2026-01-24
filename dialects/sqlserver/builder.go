@@ -9,11 +9,17 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type sqlserverSQLBuilder struct {
-	generic *internal.GenericSQLBuilder
+type sqlserverBuilder struct {
+	generic ormshift.SQLBuilder
 }
 
-func (sb sqlserverSQLBuilder) CreateTable(pTable schema.Table) string {
+func newSQLServerBuilder() ormshift.SQLBuilder {
+	lBuilder := sqlserverBuilder{}
+	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, nil)
+	return lBuilder
+}
+
+func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	for _, lColumn := range pTable.Columns() {
@@ -39,19 +45,19 @@ func (sb sqlserverSQLBuilder) CreateTable(pTable schema.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
 }
 
-func (sb sqlserverSQLBuilder) DropTable(pTableName schema.TableName) string {
-	return sb.withGeneric().DropTable(pTableName)
+func (sb sqlserverBuilder) DropTable(pTableName schema.TableName) string {
+	return sb.generic.DropTable(pTableName)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
-	return sb.withGeneric().AlterTableAddColumn(pTableName, pColumn)
+func (sb sqlserverBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqlserverSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
-	return sb.withGeneric().AlterTableDropColumn(pTableName, pColumnName)
+func (sb sqlserverBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
+func (sb sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
 	case schema.Varchar:
 		return "VARCHAR"
@@ -72,7 +78,7 @@ func (sb sqlserverSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) 
 	}
 }
 
-func (sb sqlserverSQLBuilder) columnDefinition(pColumn schema.Column) string {
+func (sb sqlserverBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := pColumn.Name().String()
 	if pColumn.Type() == schema.Varchar {
 		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
@@ -88,39 +94,39 @@ func (sb sqlserverSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	return lColumnDef
 }
 
-func (sb sqlserverSQLBuilder) Insert(pTableName string, pColumns []string) string {
-	return sb.withGeneric().Insert(pTableName, pColumns)
+func (sb sqlserverBuilder) Insert(pTableName string, pColumns []string) string {
+	return sb.generic.Insert(pTableName, pColumns)
 }
 
-func (sb sqlserverSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().InsertWithValues(pTableName, pColumnsValues)
+func (sb sqlserverBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
 }
 
-func (sb sqlserverSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.withGeneric().Update(pTableName, pColumns, pColumnsWhere)
+func (sb sqlserverBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
+	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
+func (sb sqlserverBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
 }
 
-func (sb sqlserverSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	return sb.withGeneric().Delete(pTableName, pColumnsWhere)
+func (sb sqlserverBuilder) Delete(pTableName string, pColumnsWhere []string) string {
+	return sb.generic.Delete(pTableName, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().DeleteWithValues(pTableName, pWhereColumnsValues)
+func (sb sqlserverBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
 }
 
-func (sb sqlserverSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.withGeneric().Select(pTableName, pColumns, pColumnsWhere)
+func (sb sqlserverBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
+	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqlserverSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.withGeneric().SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
+func (sb sqlserverBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
 }
 
-func (sb sqlserverSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
+func (sb sqlserverBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
 	lSelectWithPagination := pSQLSelectCommand
 	if pRowsPerPage > 0 {
 		lOffSet := uint(0)
@@ -132,14 +138,6 @@ func (sb sqlserverSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRo
 	return lSelectWithPagination
 }
 
-func (sb sqlserverSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	return sb.withGeneric().InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
-}
-
-func (sb sqlserverSQLBuilder) withGeneric() internal.GenericSQLBuilder {
-	if sb.generic == nil {
-		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, nil)
-		sb.generic = &temp
-	}
-	return *sb.generic
+func (sb sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
 }
