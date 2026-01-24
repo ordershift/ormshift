@@ -4,11 +4,31 @@ import (
 	"testing"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/dialects/postgresql"
 	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
 	"github.com/ordershift/ormshift/migrations"
 	"github.com/ordershift/ormshift/schema"
 )
+
+func TestNewMigratorWhenDatabaseIsNil(t *testing.T) {
+	lMigrator, lError := migrations.NewMigrator(nil, migrations.NewMigratorConfig())
+	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[database=nil]")
+	testutils.AssertErrorMessage(t, "database cannot be nil", lError, "migrations.NewMigrator[database=nil]")
+}
+
+func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
+	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
+	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+	defer func() { _ = lDB.Close() }()
+
+	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
+	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[database=invalid]")
+	testutils.AssertErrorMessage(t, "failed to get applied migration names: missing \"=\" after \"invalid-connection-string\" in connection info string\"", lError, "migrations.NewMigrator[database=invalid]")
+}
 
 func TestRevertLatestMigration(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})

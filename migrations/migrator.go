@@ -20,14 +20,10 @@ func NewMigrator(pDatabase *ormshift.Database, pConfig MigratorConfig) (*Migrato
 	if pDatabase == nil {
 		return nil, fmt.Errorf("database cannot be nil")
 	}
-	lError := pDatabase.Validate()
-	if lError != nil {
-		return nil, fmt.Errorf("invalid database: %w", lError)
-	}
 
 	lAppliedMigrationNames, lError := getAppliedMigrationNames(*pDatabase, pConfig)
 	if lError != nil {
-		return nil, lError
+		return nil, fmt.Errorf("failed to get applied migration names: %w", lError)
 	}
 	lAppliedMigrations := make(map[string]bool, len(lAppliedMigrationNames))
 	for _, name := range lAppliedMigrationNames {

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/ordershift/ormshift"
-	"github.com/ordershift/ormshift/dialects/postgresql"
 	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/dialects/sqlserver"
 	"github.com/ordershift/ormshift/internal/testutils"
@@ -72,16 +71,6 @@ func TestClose(t *testing.T) {
 
 	lError = lDB.DB().Ping()
 	testutils.AssertErrorMessage(t, "sql: database is closed", lError, "Database.DB.Ping")
-}
-
-func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
-	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
-	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
-		return
-	}
-	lError = lDB.Validate()
-	testutils.AssertErrorMessage(t, "database ping failed: missing \"=\" after \"invalid-connection-string\" in connection info string\"", lError, "ormshift.OpenDatabase")
 }
 
 func TestConnectionStringWithNoParams(t *testing.T) {

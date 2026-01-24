@@ -79,7 +79,7 @@ func TestMigrateTwice(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 
-func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
+func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -95,5 +95,5 @@ func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "invalid database: database ping failed: sql: database is closed", lError, "migrations.Migrate")
+	testutils.AssertErrorMessage(t, "failed to get applied migration names: sql: database is closed", lError, "migrations.Migrate")
 }

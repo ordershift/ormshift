@@ -55,13 +55,6 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 	}, nil
 }
 
-func (d *Database) Validate() error {
-	if err := d.db.Ping(); err != nil {
-		return fmt.Errorf("database ping failed: %w", err)
-	}
-	return nil
-}
-
 func (d *Database) Close() error {
 	return d.db.Close()
 }
