@@ -13,7 +13,7 @@ type FakeDriver struct {
 	underlyingDriver ormshift.DatabaseDriver
 }
 
-func NewFakeDriver(underlyingDriver ormshift.DatabaseDriver) *FakeDriver {
+func NewFakeDriver(underlyingDriver ormshift.DatabaseDriver) ormshift.DatabaseDriver {
 	return &FakeDriver{
 		underlyingDriver: underlyingDriver,
 	}
@@ -36,7 +36,7 @@ type FakeDriverInvalidConnectionString struct {
 	underlyingDriver ormshift.DatabaseDriver
 }
 
-func NewFakeDriverInvalidConnectionString(underlyingDriver ormshift.DatabaseDriver) *FakeDriverInvalidConnectionString {
+func NewFakeDriverInvalidConnectionString(underlyingDriver ormshift.DatabaseDriver) ormshift.DatabaseDriver {
 	return &FakeDriverInvalidConnectionString{
 		underlyingDriver: underlyingDriver,
 	}
@@ -59,7 +59,7 @@ type FakeDriverBadSchema struct {
 	underlyingDriver ormshift.DatabaseDriver
 }
 
-func NewFakeDriverBadSchema(underlyingDriver ormshift.DatabaseDriver) *FakeDriverBadSchema {
+func NewFakeDriverBadSchema(underlyingDriver ormshift.DatabaseDriver) ormshift.DatabaseDriver {
 	return &FakeDriverBadSchema{
 		underlyingDriver: underlyingDriver,
 	}
@@ -82,7 +82,7 @@ type FakeDriverBadName struct {
 	underlyingDriver ormshift.DatabaseDriver
 }
 
-func NewFakeDriverBadName(underlyingDriver ormshift.DatabaseDriver) *FakeDriverBadName {
+func NewFakeDriverBadName(underlyingDriver ormshift.DatabaseDriver) ormshift.DatabaseDriver {
 	return &FakeDriverBadName{
 		underlyingDriver: underlyingDriver,
 	}
