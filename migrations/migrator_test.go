@@ -52,7 +52,7 @@ func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
 	testutils.AssertErrorMessage(t, "failed to record applied migration \"M005_Blank_Migration\": sql: database is closed", lError, "Migrator.ApplyAllMigrations")
 }
 
-func TestRevertLatestMigration(t *testing.T) {
+func TestRevertLastAppliedMigration(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -76,8 +76,8 @@ func TestRevertLatestMigration(t *testing.T) {
 	}
 	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
 
-	lError = lMigrator.RevertLatestMigration()
-	if !testutils.AssertNilError(t, lError, "Migrator.RevertLatestMigration") {
+	lError = lMigrator.RevertLastAppliedMigration()
+	if !testutils.AssertNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
 	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
@@ -87,7 +87,7 @@ func TestRevertLatestMigration(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, false, lDB.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
 }
 
-func TestRevertLatestMigrationFailsWhenDownFails(t *testing.T) {
+func TestRevertLastAppliedMigrationFailsWhenDownFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -104,14 +104,14 @@ func TestRevertLatestMigrationFailsWhenDownFails(t *testing.T) {
 		return
 	}
 
-	lError = lMigrator.RevertLatestMigration()
-	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLatestMigration") {
+	lError = lMigrator.RevertLastAppliedMigration()
+	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to revert migration \"M004_Bad_Migration_Fails_To_Revert\": intentionally failed to Down", lError, "Migrator.RevertLatestMigration")
+	testutils.AssertErrorMessage(t, "failed to revert migration \"M004_Bad_Migration_Fails_To_Revert\": intentionally failed to Down", lError, "Migrator.RevertLastAppliedMigration")
 }
 
-func TestRevertLatestMigrationFailsWhenDeletingFails(t *testing.T) {
+func TestRevertLastAppliedMigrationFailsWhenDeletingFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -131,9 +131,9 @@ func TestRevertLatestMigrationFailsWhenDeletingFails(t *testing.T) {
 
 	_ = lDB.Close()
 
-	lError = lMigrator.RevertLatestMigration()
-	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLatestMigration") {
+	lError = lMigrator.RevertLastAppliedMigration()
+	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to delete applied migration \"M005_Blank_Migration\": sql: database is closed", lError, "Migrator.RevertLatestMigration")
+	testutils.AssertErrorMessage(t, "failed to delete applied migration \"M005_Blank_Migration\": sql: database is closed", lError, "Migrator.RevertLastAppliedMigration")
 }

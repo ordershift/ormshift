@@ -60,7 +60,7 @@ func (m *Migrator) ApplyAllMigrations() error {
 	return nil
 }
 
-func (m *Migrator) RevertLatestMigration() error {
+func (m *Migrator) RevertLastAppliedMigration() error {
 	for i := len(m.migrations) - 1; i >= 0; i-- {
 		lMigration := m.migrations[i]
 		lMigrationName := reflect.TypeOf(lMigration).Name()
