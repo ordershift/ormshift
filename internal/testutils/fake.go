@@ -224,3 +224,7 @@ func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, namedArgs ...sq
 	}
 	return "command has been modified", lArgs
 }
+
+func FakeColumnDefinitionFunc(column schema.Column) string {
+	return "fake"
+}

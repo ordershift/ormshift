@@ -7,6 +7,7 @@ import (
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
 	"github.com/ordershift/ormshift/internal/testutils"
+	"github.com/ordershift/ormshift/schema"
 )
 
 func TestCreateTable(t *testing.T) {
@@ -146,4 +147,16 @@ func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.InteroperateSQLCommandWithNamedArgs.SQL")
 	testutils.AssertEqualWithLabel(t, 1, len(lReturnedNamedArgs), "SQLBuilder.InteroperateSQLCommandWithNamedArgs.NamedArgs")
 	testutils.AssertNamedArgEqualWithLabel(t, lReturnedNamedArgs[0], sql.NamedArg{Name: "param1", Value: 1}, "SQLBuilder.InteroperateSQLCommandWithNamedArgs.NamedArgs[0]")
+}
+
+func TestColumnDefinition(t *testing.T) {
+	lSQLBuilder := internal.NewGenericSQLBuilder(testutils.FakeColumnDefinitionFunc, nil)
+	lColumn, lError := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
+	testutils.AssertNilError(t, lError, "schema.NewColumn")
+
+	lTableName, lError := schema.NewTableName("test_table")
+	testutils.AssertNilError(t, lError, "schema.NewTableName")
+
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(*lTableName, *lColumn)
+	testutils.AssertEqualWithLabel(t, "ALTER TABLE test_table ADD COLUMN fake;", lReturnedSQL, "SQLBuilder.ColumnDefinition")
 }
