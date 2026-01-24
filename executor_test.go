@@ -40,7 +40,7 @@ func TestExecutor(t *testing.T) {
 		return
 	}
 
-	var lSQLExecutor ormshift.SQLExecutor = lDB.DB()
+	var lSQLExecutor ormshift.SQLExecutor = lDB.SQLExecutor()
 	lSQLBuilder := lDB.SQLBuilder()
 
 	//INSERT

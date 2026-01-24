@@ -28,6 +28,7 @@ type DatabaseDriver interface {
 type Database struct {
 	driver           DatabaseDriver
 	db               *sql.DB
+	executor         SQLExecutor
 	connectionString string
 	sqlBuilder       SQLBuilder
 	schema           schema.DBSchema
@@ -49,6 +50,7 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 	return &Database{
 		driver:           pDriver,
 		db:               lDB,
+		executor:         lDB,
 		connectionString: lConnectionString,
 		sqlBuilder:       pDriver.SQLBuilder(),
 		schema:           *lSchema,
@@ -61,6 +63,10 @@ func (d *Database) Close() error {
 
 func (d *Database) DB() *sql.DB {
 	return d.db
+}
+
+func (d *Database) SQLExecutor() SQLExecutor {
+	return d.executor
 }
 
 func (d *Database) DriverName() string {

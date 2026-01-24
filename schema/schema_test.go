@@ -43,7 +43,7 @@ func TestExistsTableColumn(t *testing.T) {
 		return
 	}
 
-	_, lError = lDB.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
@@ -80,7 +80,7 @@ func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 		return
 	}
 
-	_, lError = lDB.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		_ = lDB.Close()
 		return
