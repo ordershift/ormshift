@@ -8,7 +8,7 @@ import (
 )
 
 func TestColumn(t *testing.T) {
-	lColumn, lError := schema.NewColumn(schema.NewColumnParams{Name: "id", Type: schema.Integer, NotNull: true, PrimaryKey: true, Autoincrement: true})
+	lColumn, lError := schema.NewColumn(schema.NewColumnParams{Name: "id", Type: schema.Integer, NotNull: true, PrimaryKey: true, AutoIncrement: true})
 	if !testutils.AssertNilError(t, lError, "schema.NewColumn") {
 		return
 	}
@@ -17,5 +17,5 @@ func TestColumn(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, uint(0), lColumn.Size(), "Column.Size")
 	testutils.AssertEqualWithLabel(t, true, lColumn.PrimaryKey(), "Column.IsPrimaryKey")
 	testutils.AssertEqualWithLabel(t, true, lColumn.NotNull(), "Column.IsNotNull")
-	testutils.AssertEqualWithLabel(t, true, lColumn.Autoincrement(), "Column.IsAutoincrement")
+	testutils.AssertEqualWithLabel(t, true, lColumn.AutoIncrement(), "Column.IsAutoIncrement")
 }

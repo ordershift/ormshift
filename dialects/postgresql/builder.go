@@ -54,7 +54,7 @@ func (sb postgresqlSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType)
 
 func (sb postgresqlSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	lColumnDef := pColumn.Name().String()
-	if pColumn.Autoincrement() {
+	if pColumn.AutoIncrement() {
 		lColumnDef += " BIGSERIAL"
 	} else {
 		if pColumn.Type() == schema.Varchar {

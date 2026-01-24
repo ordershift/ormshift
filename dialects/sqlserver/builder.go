@@ -82,7 +82,7 @@ func (sb sqlserverSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"
 	}
-	if pColumn.Autoincrement() {
+	if pColumn.AutoIncrement() {
 		lColumnDef += " IDENTITY (1, 1)"
 	}
 	return lColumnDef

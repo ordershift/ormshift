@@ -40,7 +40,7 @@ type NewColumnParams struct {
 	Size          uint
 	PrimaryKey    bool
 	NotNull       bool
-	Autoincrement bool
+	AutoIncrement bool
 }
 
 type Column struct {
@@ -63,7 +63,7 @@ func NewColumn(pParams NewColumnParams) (*Column, error) {
 		size:       pParams.Size,
 		pk:         pParams.PrimaryKey,
 		notNull:    pParams.NotNull,
-		autoInc:    pParams.Autoincrement,
+		autoInc:    pParams.AutoIncrement,
 	}, nil
 }
 
@@ -87,6 +87,6 @@ func (c Column) NotNull() bool {
 	return c.notNull
 }
 
-func (c Column) Autoincrement() bool {
+func (c Column) AutoIncrement() bool {
 	return c.autoInc
 }

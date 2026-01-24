@@ -19,7 +19,7 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 		{
 			Name:          "id",
 			Type:          schema.Integer,
-			Autoincrement: true,
+			AutoIncrement: true,
 			PrimaryKey:    true,
 			NotNull:       true,
 		},

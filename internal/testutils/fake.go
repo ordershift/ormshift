@@ -16,7 +16,7 @@ func FakeProductAttributeTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
@@ -26,7 +26,7 @@ func FakeProductAttributeTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
@@ -37,7 +37,7 @@ func FakeProductAttributeTable(t *testing.T) *schema.Table {
 		Size:          75,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
@@ -47,7 +47,7 @@ func FakeProductAttributeTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumn") {
 		return nil
@@ -65,7 +65,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    true,
 		NotNull:       true,
-		Autoincrement: true,
+		AutoIncrement: true,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -76,7 +76,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Size:          80,
 		PrimaryKey:    true,
 		NotNull:       true,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -87,7 +87,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Size:          50,
 		PrimaryKey:    false,
 		NotNull:       true,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -98,7 +98,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Size:          256,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -108,7 +108,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Boolean,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -118,7 +118,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.DateTime,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -128,7 +128,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -138,7 +138,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Integer,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -148,7 +148,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Monetary,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -158,7 +158,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Decimal,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -168,7 +168,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.Binary,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -178,7 +178,7 @@ func FakeUserTable(t *testing.T) *schema.Table {
 		Type:          schema.ColumnType(-1),
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNilError(t, lError, "UserTable.AddColumn") {
 		return nil
@@ -200,7 +200,7 @@ func FakeUpdatedAtColumn(t *testing.T) *schema.Column {
 		Type:          schema.DateTime,
 		PrimaryKey:    false,
 		NotNull:       false,
-		Autoincrement: false,
+		AutoIncrement: false,
 	})
 	if !AssertNotNilResultAndNilError(t, lUpdatedAtColumn, lError, "schema.NewColumn") {
 		return nil

@@ -31,7 +31,7 @@ func (sb sqliteSQLBuilder) CreateTable(pTable schema.Table) string {
 		}
 
 		if !lHasAutoIncrementColumn {
-			lHasAutoIncrementColumn = lColumn.Autoincrement()
+			lHasAutoIncrementColumn = lColumn.AutoIncrement()
 		}
 	}
 
@@ -82,7 +82,7 @@ func (sb sqliteSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"
 	}
-	if pColumn.Autoincrement() {
+	if pColumn.AutoIncrement() {
 		lColumnDef += " PRIMARY KEY AUTOINCREMENT"
 	}
 	return lColumnDef
