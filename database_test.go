@@ -10,7 +10,7 @@ import (
 )
 
 func TestOpenDatabase(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(&sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -35,7 +35,7 @@ func TestOpenDatabaseWithNilDriver(t *testing.T) {
 }
 
 func TestOpenDatabaseWithBadDriver(t *testing.T) {
-	lDriver := testutils.NewFakeDriverBadName(&sqlite.SQLiteDriver{})
+	lDriver := testutils.NewFakeDriverBadName(sqlite.SQLiteDriver{})
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNilResultAndNotNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -44,7 +44,7 @@ func TestOpenDatabaseWithBadDriver(t *testing.T) {
 }
 
 func TestOpenDatabaseWithBadSchema(t *testing.T) {
-	lDriver := testutils.NewFakeDriverBadSchema(&sqlite.SQLiteDriver{})
+	lDriver := testutils.NewFakeDriverBadSchema(sqlite.SQLiteDriver{})
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNilResultAndNotNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -53,7 +53,7 @@ func TestOpenDatabaseWithBadSchema(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(&sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
@@ -72,7 +72,7 @@ func TestClose(t *testing.T) {
 }
 
 func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
-	lDriver := testutils.NewFakeDriverInvalidConnectionString(&postgresql.PostgreSQLDriver{})
+	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.PostgreSQLDriver{})
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
@@ -82,9 +82,8 @@ func TestValidateFailsWithInvalidConnectionString(t *testing.T) {
 }
 
 func TestConnectionStringWithNoParams(t *testing.T) {
-	lDriver := sqlite.SQLiteDriver{}
 	lConnectionParams := ormshift.ConnectionParams{InMemory: true}
-	lDB, lError := ormshift.OpenDatabase(&lDriver, lConnectionParams)
+	lDB, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, lConnectionParams)
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
