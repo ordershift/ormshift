@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"database/sql"
 	"strings"
 	"testing"
 )
@@ -60,10 +61,6 @@ func AssertNotNilError(t *testing.T, pError error, pFunctionName string) bool {
 	return false
 }
 
-// func AssertEqual[T comparable](t *testing.T, pExpected, pReturned T) bool {
-// 	return AssertEqualWithLabel(t, pExpected, pReturned, "")
-// }
-
 func AssertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pLabel string) bool {
 	if pExpected == pReturned {
 		return true
@@ -75,17 +72,18 @@ func AssertEqualWithLabel[T comparable](t *testing.T, pExpected, pReturned T, pL
 	return false
 }
 
-// func AssertNotEqual[T comparable](t *testing.T, pNotExpected, pReturned T) bool {
-// 	return AssertNotEqualWithLabel(t, pNotExpected, pReturned, "")
-// }
+func AssertNamedArgEqualWithLabel(t *testing.T, pExpected any, pReturned sql.NamedArg, pLabel string) bool {
+	if pExpected == pReturned {
+		return true
+	}
+	pExpectedNamedArg := pExpected.(sql.NamedArg)
+	if pExpectedNamedArg.Name == pReturned.Name && pExpectedNamedArg.Value == pReturned.Value {
+		return true
+	}
 
-// func AssertNotEqualWithLabel[T comparable](t *testing.T, pNotExpected, pReturned T, pLabel string) bool {
-// 	if pNotExpected != pReturned {
-// 		return true
-// 	}
-// 	if pLabel != "" && !strings.HasSuffix(pLabel, ": ") {
-// 		pLabel += ": "
-// 	}
-// 	t.Errorf("%s[%v] was not expected", pLabel, pReturned)
-// 	return false
-// }
+	if pLabel != "" && !strings.HasSuffix(pLabel, ": ") {
+		pLabel += ": "
+	}
+	t.Errorf("%sexpected [%v], but returned [%v]", pLabel, pExpected, pReturned)
+	return false
+}
