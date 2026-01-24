@@ -23,15 +23,15 @@ type userRow struct {
 }
 
 func TestExecutor(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
 	lMigrationManager, lError := migrations.Migrate(
-		lDatabase,
+		lDB,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -40,8 +40,8 @@ func TestExecutor(t *testing.T) {
 		return
 	}
 
-	var lSQLExecutor ormshift.SQLExecutor = lDatabase.DB()
-	lSQLBuilder := lDatabase.SQLBuilder()
+	var lSQLExecutor ormshift.SQLExecutor = lDB.DB()
+	lSQLBuilder := lDB.SQLBuilder()
 
 	//INSERT
 	lValues := ormshift.ColumnsValues{

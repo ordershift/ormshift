@@ -31,19 +31,19 @@ func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
 }
 
 func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
 
-	lMigrator, lError := migrations.NewMigrator(lDatabase, migrations.NewMigratorConfig())
+	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
 		return
 	}
 	lMigrator.Add(testutils.M005_Blank_Migration{})
 
-	_ = lDatabase.Close()
+	_ = lDB.Close()
 
 	lError = lMigrator.ApplyAllMigrations()
 	if !testutils.AssertNotNilError(t, lError, "Migrator.ApplyAllMigrations") {
@@ -53,15 +53,15 @@ func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
 }
 
 func TestRevertLatestMigration(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
-		lDatabase,
+		lDB,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
@@ -74,7 +74,7 @@ func TestRevertLatestMigration(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lDatabase.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
 
 	lError = lMigrator.RevertLatestMigration()
 	if !testutils.AssertNilError(t, lError, "Migrator.RevertLatestMigration") {
@@ -84,19 +84,19 @@ func TestRevertLatestMigration(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, false, lDatabase.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, false, lDB.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
 }
 
 func TestRevertLatestMigrationFailsWhenDownFails(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
 	lMigrator, lError := migrations.Migrate(
-		lDatabase,
+		lDB,
 		migrations.NewMigratorConfig(),
 		testutils.M004_Bad_Migration_Fails_To_Revert{},
 	)
@@ -112,14 +112,14 @@ func TestRevertLatestMigrationFailsWhenDownFails(t *testing.T) {
 }
 
 func TestRevertLatestMigrationFailsWhenDeletingFails(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDatabase, migrations.NewMigratorConfig())
+	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
 		return
 	}
@@ -129,7 +129,7 @@ func TestRevertLatestMigrationFailsWhenDeletingFails(t *testing.T) {
 		return
 	}
 
-	_ = lDatabase.Close()
+	_ = lDB.Close()
 
 	lError = lMigrator.RevertLatestMigration()
 	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLatestMigration") {

@@ -31,24 +31,24 @@ func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
 }
 
 func TestExistsTableColumn(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
 		return
 	}
 
-	_, lError = lDatabase.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
 
-	lDBSchema := lDatabase.DBSchema()
+	lDBSchema := lDB.DBSchema()
 	testutils.AssertEqualWithLabel(t, true, lDBSchema.ExistsTable(lProductAttributeTable.Name()), "DBSchema.ExistsTable")
 	for _, lColumn := range lProductAttributeTable.Columns() {
 		testutils.AssertEqualWithLabel(t, true, lDBSchema.ExistsTableColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.ExistsTableColumn")
@@ -67,25 +67,25 @@ func TestExistsTableColumn(t *testing.T) {
 }
 
 func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
 		return
 	}
-	defer func() { _ = lDatabase.Close() }()
+	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
-		_ = lDatabase.Close()
+		_ = lDB.Close()
 		return
 	}
 
-	_, lError = lDatabase.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.DB().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
-		_ = lDatabase.Close()
+		_ = lDB.Close()
 		return
 	}
-	_ = lDatabase.Close()
-	lDBSchema := lDatabase.DBSchema()
+	_ = lDB.Close()
+	lDBSchema := lDB.DBSchema()
 	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTable(lProductAttributeTable.Name()), "DBSchema.ExistsTable")
 }
