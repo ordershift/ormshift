@@ -92,20 +92,25 @@ func TestConnectionStringWithNoParams(t *testing.T) {
 	}
 	defer func() { _ = lDB.Close() }()
 
-	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
+	lExpectedConnectionString := ":memory:"
+	lReturnedConnectionString := lDB.ConnectionString()
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "Database.ConnectionString")
 
 	// Connection string should not be modified if the connection params is changed
 	lConnectionParams.InMemory = false
-	testutils.AssertEqualWithLabel(t, ":memory:", lDB.ConnectionString(), "Database.ConnectionString")
+	lReturnedConnectionString = lDB.ConnectionString()
+	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "Database.ConnectionString")
 }
 
 func TestDriverName(t *testing.T) {
-	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	var lDriver ormshift.DatabaseDriver
+	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	testutils.AssertEqualWithLabel(t, "sqlite", lDriver.Name(), "FakeDriver.Name")
 }
 
 func TestDriverConnectionString(t *testing.T) {
-	lDriver := testutils.NewFakeDriver(sqlserver.SQLServerDriver{})
+	var lDriver ormshift.DatabaseDriver
+	lDriver = testutils.NewFakeDriver(sqlserver.SQLServerDriver{})
 	lConnectionParams := ormshift.ConnectionParams{
 		Host:     "localhost",
 		Port:     1433,
@@ -130,13 +135,15 @@ func TestDriverConnectionString(t *testing.T) {
 }
 
 func TestDriverSQLBuilder(t *testing.T) {
-	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	var lDriver ormshift.DatabaseDriver
+	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	lSQLBuilder := lDriver.SQLBuilder()
 	testutils.AssertEqualWithLabel(t, "sqliteSQLBuilder", reflect.TypeOf(lSQLBuilder).Name(), "FakeDriver.SQLBuilder")
 }
 
 func TestDriverDBSchema(t *testing.T) {
-	lDriver := testutils.NewFakeDriver(sqlite.SQLiteDriver{})
+	var lDriver ormshift.DatabaseDriver
+	lDriver = testutils.NewFakeDriver(sqlite.SQLiteDriver{})
 	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
 		return
