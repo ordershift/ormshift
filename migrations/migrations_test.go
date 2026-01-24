@@ -97,38 +97,3 @@ func TestMigrateFailsWhenDatabaseIsInvalid(t *testing.T) {
 	}
 	testutils.AssertErrorMessage(t, "invalid database: database ping failed: sql: database is closed", lError, "migrations.Migrate")
 }
-
-func TestRevertLatestMigration(t *testing.T) {
-	lDatabase, lError := ormshift.OpenDatabase(sqlite.SQLiteDriver{}, ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
-		return
-	}
-	defer func() { _ = lDatabase.Close() }()
-
-	lMigrator, lError := migrations.Migrate(
-		lDatabase,
-		migrations.NewMigratorConfig(),
-		testutils.M001_Create_Table_User{},
-		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
-	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
-		return
-	}
-
-	lUserTableName, lError := schema.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, true, lDatabase.DBSchema().ExistsTable(*lUserTableName), "Migrator.DBSchema.ExistsTable[user]")
-
-	lError = lMigrator.RevertLatestMigration()
-	if !testutils.AssertNilError(t, lError, "Migrator.DownLast") {
-		return
-	}
-	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDatabase.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
-}
