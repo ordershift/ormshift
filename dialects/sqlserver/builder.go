@@ -138,7 +138,7 @@ func (sb sqlserverSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand st
 
 func (sb sqlserverSQLBuilder) withGeneric() internal.GenericSQLBuilder {
 	if sb.generic == nil {
-		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, sb.InteroperateSQLCommandWithNamedArgs)
+		temp := internal.NewGenericSQLBuilder(sb.columnDefinition, nil)
 		sb.generic = &temp
 	}
 	return *sb.generic
