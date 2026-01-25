@@ -174,7 +174,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 			{
 				Name:       pConfig.migrationNameColumn,
 				Type:       schema.Varchar,
-				Size:       pConfig.maxMigrationNameLength,
+				Size:       pConfig.migrationNameMaxLength,
 				PrimaryKey: true,
 				NotNull:    true,
 			},
