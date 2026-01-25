@@ -334,11 +334,10 @@ When applying migrations with the `migrations.Migrate()` function, a `MigratorCo
 To change any of these defaults, use the provided functions to change the values, for example:
 
 ```go
-config := migrations.NewMigratorConfig(
-	migrations.WithTableName("custom_migrations"),
-	migrations.WithColumnNames("migration_name", "applied_on"),
-	migrations.WithMigrationNameMaxLength(500),
-)
+config := migrations.NewMigratorConfig().
+	WithTableName("custom_migrations").
+	WithColumnNames("migration_name", "applied_on").
+	WithMigrationNameMaxLength(500)
 
 migrator, err := migrations.Migrate(
 	db,
