@@ -9,6 +9,7 @@ import (
 
 func TestNewMigratorConfigDefaults(t *testing.T) {
 	lConfig := migrations.NewMigratorConfig()
+
 	testutils.AssertEqualWithLabel(t, "__ormshift_migrations", lConfig.TableName(), "MigratorConfig.TableName")
 	testutils.AssertEqualWithLabel(t, "name", lConfig.MigrationNameColumn(), "MigratorConfig.MigrationNameColumn")
 	testutils.AssertEqualWithLabel(t, "applied_at", lConfig.AppliedAtColumn(), "MigratorConfig.AppliedAtColumn")
@@ -16,11 +17,11 @@ func TestNewMigratorConfigDefaults(t *testing.T) {
 }
 
 func TestNewMigratorConfigCustom(t *testing.T) {
-	lConfig := migrations.NewMigratorConfig(
-		migrations.WithTableName("custom_migrations"),
-		migrations.WithColumnNames("migration_name", "applied_on"),
-		migrations.WithMigrationNameMaxLength(500),
-	)
+	lConfig := migrations.NewMigratorConfig().
+		WithTableName("custom_migrations").
+		WithColumnNames("migration_name", "applied_on").
+		WithMigrationNameMaxLength(500)
+
 	testutils.AssertEqualWithLabel(t, "custom_migrations", lConfig.TableName(), "MigratorConfig.TableName")
 	testutils.AssertEqualWithLabel(t, "migration_name", lConfig.MigrationNameColumn(), "MigratorConfig.MigrationNameColumn")
 	testutils.AssertEqualWithLabel(t, "applied_on", lConfig.AppliedAtColumn(), "MigratorConfig.AppliedAtColumn")
