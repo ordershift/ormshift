@@ -1,8 +1,0 @@
-package ormshift
-
-import "database/sql"
-
-type SQLExecutor interface {
-	Exec(query string, args ...any) (sql.Result, error)
-	Query(query string, args ...any) (*sql.Rows, error)
-}
