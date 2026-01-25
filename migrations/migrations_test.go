@@ -35,7 +35,7 @@ func TestMigrate(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrationNames)")
 }
 
@@ -75,7 +75,7 @@ func TestMigrateTwice(t *testing.T) {
 	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.ExistsTableColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 

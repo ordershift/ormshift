@@ -169,7 +169,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 	if lError != nil {
 		return lError
 	}
-	if !pDatabase.DBSchema().ExistsTable(lMigrationsTable.Name()) {
+	if !pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
 		columns := []schema.NewColumnParams{
 			{
 				Name:       pConfig.migrationNameColumn,

@@ -19,7 +19,7 @@ func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
 	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
 }
 
-func (s DBSchema) ExistsTable(pTableName TableName) bool {
+func (s DBSchema) HasTable(pTableName TableName) bool {
 	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
@@ -55,7 +55,7 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	return lTableNames, lError
 }
 
-func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName) bool {
+func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
 		return false
