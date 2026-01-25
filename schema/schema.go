@@ -55,31 +55,21 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	return lTableNames, lError
 }
 
-func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
+func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
-		return nil, lError
+		return false
 	}
 	for _, lColumnType := range lColumnTypes {
 		if lColumnType.Name() == pColumnName.String() {
-			return lColumnType, nil
+			return true
 		}
 	}
-	return nil, fmt.Errorf("column %q not found in table %q", pColumnName.String(), pTableName.String())
-}
-
-func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName) bool {
-	_, lError := s.CheckTableColumnType(pTableName, pColumnName)
-	return lError == nil
+	return false
 }
 
 func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
-	lTableName := pTableName.String()
-	if !regexValidTableName.MatchString(lTableName) {
-		return nil, fmt.Errorf("invalid table name: %q", lTableName)
-	}
-
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", lTableName)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	if lError != nil {
 		return nil, lError
 	}
