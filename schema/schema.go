@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
+	"slices"
 )
 
 type DBSchema struct {
@@ -24,13 +24,7 @@ func (s DBSchema) HasTable(pTableName TableName) bool {
 	if lError != nil {
 		return false
 	}
-	for _, lTable := range lTables {
-		lUpperTableName := strings.ToUpper(lTable)
-		if lUpperTableName == strings.ToUpper(pTableName.String()) {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(lTables, pTableName.String())
 }
 
 func (s DBSchema) fetchTableNames() ([]string, error) {
