@@ -28,6 +28,7 @@
 			- [Example migrations](#example-migrations)
 			- [Applying and reverting migrations](#applying-and-reverting-migrations)
 			- [Migrator configurations](#migrator-configurations)
+	- [License](#license)
 
 ## About ormshift
 
@@ -349,3 +350,7 @@ if err != nil {
 	// handle error
 }
 ```
+
+## License
+
+[Apache-2.0](./LICENSE)
