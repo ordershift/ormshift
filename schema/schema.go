@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 )
 
 type DBSchema struct {
@@ -24,7 +25,9 @@ func (s DBSchema) HasTable(pTableName TableName) bool {
 	if lError != nil {
 		return false
 	}
-	return slices.Contains(lTables, pTableName.String())
+	return slices.ContainsFunc(lTables, func(t string) bool {
+		return strings.EqualFold(t, pTableName.String())
+	})
 }
 
 func (s DBSchema) fetchTableNames() ([]string, error) {
@@ -54,12 +57,9 @@ func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
 	if lError != nil {
 		return false
 	}
-	for _, lColumnType := range lColumnTypes {
-		if lColumnType.Name() == pColumnName.String() {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
+		return strings.EqualFold(ct.Name(), pColumnName.String())
+	})
 }
 
 func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
