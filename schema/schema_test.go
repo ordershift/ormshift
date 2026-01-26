@@ -30,7 +30,7 @@ func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
 	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "schema.NewDBSchema")
 }
 
-func TestExistsTableColumn(t *testing.T) {
+func TestHasColumn(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -49,24 +49,24 @@ func TestExistsTableColumn(t *testing.T) {
 	}
 
 	lDBSchema := lDB.DBSchema()
-	testutils.AssertEqualWithLabel(t, true, lDBSchema.ExistsTable(lProductAttributeTable.Name()), "DBSchema.ExistsTable")
+	testutils.AssertEqualWithLabel(t, true, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
 	for _, lColumn := range lProductAttributeTable.Columns() {
-		testutils.AssertEqualWithLabel(t, true, lDBSchema.ExistsTableColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.ExistsTableColumn")
+		testutils.AssertEqualWithLabel(t, true, lDBSchema.HasColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.HasColumn")
 	}
 	lAnyTableName, lError := schema.NewTableName("any_table")
 	if !testutils.AssertNotNilResultAndNilError(t, lAnyTableName, lError, "ormshift.NewTableName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTable(*lAnyTableName), "DBSchema.ExistsTable")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(*lAnyTableName), "DBSchema.HasTable")
 	lAnyColumnName, lError := schema.NewColumnName("any_col")
 	if !testutils.AssertNotNilResultAndNilError(t, lAnyColumnName, lError, "ormshift.NewTableName") {
 		return
 	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTableColumn(lProductAttributeTable.Name(), *lAnyColumnName), "DBSchema.ExistsTableColumn")
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTableColumn(*lAnyTableName, *lAnyColumnName), "DBSchema.ExistsTableColumn")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), *lAnyColumnName), "DBSchema.HasColumn")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(*lAnyTableName, *lAnyColumnName), "DBSchema.HasColumn")
 }
 
-func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
+func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if lError != nil {
 		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
@@ -87,5 +87,5 @@ func TestExistsTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	}
 	_ = lDB.Close()
 	lDBSchema := lDB.DBSchema()
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.ExistsTable(lProductAttributeTable.Name()), "DBSchema.ExistsTable")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
 }

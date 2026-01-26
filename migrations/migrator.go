@@ -113,7 +113,7 @@ func (m Migrator) recordAppliedMigration(pMigrationName string) error {
 			m.config.appliedAtColumn:     time.Now().UTC(),
 		},
 	)
-	_, lError := m.database.DB().Exec(q, p...)
+	_, lError := m.database.SQLExecutor().Exec(q, p...)
 	return lError
 }
 
@@ -124,7 +124,7 @@ func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
 			m.config.migrationNameColumn: pMigrationName,
 		},
 	)
-	_, lError := m.database.DB().Exec(q, p...)
+	_, lError := m.database.SQLExecutor().Exec(q, p...)
 	return lError
 }
 
@@ -144,7 +144,7 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 			pConfig.migrationNameColumn,
 		),
 	)
-	lMigrationsRows, lError := pDatabase.DB().Query(q, p...)
+	lMigrationsRows, lError := pDatabase.SQLExecutor().Query(q, p...)
 	if lError != nil {
 		return nil, lError
 	}
@@ -169,7 +169,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 	if lError != nil {
 		return lError
 	}
-	if !pDatabase.DBSchema().ExistsTable(lMigrationsTable.Name()) {
+	if !pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
 		columns := []schema.NewColumnParams{
 			{
 				Name:       pConfig.migrationNameColumn,
@@ -191,7 +191,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 			}
 		}
 
-		_, lError = pDatabase.DB().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+		_, lError = pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	}
 	return lError
 }

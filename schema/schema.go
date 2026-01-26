@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -19,18 +20,14 @@ func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
 	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
 }
 
-func (s DBSchema) ExistsTable(pTableName TableName) bool {
+func (s DBSchema) HasTable(pTableName TableName) bool {
 	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
 	}
-	for _, lTable := range lTables {
-		lUpperTableName := strings.ToUpper(lTable)
-		if lUpperTableName == strings.ToUpper(pTableName.String()) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(lTables, func(t string) bool {
+		return strings.EqualFold(t, pTableName.String())
+	})
 }
 
 func (s DBSchema) fetchTableNames() ([]string, error) {
@@ -55,31 +52,18 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	return lTableNames, lError
 }
 
-func (s DBSchema) CheckTableColumnType(pTableName TableName, pColumnName ColumnName) (*sql.ColumnType, error) {
+func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
-		return nil, lError
+		return false
 	}
-	for _, lColumnType := range lColumnTypes {
-		if lColumnType.Name() == pColumnName.String() {
-			return lColumnType, nil
-		}
-	}
-	return nil, fmt.Errorf("column %q not found in table %q", pColumnName.String(), pTableName.String())
-}
-
-func (s DBSchema) ExistsTableColumn(pTableName TableName, pColumnName ColumnName) bool {
-	_, lError := s.CheckTableColumnType(pTableName, pColumnName)
-	return lError == nil
+	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
+		return strings.EqualFold(ct.Name(), pColumnName.String())
+	})
 }
 
 func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
-	lTableName := pTableName.String()
-	if !regexValidTableName.MatchString(lTableName) {
-		return nil, fmt.Errorf("invalid table name: %q", lTableName)
-	}
-
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", lTableName)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	if lError != nil {
 		return nil, lError
 	}

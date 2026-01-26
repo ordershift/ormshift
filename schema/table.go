@@ -45,9 +45,8 @@ func (t *Table) AddColumn(pParams NewColumnParams) error {
 	if lError != nil {
 		return lError
 	}
-	lLowerColumnName := strings.ToLower(lColumn.Name().String())
 	lColumnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
-		return lLowerColumnName == strings.ToLower(c.Name().String())
+		return strings.EqualFold(lColumn.Name().String(), c.Name().String())
 	})
 	if lColumnAlreadyExists {
 		return fmt.Errorf("column %q already exists in table %q", lColumn.Name().String(), t.name)

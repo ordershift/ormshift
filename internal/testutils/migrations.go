@@ -15,7 +15,7 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 	if lError != nil {
 		return lError
 	}
-	if pMigrator.Database().DBSchema().ExistsTable(lUserTable.Name()) {
+	if pMigrator.Database().DBSchema().HasTable(lUserTable.Name()) {
 		return nil
 	}
 	columns := []schema.NewColumnParams{
@@ -72,7 +72,7 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 		}
 	}
 
-	_, lError = pMigrator.Database().DB().Exec(pMigrator.Database().SQLBuilder().CreateTable(*lUserTable))
+	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().CreateTable(*lUserTable))
 	if lError != nil {
 		return lError
 	}
@@ -84,10 +84,10 @@ func (m M001_Create_Table_User) Down(pMigrator *migrations.Migrator) error {
 	if lError != nil {
 		return lError
 	}
-	if !pMigrator.Database().DBSchema().ExistsTable(*lUserTableName) {
+	if !pMigrator.Database().DBSchema().HasTable(*lUserTableName) {
 		return nil
 	}
-	_, lError = pMigrator.Database().DB().Exec(pMigrator.Database().SQLBuilder().DropTable(*lUserTableName))
+	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().DropTable(*lUserTableName))
 	if lError != nil {
 		return lError
 	}
@@ -109,10 +109,10 @@ func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Up(pMigrator *migrations.Mig
 	if lError != nil {
 		return lError
 	}
-	if pMigrator.Database().DBSchema().ExistsTableColumn(*lUserTableName, lUpdatedAtColumn.Name()) {
+	if pMigrator.Database().DBSchema().HasColumn(*lUserTableName, lUpdatedAtColumn.Name()) {
 		return nil
 	}
-	_, lError = pMigrator.Database().DB().Exec(pMigrator.Database().SQLBuilder().AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn))
+	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn))
 	if lError != nil {
 		return lError
 	}
@@ -128,10 +128,10 @@ func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Down(pMigrator *migrations.M
 	if lError != nil {
 		return lError
 	}
-	if !pMigrator.Database().DBSchema().ExistsTableColumn(*lUserTableName, *lUpdatedAtColumnName) {
+	if !pMigrator.Database().DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName) {
 		return nil
 	}
-	_, lError = pMigrator.Database().DB().Exec(pMigrator.Database().SQLBuilder().AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName))
+	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName))
 	if lError != nil {
 		return lError
 	}

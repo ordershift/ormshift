@@ -214,7 +214,7 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	if db.DBSchema().ExistsTable(table.Name()) {
+	if db.DBSchema().HasTable(table.Name()) {
 		// if the table already exists, nothing to do here
 		return nil
 	}
@@ -239,7 +239,7 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 func (m M0001CreateUserTable) Down(migrator *migrations.Migrator) error {
 	db := migrator.Database()
 	tableName, _ := schema.NewTableName("user")
-	if !db.DBSchema().ExistsTable(*tableName) {
+	if !db.DBSchema().HasTable(*tableName) {
 		// if the table already doesn't exist, nothing to do here
 		return nil
 	}
@@ -266,7 +266,7 @@ func (m M0002AddUpdatedAtColumn) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	if db.DBSchema().ExistsTableColumn(*tableName, col.Name()) {
+	if db.DBSchema().HasColumn(*tableName, col.Name()) {
 		// if the column already exists, nothing to do here
 		return nil
 	}
@@ -287,7 +287,7 @@ func (m M0002AddUpdatedAtColumn) Down(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	if !db.DBSchema().ExistsTableColumn(*tableName, *colName) {
+	if !db.DBSchema().HasColumn(*tableName, *colName) {
 		// if the column already doesn't exist, nothing to do here
 		return nil
 	}
@@ -334,11 +334,10 @@ When applying migrations with the `migrations.Migrate()` function, a `MigratorCo
 To change any of these defaults, use the provided functions to change the values, for example:
 
 ```go
-config := migrations.NewMigratorConfig(
-	migrations.WithTableName("custom_migrations"),
-	migrations.WithColumnNames("migration_name", "applied_on"),
-	migrations.WithMigrationNameMaxLength(500),
-)
+config := migrations.NewMigratorConfig().
+	WithTableName("custom_migrations").
+	WithColumnNames("migration_name", "applied_on").
+	WithMigrationNameMaxLength(500)
 
 migrator, err := migrations.Migrate(
 	db,
