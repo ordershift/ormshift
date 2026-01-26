@@ -74,16 +74,18 @@ func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
-		_ = lDB.Close()
 		return
 	}
 
 	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
-		_ = lDB.Close()
 		return
 	}
-	_ = lDB.Close()
+
+	lError = lDB.Close()
+	if !testutils.AssertNilError(t, lError, "DB.Close") {
+		return
+	}
 	lDBSchema := lDB.DBSchema()
 	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
 }
