@@ -167,7 +167,7 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 	if pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
 		return nil
 	}
-	lMigrationsTable.AddColumns(
+	lError := lMigrationsTable.AddColumns(
 		schema.NewColumnParams{
 			Name:       pConfig.migrationNameColumn,
 			Type:       schema.Varchar,
@@ -181,7 +181,10 @@ func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorCo
 			NotNull: true,
 		},
 	)
+	if lError != nil {
+		return lError
+	}
 
-	_, lError := pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(lMigrationsTable)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+	_, lError = pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(lMigrationsTable)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	return lError
 }

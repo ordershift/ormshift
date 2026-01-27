@@ -63,6 +63,9 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 			NotNull:    false,
 		},
 	)
+	if lError != nil {
+		return lError
+	}
 
 	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().CreateTable(lUserTable))
 	return lError
