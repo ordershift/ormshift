@@ -33,7 +33,7 @@ func (sb *sqliteBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += lColumn.Name()
+			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
 		}
 
 		if !lHasAutoIncrementColumn {

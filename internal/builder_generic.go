@@ -147,7 +147,11 @@ func (sb *genericSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRow
 }
 
 func (sb *genericSQLBuilder) columnsList(pColumns []string) string {
-	return strings.Join(pColumns, ",")
+	lQuotedColumns := []string{}
+	for _, col := range pColumns {
+		lQuotedColumns = append(lQuotedColumns, sb.QuoteIdentifier(col))
+	}
+	return strings.Join(lQuotedColumns, ",")
 }
 
 func (sb *genericSQLBuilder) namesList(pColumns []string) string {
@@ -164,7 +168,7 @@ func (sb *genericSQLBuilder) columnEqualNameList(pColumns []string, pSeparator s
 		if lColumnEqualNameList != "" {
 			lColumnEqualNameList += pSeparator
 		}
-		lColumnEqualNameList += fmt.Sprintf("%s = @%s", lColumn, lColumn)
+		lColumnEqualNameList += fmt.Sprintf("%s = @%s", sb.QuoteIdentifier(lColumn), lColumn)
 	}
 	return lColumnEqualNameList
 }
