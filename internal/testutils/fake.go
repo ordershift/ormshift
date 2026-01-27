@@ -129,7 +129,7 @@ func FakeUserTable(t *testing.T) schema.Table {
 			AutoIncrement: false,
 		},
 	)
-	if !AssertNilError(t, lError, "UserTable.AddColumn") {
+	if !AssertNilError(t, lError, "UserTable.AddColumns") {
 		panic(lError)
 	}
 	return lUserTable
