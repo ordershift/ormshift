@@ -24,12 +24,12 @@ func TestCreateTable(t *testing.T) {
 	lUserTable := testutils.FakeUserTable(t)
 	lExpectedSQL := "CREATE TABLE user (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,email TEXT NOT NULL,name TEXT NOT NULL," +
 		"password_hash TEXT,active INTEGER,created_at DATETIME,user_master INTEGER,master_user_id INTEGER,licence_price REAL,relevance REAL,photo BLOB,any TEXT);"
-	lReturnedSQL := lSQLBuilder.CreateTable(*lUserTable)
+	lReturnedSQL := lSQLBuilder.CreateTable(lUserTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	lExpectedSQL = "CREATE TABLE product_attribute (product_id INTEGER NOT NULL,attribute_id INTEGER NOT NULL,value TEXT,position INTEGER,CONSTRAINT PK_product_attribute PRIMARY KEY (product_id,attribute_id));"
-	lReturnedSQL = lSQLBuilder.CreateTable(*lProductAttributeTable)
+	lReturnedSQL = lSQLBuilder.CreateTable(lProductAttributeTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 }
 
@@ -38,7 +38,7 @@ func TestDropTable(t *testing.T) {
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lExpectedSQL := "DROP TABLE user;"
-	lReturnedSQL := lSQLBuilder.DropTable(*lUserTableName)
+	lReturnedSQL := lSQLBuilder.DropTable(lUserTableName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.DropTable")
 }
 
@@ -48,7 +48,7 @@ func TestAlterTableAddColumn(t *testing.T) {
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumn := testutils.FakeUpdatedAtColumn(t)
 	lExpectedSQL := "ALTER TABLE user ADD COLUMN updated_at DATETIME;"
-	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn)
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lUserTableName, lUpdatedAtColumn)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableAddColumn")
 }
 
@@ -58,7 +58,7 @@ func TestAlterTableDropColumn(t *testing.T) {
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumnName := testutils.FakeUpdatedAtColumnName(t)
 	lExpectedSQL := "ALTER TABLE user DROP COLUMN updated_at;"
-	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName)
+	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(lUserTableName, lUpdatedAtColumnName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableDropColumn")
 }
 
