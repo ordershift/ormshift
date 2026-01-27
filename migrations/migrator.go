@@ -137,9 +137,9 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 	q, p := pDatabase.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
 		fmt.Sprintf(
 			"select %s from %s order by %s",
-			pConfig.migrationNameColumn,
-			pConfig.tableName,
-			pConfig.migrationNameColumn,
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.tableName),
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
 		),
 	)
 	lMigrationsRows, rError := pDatabase.SQLExecutor().Query(q, p...)
