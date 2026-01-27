@@ -7,7 +7,6 @@ import (
 	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
 	"github.com/ordershift/ormshift/migrations"
-	"github.com/ordershift/ormshift/schema"
 )
 
 func TestMigrate(t *testing.T) {
@@ -27,16 +26,10 @@ func TestMigrate(t *testing.T) {
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
 		return
 	}
-	lUserTableName, lError := schema.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
-		return
-	}
-	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrationNames)")
+	lUserTableName := "user"
+	lUpdatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 
 func TestMigrateTwice(t *testing.T) {
@@ -67,15 +60,9 @@ func TestMigrateTwice(t *testing.T) {
 		return
 	}
 
-	lUserTableName, lError := schema.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
-		return
-	}
-	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+	lUserTableName := "user"
+	lUpdatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
 	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 

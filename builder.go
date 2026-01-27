@@ -10,9 +10,9 @@ import (
 // DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
 	CreateTable(pTable schema.Table) string
-	DropTable(pTableName schema.TableName) string
-	AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string
-	AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string
+	DropTable(pTableName string) string
+	AlterTableAddColumn(pTableName string, pColumn schema.Column) string
+	AlterTableDropColumn(pTableName string, pColumnName string) string
 	ColumnTypeAsString(pColumnType schema.ColumnType) string
 }
 

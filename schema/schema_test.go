@@ -39,11 +39,8 @@ func TestHasColumn(t *testing.T) {
 	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	if lProductAttributeTable == nil {
-		return
-	}
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
@@ -53,17 +50,10 @@ func TestHasColumn(t *testing.T) {
 	for _, lColumn := range lProductAttributeTable.Columns() {
 		testutils.AssertEqualWithLabel(t, true, lDBSchema.HasColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.HasColumn")
 	}
-	lAnyTableName, lError := schema.NewTableName("any_table")
-	if !testutils.AssertNotNilResultAndNilError(t, lAnyTableName, lError, "ormshift.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(*lAnyTableName), "DBSchema.HasTable")
-	lAnyColumnName, lError := schema.NewColumnName("any_col")
-	if !testutils.AssertNotNilResultAndNilError(t, lAnyColumnName, lError, "ormshift.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), *lAnyColumnName), "DBSchema.HasColumn")
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(*lAnyTableName, *lAnyColumnName), "DBSchema.HasColumn")
+	lAnyTableName := "any_table"
+	lAnyColumnName := "any_col"
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), lAnyColumnName), "DBSchema.HasColumn")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lAnyTableName, lAnyColumnName), "DBSchema.HasColumn")
 }
 
 func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
@@ -75,12 +65,8 @@ func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	if lProductAttributeTable == nil {
-		_ = lDB.Close()
-		return
-	}
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		_ = lDB.Close()
 		return
