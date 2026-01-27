@@ -16,7 +16,7 @@ type sqliteBuilder struct {
 
 func newSQLiteBuilder() ormshift.SQLBuilder {
 	sb := sqliteBuilder{}
-	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.quoteIdentifier, nil)
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, QuoteIdentifier, nil)
 	return sb
 }
 
@@ -46,10 +46,10 @@ func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
 		if lColumns != "" {
 			lColumns += ","
 		}
-		lPKConstraintName := sb.quoteIdentifier("PK_" + pTable.Name())
+		lPKConstraintName := QuoteIdentifier("PK_" + pTable.Name())
 		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.quoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", QuoteIdentifier(pTable.Name()), lColumns)
 }
 
 func (sb sqliteBuilder) DropTable(pTableName string) string {
@@ -86,7 +86,7 @@ func (sb sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string
 }
 
 func (sb sqliteBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := fmt.Sprintf("%s %s", sb.quoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
+	lColumnDef := fmt.Sprintf("%s %s", QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"
 	}
@@ -132,13 +132,13 @@ func (sb sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerP
 	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
 }
 
-func (sb sqliteBuilder) quoteIdentifier(pIdentifier string) string {
+func (sb sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
+}
+
+func QuoteIdentifier(pIdentifier string) string {
 	// SQLite uses double quotes (same as PostgreSQL)
 	// Escape rule: double quote becomes two double quotes
 	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
 	return fmt.Sprintf(`"%s"`, pIdentifier)
-}
-
-func (sb sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
 }

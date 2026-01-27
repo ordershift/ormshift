@@ -3,21 +3,31 @@ package schema
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 )
 
 type DBSchema struct {
-	db              *sql.DB
-	tableNamesQuery string
+	db                   *sql.DB
+	tableNamesQuery      string
+	columnTypesQueryFunc ColumnTypesQueryFunc
 }
 
-func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
+type ColumnTypesQueryFunc func(pTableName string) string
+
+func NewDBSchema(
+	pDB *sql.DB,
+	pTableNamesQuery string,
+	pColumnTypesQueryFunc ColumnTypesQueryFunc,
+) (*DBSchema, error) {
 	if pDB == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
-	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
+	return &DBSchema{
+		db:                   pDB,
+		tableNamesQuery:      pTableNamesQuery,
+		columnTypesQueryFunc: pColumnTypesQueryFunc,
+	}, nil
 }
 
 func (s DBSchema) HasTable(pTableName string) bool {
@@ -62,7 +72,7 @@ func (s DBSchema) HasColumn(pTableName string, pColumnName string) bool {
 }
 
 func (s DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
-	lRows, rError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+	lRows, rError := s.db.Query(s.columnTypesQueryFunc(pTableName))
 	if rError != nil {
 		return
 	}

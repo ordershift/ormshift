@@ -37,5 +37,5 @@ func (d sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {
 }
 
 func (d sqlserverDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return schema.NewDBSchema(pDB, tableNamesQuery)
+	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc)
 }

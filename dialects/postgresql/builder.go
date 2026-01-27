@@ -17,7 +17,7 @@ type postgresqlBuilder struct {
 
 func newPostgreSQLBuilder() ormshift.SQLBuilder {
 	sb := postgresqlBuilder{}
-	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.quoteIdentifier, sb.InteroperateSQLCommandWithNamedArgs)
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, QuoteIdentifier, sb.InteroperateSQLCommandWithNamedArgs)
 	return sb
 }
 
@@ -59,7 +59,7 @@ func (sb postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) st
 }
 
 func (sb postgresqlBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := sb.quoteIdentifier(pColumn.Name())
+	lColumnDef := QuoteIdentifier(pColumn.Name())
 	if pColumn.AutoIncrement() {
 		lColumnDef += " BIGSERIAL"
 	} else {
@@ -111,14 +111,6 @@ func (sb postgresqlBuilder) SelectWithPagination(pSQLSelectCommand string, pRows
 	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
 }
 
-func (sb postgresqlBuilder) quoteIdentifier(pIdentifier string) string {
-	// PostgreSQL uses double quotes: "identifier"
-	// Escape rule: double quote becomes two double quotes
-	// Example: users -> "users", table"name -> "table""name"
-	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
-	return fmt.Sprintf(`"%s"`, pIdentifier)
-}
-
 func (sb postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
 	lSQLCommand := pSQLCommand
 	lArgs := []any{}
@@ -145,4 +137,12 @@ func (sb postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand stri
 		return m
 	})
 	return lSQLCommand, lArgs
+}
+
+func QuoteIdentifier(pIdentifier string) string {
+	// PostgreSQL uses double quotes: "identifier"
+	// Escape rule: double quote becomes two double quotes
+	// Example: users -> "users", table"name -> "table""name"
+	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
+	return fmt.Sprintf(`"%s"`, pIdentifier)
 }

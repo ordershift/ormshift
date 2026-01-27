@@ -1,6 +1,7 @@
 package schema_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ordershift/ormshift"
@@ -9,6 +10,10 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
+func testColumnTypesQueryFunc(pTableName string) string {
+	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName)
+}
+
 func TestNewDBSchema(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
@@ -16,14 +21,14 @@ func TestNewDBSchema(t *testing.T) {
 	}
 	defer func() { _ = lDB.Close() }()
 
-	lDBSchema, lError := schema.NewDBSchema(lDB.DB(), "query")
+	lDBSchema, lError := schema.NewDBSchema(lDB.DB(), "query", testColumnTypesQueryFunc)
 	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
 		return
 	}
 }
 
 func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDBSchema, lError := schema.NewDBSchema(nil, "query")
+	lDBSchema, lError := schema.NewDBSchema(nil, "query", testColumnTypesQueryFunc)
 	if !testutils.AssertNilResultAndNotNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
 		return
 	}
