@@ -24,8 +24,7 @@ type userRow struct {
 
 func TestExecutor(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()

@@ -11,7 +11,7 @@ import (
 
 func TestNewDBSchema(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -32,8 +32,7 @@ func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
 
 func TestHasColumn(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -68,24 +67,25 @@ func TestHasColumn(t *testing.T) {
 
 func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	if lProductAttributeTable == nil {
-		_ = lDB.Close()
 		return
 	}
 
 	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
-		_ = lDB.Close()
 		return
 	}
-	_ = lDB.Close()
+
+	lError = lDB.Close()
+	if !testutils.AssertNilError(t, lError, "DB.Close") {
+		return
+	}
 	lDBSchema := lDB.DBSchema()
 	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
 }

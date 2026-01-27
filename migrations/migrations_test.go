@@ -12,8 +12,7 @@ import (
 
 func TestMigrate(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -41,8 +40,7 @@ func TestMigrate(t *testing.T) {
 
 func TestMigrateTwice(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -81,8 +79,7 @@ func TestMigrateTwice(t *testing.T) {
 
 func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	_ = lDB.Close()
@@ -101,8 +98,7 @@ func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 
 func TestMigrateFailsWhenMigrationUpFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()

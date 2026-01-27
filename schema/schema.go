@@ -30,26 +30,25 @@ func (s DBSchema) HasTable(pTableName TableName) bool {
 	})
 }
 
-func (s DBSchema) fetchTableNames() ([]string, error) {
-	lRows, lError := s.db.Query(s.tableNamesQuery)
-	if lError != nil {
-		return nil, lError
+func (s DBSchema) fetchTableNames() (rTableNames []string, rError error) {
+	lRows, rError := s.db.Query(s.tableNamesQuery)
+	if rError != nil {
+		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && lError == nil {
-			lError = err
+		if err := lRows.Close(); err != nil && rError == nil {
+			rError = err
 		}
 	}()
-	var lTableNames []string
 	lTableName := ""
 	for lRows.Next() {
-		lError = lRows.Scan(&lTableName)
-		if lError != nil {
-			return nil, lError
+		rError = lRows.Scan(&lTableName)
+		if rError != nil {
+			return
 		}
-		lTableNames = append(lTableNames, lTableName)
+		rTableNames = append(rTableNames, lTableName)
 	}
-	return lTableNames, lError
+	return
 }
 
 func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
@@ -62,15 +61,16 @@ func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
 	})
 }
 
-func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
-	if lError != nil {
-		return nil, lError
+func (s DBSchema) fetchColumnTypes(pTableName TableName) (rColumnTypes []*sql.ColumnType, rError error) {
+	lRows, rError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+	if rError != nil {
+		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && lError == nil {
-			lError = err
+		if err := lRows.Close(); err != nil && rError == nil {
+			rError = err
 		}
 	}()
-	return lRows.ColumnTypes()
+	rColumnTypes, rError = lRows.ColumnTypes()
+	return
 }

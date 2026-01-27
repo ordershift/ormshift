@@ -32,10 +32,10 @@ func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
 
 func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
+	defer func() { _ = lDB.Close() }()
 
 	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
 	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
@@ -54,8 +54,7 @@ func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
 
 func TestRevertLastAppliedMigration(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -89,8 +88,7 @@ func TestRevertLastAppliedMigration(t *testing.T) {
 
 func TestRevertLastAppliedMigrationWhenNoMigrationsApplied(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -107,8 +105,7 @@ func TestRevertLastAppliedMigrationWhenNoMigrationsApplied(t *testing.T) {
 
 func TestRevertLastAppliedMigrationFailsWhenDownFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
@@ -131,8 +128,7 @@ func TestRevertLastAppliedMigrationFailsWhenDownFails(t *testing.T) {
 
 func TestRevertLastAppliedMigrationFailsWhenDeletingFails(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if lError != nil {
-		t.Errorf("ormshift.OpenDatabase failed: %v", lError)
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
 		return
 	}
 	defer func() { _ = lDB.Close() }()
