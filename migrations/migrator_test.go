@@ -16,6 +16,18 @@ func TestNewMigratorWhenDatabaseIsNil(t *testing.T) {
 	testutils.AssertErrorMessage(t, "database cannot be nil", lError, "migrations.NewMigrator[database=nil]")
 }
 
+func TestNewMigratorWhenConfigIsNil(t *testing.T) {
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+	defer func() { _ = lDB.Close() }()
+
+	lMigrator, lError := migrations.NewMigrator(lDB, nil)
+	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[config=nil]")
+	testutils.AssertErrorMessage(t, "migrator config cannot be nil", lError, "migrations.NewMigrator[config=nil]")
+}
+
 func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
 	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
 	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
