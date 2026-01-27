@@ -30,7 +30,7 @@ type Database struct {
 	db               *sql.DB
 	connectionString string
 	sqlBuilder       SQLBuilder
-	schema           *schema.DBSchema
+	dbSchema         *schema.DBSchema
 }
 
 func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, error) {
@@ -42,7 +42,7 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 	if lError != nil {
 		return nil, fmt.Errorf("sql.Open failed: %w", lError)
 	}
-	lSchema, lError := pDriver.DBSchema(lDB)
+	lDBSchema, lError := pDriver.DBSchema(lDB)
 	if lError != nil {
 		return nil, fmt.Errorf("failed to get DB schema: %w", lError)
 	}
@@ -52,7 +52,7 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 		db:               lDB,
 		connectionString: lConnectionString,
 		sqlBuilder:       pDriver.SQLBuilder(),
-		schema:           lSchema,
+		dbSchema:         lDBSchema,
 	}, nil
 }
 
@@ -82,5 +82,5 @@ func (d *Database) SQLBuilder() SQLBuilder {
 }
 
 func (d *Database) DBSchema() *schema.DBSchema {
-	return d.schema
+	return d.dbSchema
 }
