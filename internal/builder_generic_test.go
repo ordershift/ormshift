@@ -156,3 +156,11 @@ func TestColumnDefinition(t *testing.T) {
 	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lTableName, lColumn)
 	testutils.AssertEqualWithLabel(t, "ALTER TABLE \"test_table\" ADD COLUMN fake;", lReturnedSQL, "SQLBuilder.ColumnDefinition")
 }
+
+func TestQuoteIdentifier(t *testing.T) {
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, testutils.FakeQuoteIdentifierFunc, nil)
+	lColumn := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
+	lTableName := "test_table"
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lTableName, lColumn)
+	testutils.AssertEqualWithLabel(t, "ALTER TABLE quoted_test_table ADD COLUMN quoted_column_name <<TYPE_0>>;", lReturnedSQL, "SQLBuilder.QuoteIdentifier")
+}

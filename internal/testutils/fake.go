@@ -165,3 +165,7 @@ func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, namedArgs ...sq
 func FakeColumnDefinitionFunc(column schema.Column) string {
 	return "fake"
 }
+
+func FakeQuoteIdentifierFunc(identifier string) string {
+	return "quoted_" + identifier
+}
