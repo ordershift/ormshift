@@ -3,7 +3,6 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
@@ -16,7 +15,7 @@ type sqliteBuilder struct {
 
 func newSQLiteBuilder() ormshift.SQLBuilder {
 	sb := sqliteBuilder{}
-	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.QuoteIdentifier, nil)
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, nil, nil)
 	return sb
 }
 
@@ -133,10 +132,7 @@ func (sb sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerP
 }
 
 func (sb sqliteBuilder) QuoteIdentifier(pIdentifier string) string {
-	// SQLite uses double quotes (same as PostgreSQL)
-	// Escape rule: double quote becomes two double quotes
-	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
-	return fmt.Sprintf(`"%s"`, pIdentifier)
+	return sb.generic.QuoteIdentifier(pIdentifier)
 }
 
 func (sb sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {

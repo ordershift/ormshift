@@ -17,7 +17,7 @@ type postgresqlBuilder struct {
 
 func newPostgreSQLBuilder() ormshift.SQLBuilder {
 	sb := postgresqlBuilder{}
-	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.QuoteIdentifier, sb.InteroperateSQLCommandWithNamedArgs)
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, nil, sb.InteroperateSQLCommandWithNamedArgs)
 	return sb
 }
 
@@ -112,11 +112,7 @@ func (sb postgresqlBuilder) SelectWithPagination(pSQLSelectCommand string, pRows
 }
 
 func (sb postgresqlBuilder) QuoteIdentifier(pIdentifier string) string {
-	// PostgreSQL uses double quotes: "identifier"
-	// Escape rule: double quote becomes two double quotes
-	// Example: users -> "users", table"name -> "table""name"
-	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
-	return fmt.Sprintf(`"%s"`, pIdentifier)
+	return sb.generic.QuoteIdentifier(pIdentifier)
 }
 
 func (sb postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
