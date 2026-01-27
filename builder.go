@@ -91,4 +91,5 @@ type DMLSQLBuilder interface {
 type SQLBuilder interface {
 	DDLSQLBuilder
 	DMLSQLBuilder
+	QuoteIdentifier(pIdentifier string) string
 }

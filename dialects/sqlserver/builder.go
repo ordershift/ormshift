@@ -16,7 +16,7 @@ type sqlserverBuilder struct {
 
 func newSQLServerBuilder() ormshift.SQLBuilder {
 	sb := sqlserverBuilder{}
-	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, QuoteIdentifier, nil)
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.QuoteIdentifier, nil)
 	return sb
 }
 
@@ -33,7 +33,7 @@ func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += QuoteIdentifier(lColumn.Name())
+			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
 		}
 	}
 
@@ -41,10 +41,10 @@ func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
 		if lColumns != "" {
 			lColumns += ","
 		}
-		lPKConstraintName := QuoteIdentifier("PK_" + pTable.Name())
+		lPKConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
 		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
 }
 
 func (sb sqlserverBuilder) DropTable(pTableName string) string {
@@ -81,7 +81,7 @@ func (sb sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) str
 }
 
 func (sb sqlserverBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := QuoteIdentifier(pColumn.Name())
+	lColumnDef := sb.QuoteIdentifier(pColumn.Name())
 	if pColumn.Type() == schema.Varchar {
 		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 	} else {
@@ -140,14 +140,14 @@ func (sb sqlserverBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsP
 	return lSelectWithPagination
 }
 
-func (sb sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
-}
-
-func QuoteIdentifier(pIdentifier string) string {
+func (sb sqlserverBuilder) QuoteIdentifier(pIdentifier string) string {
 	// SQL Server uses square brackets: [identifier]
 	// Escape rule: ] becomes ]]
 	// Example: users -> [users], table]name -> [table]]name]
 	pIdentifier = strings.ReplaceAll(pIdentifier, "]", "]]")
 	return fmt.Sprintf("[%s]", pIdentifier)
+}
+
+func (sb sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
 }

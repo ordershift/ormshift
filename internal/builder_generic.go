@@ -176,6 +176,10 @@ func (sb genericSQLBuilder) columnEqualNameList(pColumns []string, pSeparator st
 	return lColumnEqualNameList
 }
 
+func (sb genericSQLBuilder) QuoteIdentifier(pIdentifier string) string {
+	return sb.quoteIdentifier(pIdentifier)
+}
+
 func (sb genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
 	if sb.InteroperateSQLCommandWithNamedArgsFunc != nil {
 		return sb.InteroperateSQLCommandWithNamedArgsFunc(pSQLCommand, pNamedArgs...)
