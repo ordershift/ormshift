@@ -33,7 +33,7 @@ func (sb *postgresqlBuilder) AlterTableAddColumn(pTableName string, pColumn sche
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb *postgresqlBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
+func (sb *postgresqlBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 

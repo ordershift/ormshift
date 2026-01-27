@@ -61,7 +61,7 @@ func (s *DBSchema) fetchTableNames() (rTableNames []string, rError error) {
 	return
 }
 
-func (s *DBSchema) HasColumn(pTableName string, pColumnName string) bool {
+func (s *DBSchema) HasColumn(pTableName, pColumnName string) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
 		return false

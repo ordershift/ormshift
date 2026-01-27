@@ -55,7 +55,7 @@ func (sb *sqlserverBuilder) AlterTableAddColumn(pTableName string, pColumn schem
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb *sqlserverBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
+func (sb *sqlserverBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
