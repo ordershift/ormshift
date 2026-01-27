@@ -11,10 +11,14 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type sqliteDriver struct{}
+type sqliteDriver struct {
+	sqlBuilder ormshift.SQLBuilder
+}
 
 func Driver() ormshift.DatabaseDriver {
-	return sqliteDriver{}
+	return sqliteDriver{
+		sqlBuilder: newSQLiteBuilder(),
+	}
 }
 
 func (d sqliteDriver) Name() string {
@@ -36,9 +40,9 @@ func (d sqliteDriver) ConnectionString(pParams ormshift.ConnectionParams) string
 }
 
 func (d sqliteDriver) SQLBuilder() ormshift.SQLBuilder {
-	return newSQLiteBuilder()
+	return d.sqlBuilder
 }
 
 func (d sqliteDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc)
+	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc(d.sqlBuilder))
 }
