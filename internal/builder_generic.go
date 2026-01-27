@@ -11,18 +11,33 @@ import (
 
 type ColumnDefinitionFunc func(schema.Column) string
 
+type QuoteIdentifierFunc func(string) string
+
 type InteroperateSQLCommandWithNamedArgsFunc func(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
 
 type genericSQLBuilder struct {
 	ColumnDefinitionFunc                    ColumnDefinitionFunc
 	InteroperateSQLCommandWithNamedArgsFunc InteroperateSQLCommandWithNamedArgsFunc
+	QuoteIdentifierFunc                     QuoteIdentifierFunc
 }
 
-func NewGenericSQLBuilder(pColumnDefinitionFunc ColumnDefinitionFunc, pInteroperateSQLCommandWithNamedArgsFunc InteroperateSQLCommandWithNamedArgsFunc) ormshift.SQLBuilder {
+func NewGenericSQLBuilder(
+	pColumnDefinitionFunc ColumnDefinitionFunc,
+	pQuoteIdentifierFunc QuoteIdentifierFunc,
+	pInteroperateSQLCommandWithNamedArgsFunc InteroperateSQLCommandWithNamedArgsFunc,
+) ormshift.SQLBuilder {
 	return genericSQLBuilder{
 		ColumnDefinitionFunc:                    pColumnDefinitionFunc,
+		QuoteIdentifierFunc:                     pQuoteIdentifierFunc,
 		InteroperateSQLCommandWithNamedArgsFunc: pInteroperateSQLCommandWithNamedArgsFunc,
 	}
+}
+
+func (sb genericSQLBuilder) quoteIdentifier(pIdentifier string) string {
+	if sb.QuoteIdentifierFunc != nil {
+		return sb.QuoteIdentifierFunc(pIdentifier)
+	}
+	return pIdentifier
 }
 
 func (sb genericSQLBuilder) CreateTable(pTable schema.Table) string {
@@ -38,7 +53,7 @@ func (sb genericSQLBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += lColumn.Name().String()
+			lPKColumns += sb.quoteIdentifier(lColumn.Name())
 		}
 	}
 
@@ -48,19 +63,19 @@ func (sb genericSQLBuilder) CreateTable(pTable schema.Table) string {
 		}
 		lColumns += fmt.Sprintf("PRIMARY KEY (%s)", lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.quoteIdentifier(pTable.Name()), lColumns)
 }
 
-func (sb genericSQLBuilder) DropTable(pTableName schema.TableName) string {
-	return fmt.Sprintf("DROP TABLE %s;", pTableName.String())
+func (sb genericSQLBuilder) DropTable(pTableName string) string {
+	return fmt.Sprintf("DROP TABLE %s;", sb.quoteIdentifier(pTableName))
 }
 
-func (sb genericSQLBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", pTableName.String(), sb.columnDefinition(pColumn))
+func (sb genericSQLBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
+	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.quoteIdentifier(pTableName), sb.columnDefinition(pColumn))
 }
 
-func (sb genericSQLBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
-	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", pTableName.String(), pColumnName.String())
+func (sb genericSQLBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
+	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.quoteIdentifier(pTableName), sb.quoteIdentifier(pColumnName))
 }
 
 func (sb genericSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
@@ -72,11 +87,11 @@ func (sb genericSQLBuilder) columnDefinition(pColumn schema.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
 		return sb.ColumnDefinitionFunc(pColumn)
 	}
-	return fmt.Sprintf("%s %s", pColumn.Name().String(), sb.ColumnTypeAsString(pColumn.Type()))
+	return fmt.Sprintf("%s %s", sb.quoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
 }
 
 func (sb genericSQLBuilder) Insert(pTableName string, pColumns []string) string {
-	return fmt.Sprintf("insert into %s (%s) values (%s)", pTableName, sb.columnsList(pColumns), sb.namesList(pColumns))
+	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.quoteIdentifier(pTableName), sb.columnsList(pColumns), sb.namesList(pColumns))
 }
 
 func (sb genericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
@@ -86,7 +101,7 @@ func (sb genericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues o
 }
 
 func (sb genericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("update %s set %s ", pTableName, sb.columnEqualNameList(pColumns, ","))
+	lUpdate := fmt.Sprintf("update %s set %s ", sb.quoteIdentifier(pTableName), sb.columnEqualNameList(pColumns, ","))
 	if len(pColumnsWhere) > 0 {
 		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
@@ -100,7 +115,7 @@ func (sb genericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColum
 }
 
 func (sb genericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	lDelete := fmt.Sprintf("delete from %s ", pTableName)
+	lDelete := fmt.Sprintf("delete from %s ", sb.quoteIdentifier(pTableName))
 	if len(pColumnsWhere) > 0 {
 		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
@@ -114,7 +129,7 @@ func (sb genericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsVal
 }
 
 func (sb genericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), pTableName)
+	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), sb.quoteIdentifier(pTableName))
 	if len(pColumnsWhere) > 0 {
 		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}

@@ -11,52 +11,52 @@ import (
 )
 
 func TestCreateTable(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lUserTable := testutils.FakeUserTable(t)
 	lExpectedSQL := "CREATE TABLE user (id <<TYPE_0>>,email <<TYPE_1>>,name <<TYPE_1>>,password_hash <<TYPE_1>>," +
 		"active <<TYPE_5>>,created_at <<TYPE_3>>,user_master <<TYPE_0>>,master_user_id <<TYPE_0>>," +
 		"licence_price <<TYPE_2>>,relevance <<TYPE_4>>,photo <<TYPE_6>>,any <<TYPE_-1>>,PRIMARY KEY (id,email));"
-	lReturnedSQL := lSQLBuilder.CreateTable(*lUserTable)
+	lReturnedSQL := lSQLBuilder.CreateTable(lUserTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
 	lExpectedSQL = "CREATE TABLE product_attribute (product_id <<TYPE_0>>,attribute_id <<TYPE_0>>,value <<TYPE_1>>,position <<TYPE_0>>,PRIMARY KEY (product_id,attribute_id));"
-	lReturnedSQL = lSQLBuilder.CreateTable(*lProductAttributeTable)
+	lReturnedSQL = lSQLBuilder.CreateTable(lProductAttributeTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 }
 
 func TestDropTable(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lExpectedSQL := "DROP TABLE user;"
-	lReturnedSQL := lSQLBuilder.DropTable(*lUserTableName)
+	lReturnedSQL := lSQLBuilder.DropTable(lUserTableName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.DropTable")
 }
 
 func TestAlterTableAddColumn(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumn := testutils.FakeUpdatedAtColumn(t)
 	lExpectedSQL := "ALTER TABLE user ADD COLUMN updated_at <<TYPE_3>>;"
-	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn)
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lUserTableName, lUpdatedAtColumn)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableAddColumn")
 }
 
 func TestAlterTableDropColumn(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumnName := testutils.FakeUpdatedAtColumnName(t)
 	lExpectedSQL := "ALTER TABLE user DROP COLUMN updated_at;"
-	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName)
+	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(lUserTableName, lUpdatedAtColumnName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableDropColumn")
 }
 
 func TestInsert(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL := lSQLBuilder.Insert("product", []string{"id", "sku", "name", "description"})
 	lExpectedSQL := "insert into product (id,sku,name,description) values (@id,@sku,@name,@description)"
@@ -64,7 +64,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestInsertWithValues(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.InsertWithValues("product", ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.9", "name": "Trufa Sabor Amarula 30g Cacaushow"})
 	lExpectedSQL := "insert into product (id,name,sku) values (@id,@name,@sku)"
@@ -76,7 +76,7 @@ func TestInsertWithValues(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL := lSQLBuilder.Update("product", []string{"sku", "name", "description"}, []string{"id"})
 	lExpectedSQL := "update product set sku = @sku,name = @name,description = @description where id = @id"
@@ -84,7 +84,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdateWithValues(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.UpdateWithValues("product", []string{"sku", "name"}, []string{"id"}, ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.5", "name": "Trufa Sabor Amarula 18g Cacaushow"})
 	lExpectedSQL := "update product set sku = @sku,name = @name where id = @id"
@@ -96,7 +96,7 @@ func TestUpdateWithValues(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL := lSQLBuilder.Delete("product", []string{"id"})
 	lExpectedSQL := "delete from product where id = @id"
@@ -104,7 +104,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteWithValues(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.DeleteWithValues("product", ormshift.ColumnsValues{"id": 1})
 	lExpectedSQL := "delete from product where id = @id"
@@ -114,7 +114,7 @@ func TestDeleteWithValues(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL := lSQLBuilder.Select("product", []string{"id", "name", "description"}, []string{"sku", "active"})
 	lExpectedSQL := "select id,name,description from product where sku = @sku and active = @active"
@@ -122,7 +122,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestSelectWithValues(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.SelectWithValues("product", []string{"id", "sku", "name", "description"}, ormshift.ColumnsValues{"category_id": 1, "active": true})
 	lExpectedSQL := "select id,sku,name,description from product where active = @active and category_id = @category_id"
@@ -133,7 +133,7 @@ func TestSelectWithValues(t *testing.T) {
 }
 
 func TestSelectWithPagination(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	lReturnedSQL := lSQLBuilder.SelectWithPagination("select * from product", 10, 5)
 	lExpectedSQL := "select * from product LIMIT 10 OFFSET 40"
@@ -141,7 +141,7 @@ func TestSelectWithPagination(t *testing.T) {
 }
 
 func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(nil, testutils.FakeInteroperateSQLCommandWithNamedArgsFunc)
+	lSQLBuilder := internal.NewGenericSQLBuilder(nil, nil, testutils.FakeInteroperateSQLCommandWithNamedArgsFunc)
 	lReturnedSQL, lReturnedNamedArgs := lSQLBuilder.InteroperateSQLCommandWithNamedArgs("original command", sql.NamedArg{Name: "param1", Value: 1})
 	lExpectedSQL := "command has been modified"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.InteroperateSQLCommandWithNamedArgs.SQL")
@@ -150,13 +150,9 @@ func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
 }
 
 func TestColumnDefinition(t *testing.T) {
-	lSQLBuilder := internal.NewGenericSQLBuilder(testutils.FakeColumnDefinitionFunc, nil)
-	lColumn, lError := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
-	testutils.AssertNilError(t, lError, "schema.NewColumn")
-
-	lTableName, lError := schema.NewTableName("test_table")
-	testutils.AssertNilError(t, lError, "schema.NewTableName")
-
-	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(*lTableName, *lColumn)
+	lSQLBuilder := internal.NewGenericSQLBuilder(testutils.FakeColumnDefinitionFunc, nil, nil)
+	lColumn := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
+	lTableName := "test_table"
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lTableName, lColumn)
 	testutils.AssertEqualWithLabel(t, "ALTER TABLE test_table ADD COLUMN fake;", lReturnedSQL, "SQLBuilder.ColumnDefinition")
 }
