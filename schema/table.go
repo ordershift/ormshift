@@ -15,20 +15,7 @@ func NewTable(pName string) Table {
 	return Table{
 		name:    pName,
 		columns: []Column{},
-
-func (t *Table) AddColumn(pParams NewColumnParams) error {
-	lColumn, lError := NewColumn(pParams)
-	if lError != nil {
-		return lError
 	}
-	lColumnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
-		return strings.EqualFold(lColumn.Name().String(), c.Name().String())
-	})
-	if lColumnAlreadyExists {
-		return fmt.Errorf("column %q already exists in table %q", lColumn.Name().String(), t.name)
-	}
-	t.columns = append(t.columns, *lColumn)
-	return nil
 }
 
 func (t Table) Name() string {
@@ -37,4 +24,18 @@ func (t Table) Name() string {
 
 func (t Table) Columns() []Column {
 	return t.columns
+}
+
+func (t Table) AddColumns(pParams ...NewColumnParams) error {
+	for _, lColParams := range pParams {
+		lColumn := NewColumn(lColParams)
+		lColumnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
+			return strings.EqualFold(lColumn.Name(), c.Name())
+		})
+		if lColumnAlreadyExists {
+			return fmt.Errorf("column %q already exists in table %q", lColumn.Name(), t.Name())
+		}
+		t.columns = append(t.columns, lColumn)
+	}
+	return nil
 }
