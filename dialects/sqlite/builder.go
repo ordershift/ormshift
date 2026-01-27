@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
@@ -14,9 +15,9 @@ type sqliteBuilder struct {
 }
 
 func newSQLiteBuilder() ormshift.SQLBuilder {
-	lBuilder := sqliteBuilder{}
-	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, nil)
-	return lBuilder
+	sb := sqliteBuilder{}
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.quoteIdentifier, nil)
+	return sb
 }
 
 func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
@@ -33,7 +34,7 @@ func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += lColumn.Name().String()
+			lPKColumns += lColumn.Name()
 		}
 
 		if !lHasAutoIncrementColumn {
@@ -45,20 +46,21 @@ func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
 		if lColumns != "" {
 			lColumns += ","
 		}
-		lColumns += fmt.Sprintf("CONSTRAINT PK_%s PRIMARY KEY (%s)", pTable.Name().String(), lPKColumns)
+		lPKConstraintName := sb.quoteIdentifier("PK_" + pTable.Name())
+		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.quoteIdentifier(pTable.Name()), lColumns)
 }
 
-func (sb sqliteBuilder) DropTable(pTableName schema.TableName) string {
+func (sb sqliteBuilder) DropTable(pTableName string) string {
 	return sb.generic.DropTable(pTableName)
 }
 
-func (sb sqliteBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+func (sb sqliteBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqliteBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+func (sb sqliteBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
@@ -84,7 +86,7 @@ func (sb sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string
 }
 
 func (sb sqliteBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := fmt.Sprintf("%s %s", pColumn.Name().String(), sb.ColumnTypeAsString(pColumn.Type()))
+	lColumnDef := fmt.Sprintf("%s %s", sb.quoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"
 	}
@@ -128,6 +130,13 @@ func (sb sqliteBuilder) SelectWithValues(pTableName string, pColumns []string, p
 
 func (sb sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
 	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
+}
+
+func (sb sqliteBuilder) quoteIdentifier(pIdentifier string) string {
+	// SQLite uses double quotes (same as PostgreSQL)
+	// Escape rule: double quote becomes two double quotes
+	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
+	return fmt.Sprintf(`"%s"`, pIdentifier)
 }
 
 func (sb sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {

@@ -3,6 +3,7 @@ package sqlserver
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
@@ -14,9 +15,9 @@ type sqlserverBuilder struct {
 }
 
 func newSQLServerBuilder() ormshift.SQLBuilder {
-	lBuilder := sqlserverBuilder{}
-	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, nil)
-	return lBuilder
+	sb := sqlserverBuilder{}
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.quoteIdentifier, nil)
+	return sb
 }
 
 func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
@@ -32,7 +33,7 @@ func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += lColumn.Name().String()
+			lPKColumns += sb.quoteIdentifier(lColumn.Name())
 		}
 	}
 
@@ -40,20 +41,21 @@ func (sb sqlserverBuilder) CreateTable(pTable schema.Table) string {
 		if lColumns != "" {
 			lColumns += ","
 		}
-		lColumns += fmt.Sprintf("CONSTRAINT PK_%s PRIMARY KEY (%s)", pTable.Name().String(), lPKColumns)
+		lPKConstraintName := sb.quoteIdentifier("PK_" + pTable.Name())
+		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.quoteIdentifier(pTable.Name()), lColumns)
 }
 
-func (sb sqlserverBuilder) DropTable(pTableName schema.TableName) string {
+func (sb sqlserverBuilder) DropTable(pTableName string) string {
 	return sb.generic.DropTable(pTableName)
 }
 
-func (sb sqlserverBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+func (sb sqlserverBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqlserverBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+func (sb sqlserverBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
@@ -79,7 +81,7 @@ func (sb sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) str
 }
 
 func (sb sqlserverBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := pColumn.Name().String()
+	lColumnDef := sb.quoteIdentifier(pColumn.Name())
 	if pColumn.Type() == schema.Varchar {
 		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 	} else {
@@ -136,6 +138,14 @@ func (sb sqlserverBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsP
 		lSelectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", lOffSet, pRowsPerPage)
 	}
 	return lSelectWithPagination
+}
+
+func (sb sqlserverBuilder) quoteIdentifier(pIdentifier string) string {
+	// SQL Server uses square brackets: [identifier]
+	// Escape rule: ] becomes ]]
+	// Example: users -> [users], table]name -> [table]]name]
+	pIdentifier = strings.ReplaceAll(pIdentifier, "]", "]]")
+	return fmt.Sprintf("[%s]", pIdentifier)
 }
 
 func (sb sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {

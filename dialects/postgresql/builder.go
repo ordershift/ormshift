@@ -16,24 +16,24 @@ type postgresqlBuilder struct {
 }
 
 func newPostgreSQLBuilder() ormshift.SQLBuilder {
-	lBuilder := postgresqlBuilder{}
-	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, lBuilder.InteroperateSQLCommandWithNamedArgs)
-	return lBuilder
+	sb := postgresqlBuilder{}
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, sb.quoteIdentifier, sb.InteroperateSQLCommandWithNamedArgs)
+	return sb
 }
 
 func (sb postgresqlBuilder) CreateTable(pTable schema.Table) string {
 	return sb.generic.CreateTable(pTable)
 }
 
-func (sb postgresqlBuilder) DropTable(pTableName schema.TableName) string {
+func (sb postgresqlBuilder) DropTable(pTableName string) string {
 	return sb.generic.DropTable(pTableName)
 }
 
-func (sb postgresqlBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+func (sb postgresqlBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb postgresqlBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+func (sb postgresqlBuilder) AlterTableDropColumn(pTableName string, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
@@ -59,7 +59,7 @@ func (sb postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) st
 }
 
 func (sb postgresqlBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := pColumn.Name().String()
+	lColumnDef := sb.quoteIdentifier(pColumn.Name())
 	if pColumn.AutoIncrement() {
 		lColumnDef += " BIGSERIAL"
 	} else {
@@ -109,6 +109,14 @@ func (sb postgresqlBuilder) SelectWithValues(pTableName string, pColumns []strin
 
 func (sb postgresqlBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
 	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
+}
+
+func (sb postgresqlBuilder) quoteIdentifier(pIdentifier string) string {
+	// PostgreSQL uses double quotes: "identifier"
+	// Escape rule: double quote becomes two double quotes
+	// Example: users -> "users", table"name -> "table""name"
+	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
+	return fmt.Sprintf(`"%s"`, pIdentifier)
 }
 
 func (sb postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
