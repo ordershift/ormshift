@@ -128,12 +128,10 @@ func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
 	return lError
 }
 
-func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfig) ([]string, error) {
-	var lAppliedMigrationNames []string
-
-	lError := ensureMigrationsTableExists(pDatabase, pConfig)
-	if lError != nil {
-		return nil, lError
+func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfig) (rMigrationNames []string, rError error) {
+	rError = ensureMigrationsTableExists(pDatabase, pConfig)
+	if rError != nil {
+		return
 	}
 
 	q, p := pDatabase.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
@@ -144,24 +142,24 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 			pConfig.migrationNameColumn,
 		),
 	)
-	lMigrationsRows, lError := pDatabase.SQLExecutor().Query(q, p...)
-	if lError != nil {
-		return nil, lError
+	lMigrationsRows, rError := pDatabase.SQLExecutor().Query(q, p...)
+	if rError != nil {
+		return
 	}
 	defer func() {
-		if err := lMigrationsRows.Close(); err != nil && lError == nil {
-			lError = err
+		if err := lMigrationsRows.Close(); err != nil && rError == nil {
+			rError = err
 		}
 	}()
 	for lMigrationsRows.Next() {
 		var lMigrationName string
-		lError = lMigrationsRows.Scan(&lMigrationName)
-		if lError != nil {
+		rError = lMigrationsRows.Scan(&lMigrationName)
+		if rError != nil {
 			break
 		}
-		lAppliedMigrationNames = append(lAppliedMigrationNames, lMigrationName)
+		rMigrationNames = append(rMigrationNames, lMigrationName)
 	}
-	return lAppliedMigrationNames, lError
+	return
 }
 
 func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorConfig) error {
