@@ -1,27 +1,5 @@
 package schema
 
-import (
-	"fmt"
-	"regexp"
-)
-
-var regexValidColumnName = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]*$`)
-
-type ColumnName struct {
-	columnName string
-}
-
-func NewColumnName(pName string) (*ColumnName, error) {
-	if !regexValidColumnName.MatchString(pName) {
-		return nil, fmt.Errorf("invalid column name: %q", pName)
-	}
-	return &ColumnName{pName}, nil
-}
-
-func (tn ColumnName) String() string {
-	return tn.columnName
-}
-
 type ColumnType int
 
 const (
@@ -44,30 +22,26 @@ type NewColumnParams struct {
 }
 
 type Column struct {
-	name       ColumnName
-	columnType ColumnType
-	size       uint
-	pk         bool
-	notNull    bool
-	autoInc    bool
+	name          string
+	columnType    ColumnType
+	size          uint
+	primaryKey    bool
+	notNull       bool
+	autoIncrement bool
 }
 
-func NewColumn(pParams NewColumnParams) (*Column, error) {
-	lColumnName, lError := NewColumnName(pParams.Name)
-	if lError != nil {
-		return nil, lError
+func NewColumn(pParams NewColumnParams) Column {
+	return Column{
+		name:          pParams.Name,
+		columnType:    pParams.Type,
+		size:          pParams.Size,
+		primaryKey:    pParams.PrimaryKey,
+		notNull:       pParams.NotNull,
+		autoIncrement: pParams.AutoIncrement,
 	}
-	return &Column{
-		name:       *lColumnName,
-		columnType: pParams.Type,
-		size:       pParams.Size,
-		pk:         pParams.PrimaryKey,
-		notNull:    pParams.NotNull,
-		autoInc:    pParams.AutoIncrement,
-	}, nil
 }
 
-func (c Column) Name() ColumnName {
+func (c Column) Name() string {
 	return c.name
 }
 
@@ -80,7 +54,7 @@ func (c Column) Size() uint {
 }
 
 func (c Column) PrimaryKey() bool {
-	return c.pk
+	return c.primaryKey
 }
 
 func (c Column) NotNull() bool {
@@ -88,5 +62,5 @@ func (c Column) NotNull() bool {
 }
 
 func (c Column) AutoIncrement() bool {
-	return c.autoInc
+	return c.autoIncrement
 }

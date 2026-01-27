@@ -20,13 +20,13 @@ func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
 	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
 }
 
-func (s DBSchema) HasTable(pTableName TableName) bool {
+func (s DBSchema) HasTable(pTableName string) bool {
 	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
 	}
 	return slices.ContainsFunc(lTables, func(t string) bool {
-		return strings.EqualFold(t, pTableName.String())
+		return strings.EqualFold(t, pTableName)
 	})
 }
 
@@ -52,18 +52,18 @@ func (s DBSchema) fetchTableNames() ([]string, error) {
 	return lTableNames, lError
 }
 
-func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
+func (s DBSchema) HasColumn(pTableName string, pColumnName string) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
 		return false
 	}
 	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
-		return strings.EqualFold(ct.Name(), pColumnName.String())
+		return strings.EqualFold(ct.Name(), pColumnName)
 	})
 }
 
-func (s DBSchema) fetchColumnTypes(pTableName TableName) ([]*sql.ColumnType, error) {
-	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+func (s DBSchema) fetchColumnTypes(pTableName string) ([]*sql.ColumnType, error) {
+	lRows, lError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
 	if lError != nil {
 		return nil, lError
 	}
