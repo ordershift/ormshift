@@ -30,7 +30,7 @@ func NewDBSchema(
 	}, nil
 }
 
-func (s DBSchema) HasTable(pTableName string) bool {
+func (s *DBSchema) HasTable(pTableName string) bool {
 	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
@@ -40,7 +40,7 @@ func (s DBSchema) HasTable(pTableName string) bool {
 	})
 }
 
-func (s DBSchema) fetchTableNames() (rTableNames []string, rError error) {
+func (s *DBSchema) fetchTableNames() (rTableNames []string, rError error) {
 	lRows, rError := s.db.Query(s.tableNamesQuery)
 	if rError != nil {
 		return
@@ -61,7 +61,7 @@ func (s DBSchema) fetchTableNames() (rTableNames []string, rError error) {
 	return
 }
 
-func (s DBSchema) HasColumn(pTableName string, pColumnName string) bool {
+func (s *DBSchema) HasColumn(pTableName string, pColumnName string) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
 		return false
@@ -71,7 +71,7 @@ func (s DBSchema) HasColumn(pTableName string, pColumnName string) bool {
 	})
 }
 
-func (s DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
+func (s *DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
 	lRows, rError := s.db.Query(s.columnTypesQueryFunc(pTableName))
 	if rError != nil {
 		return

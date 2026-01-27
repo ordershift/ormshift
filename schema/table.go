@@ -18,15 +18,15 @@ func NewTable(pName string) Table {
 	}
 }
 
-func (t Table) Name() string {
+func (t *Table) Name() string {
 	return t.name
 }
 
-func (t Table) Columns() []Column {
+func (t *Table) Columns() []Column {
 	return t.columns
 }
 
-func (t Table) AddColumns(pParams ...NewColumnParams) error {
+func (t *Table) AddColumns(pParams ...NewColumnParams) error {
 	for _, lColParams := range pParams {
 		lColumn := NewColumn(lColParams)
 		lColumnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {

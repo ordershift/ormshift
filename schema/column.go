@@ -41,26 +41,26 @@ func NewColumn(pParams NewColumnParams) Column {
 	}
 }
 
-func (c Column) Name() string {
+func (c *Column) Name() string {
 	return c.name
 }
 
-func (c Column) Type() ColumnType {
+func (c *Column) Type() ColumnType {
 	return c.columnType
 }
 
-func (c Column) Size() uint {
+func (c *Column) Size() uint {
 	return c.size
 }
 
-func (c Column) PrimaryKey() bool {
+func (c *Column) PrimaryKey() bool {
 	return c.primaryKey
 }
 
-func (c Column) NotNull() bool {
+func (c *Column) NotNull() bool {
 	return c.notNull
 }
 
-func (c Column) AutoIncrement() bool {
+func (c *Column) AutoIncrement() bool {
 	return c.autoIncrement
 }

@@ -7,7 +7,7 @@ type Migration interface {
 	Down(pMigrator *Migrator) error
 }
 
-func Migrate(pDatabase *ormshift.Database, pConfig MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
+func Migrate(pDatabase *ormshift.Database, pConfig *MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
 	lMigrator, lError := NewMigrator(pDatabase, pConfig)
 	if lError != nil {
 		return nil, lError

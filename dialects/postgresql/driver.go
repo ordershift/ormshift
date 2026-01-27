@@ -16,16 +16,16 @@ type postgresqlDriver struct {
 }
 
 func Driver() ormshift.DatabaseDriver {
-	return postgresqlDriver{
+	return &postgresqlDriver{
 		sqlBuilder: newPostgreSQLBuilder(),
 	}
 }
 
-func (d postgresqlDriver) Name() string {
+func (d *postgresqlDriver) Name() string {
 	return "postgres"
 }
 
-func (d postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d *postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	lHost := pParams.Host
 	if lHost == "" {
 		lHost = "localhost"
@@ -37,10 +37,10 @@ func (d postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) st
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPort, pParams.User, pParams.Password, pParams.Database)
 }
 
-func (d postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {
+func (d *postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {
 	return d.sqlBuilder
 }
 
-func (d postgresqlDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+func (d *postgresqlDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
 	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc(d.sqlBuilder))
 }

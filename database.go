@@ -31,7 +31,7 @@ type Database struct {
 	executor         SQLExecutor
 	connectionString string
 	sqlBuilder       SQLBuilder
-	schema           schema.DBSchema
+	schema           *schema.DBSchema
 }
 
 func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, error) {
@@ -47,13 +47,16 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 	if lError != nil {
 		return nil, fmt.Errorf("failed to get DB schema: %w", lError)
 	}
+
+	// TODO: Unify SQLExecutor interface usage
+	var lExecutor SQLExecutor = lDB
 	return &Database{
 		driver:           pDriver,
 		db:               lDB,
-		executor:         lDB,
+		executor:         lExecutor,
 		connectionString: lConnectionString,
 		sqlBuilder:       pDriver.SQLBuilder(),
-		schema:           *lSchema,
+		schema:           lSchema,
 	}, nil
 }
 
@@ -82,6 +85,6 @@ func (d *Database) SQLBuilder() SQLBuilder {
 	return d.sqlBuilder
 }
 
-func (d *Database) DBSchema() schema.DBSchema {
+func (d *Database) DBSchema() *schema.DBSchema {
 	return d.schema
 }
