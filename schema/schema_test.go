@@ -1,6 +1,7 @@
 package schema_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ordershift/ormshift"
@@ -9,6 +10,10 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
+func testColumnTypesQueryFunc(pTableName string) string {
+	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName)
+}
+
 func TestNewDBSchema(t *testing.T) {
 	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
 	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
@@ -16,14 +21,14 @@ func TestNewDBSchema(t *testing.T) {
 	}
 	defer func() { _ = lDB.Close() }()
 
-	lDBSchema, lError := schema.NewDBSchema(lDB.DB(), "query")
+	lDBSchema, lError := schema.NewDBSchema(lDB.DB(), "query", testColumnTypesQueryFunc)
 	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
 		return
 	}
 }
 
 func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDBSchema, lError := schema.NewDBSchema(nil, "query")
+	lDBSchema, lError := schema.NewDBSchema(nil, "query", testColumnTypesQueryFunc)
 	if !testutils.AssertNilResultAndNotNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
 		return
 	}
@@ -38,11 +43,8 @@ func TestHasColumn(t *testing.T) {
 	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	if lProductAttributeTable == nil {
-		return
-	}
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}
@@ -52,17 +54,10 @@ func TestHasColumn(t *testing.T) {
 	for _, lColumn := range lProductAttributeTable.Columns() {
 		testutils.AssertEqualWithLabel(t, true, lDBSchema.HasColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.HasColumn")
 	}
-	lAnyTableName, lError := schema.NewTableName("any_table")
-	if !testutils.AssertNotNilResultAndNilError(t, lAnyTableName, lError, "ormshift.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(*lAnyTableName), "DBSchema.HasTable")
-	lAnyColumnName, lError := schema.NewColumnName("any_col")
-	if !testutils.AssertNotNilResultAndNilError(t, lAnyColumnName, lError, "ormshift.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), *lAnyColumnName), "DBSchema.HasColumn")
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(*lAnyTableName, *lAnyColumnName), "DBSchema.HasColumn")
+	lAnyTableName := "any_table"
+	lAnyColumnName := "any_col"
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), lAnyColumnName), "DBSchema.HasColumn")
+	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lAnyTableName, lAnyColumnName), "DBSchema.HasColumn")
 }
 
 func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
@@ -73,11 +68,8 @@ func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
 	defer func() { _ = lDB.Close() }()
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	if lProductAttributeTable == nil {
-		return
-	}
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(*lProductAttributeTable))
+	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
 	if !testutils.AssertNilError(t, lError, "DB.Exec") {
 		return
 	}

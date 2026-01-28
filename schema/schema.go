@@ -3,34 +3,44 @@ package schema
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 )
 
 type DBSchema struct {
-	db              *sql.DB
-	tableNamesQuery string
+	db                   *sql.DB
+	tableNamesQuery      string
+	columnTypesQueryFunc ColumnTypesQueryFunc
 }
 
-func NewDBSchema(pDB *sql.DB, pTableNamesQuery string) (*DBSchema, error) {
+type ColumnTypesQueryFunc func(pTableName string) string
+
+func NewDBSchema(
+	pDB *sql.DB,
+	pTableNamesQuery string,
+	pColumnTypesQueryFunc ColumnTypesQueryFunc,
+) (*DBSchema, error) {
 	if pDB == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
-	return &DBSchema{db: pDB, tableNamesQuery: pTableNamesQuery}, nil
+	return &DBSchema{
+		db:                   pDB,
+		tableNamesQuery:      pTableNamesQuery,
+		columnTypesQueryFunc: pColumnTypesQueryFunc,
+	}, nil
 }
 
-func (s DBSchema) HasTable(pTableName TableName) bool {
+func (s *DBSchema) HasTable(pTableName string) bool {
 	lTables, lError := s.fetchTableNames()
 	if lError != nil {
 		return false
 	}
 	return slices.ContainsFunc(lTables, func(t string) bool {
-		return strings.EqualFold(t, pTableName.String())
+		return strings.EqualFold(t, pTableName)
 	})
 }
 
-func (s DBSchema) fetchTableNames() (rTableNames []string, rError error) {
+func (s *DBSchema) fetchTableNames() (rTableNames []string, rError error) {
 	lRows, rError := s.db.Query(s.tableNamesQuery)
 	if rError != nil {
 		return
@@ -51,18 +61,18 @@ func (s DBSchema) fetchTableNames() (rTableNames []string, rError error) {
 	return
 }
 
-func (s DBSchema) HasColumn(pTableName TableName, pColumnName ColumnName) bool {
+func (s *DBSchema) HasColumn(pTableName, pColumnName string) bool {
 	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
 	if lError != nil {
 		return false
 	}
 	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
-		return strings.EqualFold(ct.Name(), pColumnName.String())
+		return strings.EqualFold(ct.Name(), pColumnName)
 	})
 }
 
-func (s DBSchema) fetchColumnTypes(pTableName TableName) (rColumnTypes []*sql.ColumnType, rError error) {
-	lRows, rError := s.db.Query(fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName.String())) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
+func (s *DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
+	lRows, rError := s.db.Query(s.columnTypesQueryFunc(pTableName))
 	if rError != nil {
 		return
 	}

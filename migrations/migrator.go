@@ -11,17 +11,20 @@ import (
 
 type Migrator struct {
 	database          *ormshift.Database
-	config            MigratorConfig
+	config            *MigratorConfig
 	migrations        []Migration
 	appliedMigrations map[string]bool
 }
 
-func NewMigrator(pDatabase *ormshift.Database, pConfig MigratorConfig) (*Migrator, error) {
+func NewMigrator(pDatabase *ormshift.Database, pConfig *MigratorConfig) (*Migrator, error) {
 	if pDatabase == nil {
 		return nil, fmt.Errorf("database cannot be nil")
 	}
+	if pConfig == nil {
+		return nil, fmt.Errorf("migrator config cannot be nil")
+	}
 
-	lAppliedMigrationNames, lError := getAppliedMigrationNames(*pDatabase, pConfig)
+	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDatabase, pConfig)
 	if lError != nil {
 		return nil, fmt.Errorf("failed to get applied migration names: %w", lError)
 	}
@@ -80,16 +83,15 @@ func (m *Migrator) RevertLastAppliedMigration() error {
 	return nil
 }
 
-func (m Migrator) Database() *ormshift.Database {
+func (m *Migrator) Database() *ormshift.Database {
 	return m.database
 }
 
-func (m Migrator) Migrations() []Migration {
+func (m *Migrator) Migrations() []Migration {
 	return m.migrations
 }
 
-func (m Migrator) AppliedMigrations() []Migration {
-
+func (m *Migrator) AppliedMigrations() []Migration {
 	lMigrations := []Migration{}
 	for _, migration := range m.Migrations() {
 		name := reflect.TypeOf(migration).Name()
@@ -100,12 +102,12 @@ func (m Migrator) AppliedMigrations() []Migration {
 	return lMigrations
 }
 
-func (m Migrator) isApplied(pMigrationName string) bool {
+func (m *Migrator) isApplied(pMigrationName string) bool {
 	_, exists := m.appliedMigrations[pMigrationName]
 	return exists
 }
 
-func (m Migrator) recordAppliedMigration(pMigrationName string) error {
+func (m *Migrator) recordAppliedMigration(pMigrationName string) error {
 	q, p := m.database.SQLBuilder().InsertWithValues(
 		m.config.tableName,
 		ormshift.ColumnsValues{
@@ -117,7 +119,7 @@ func (m Migrator) recordAppliedMigration(pMigrationName string) error {
 	return lError
 }
 
-func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
+func (m *Migrator) deleteAppliedMigration(pMigrationName string) error {
 	q, p := m.database.SQLBuilder().DeleteWithValues(
 		m.config.tableName,
 		ormshift.ColumnsValues{
@@ -128,7 +130,7 @@ func (m Migrator) deleteAppliedMigration(pMigrationName string) error {
 	return lError
 }
 
-func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfig) (rMigrationNames []string, rError error) {
+func getAppliedMigrationNames(pDatabase *ormshift.Database, pConfig *MigratorConfig) (rMigrationNames []string, rError error) {
 	rError = ensureMigrationsTableExists(pDatabase, pConfig)
 	if rError != nil {
 		return
@@ -137,9 +139,9 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 	q, p := pDatabase.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
 		fmt.Sprintf(
 			"select %s from %s order by %s",
-			pConfig.migrationNameColumn,
-			pConfig.tableName,
-			pConfig.migrationNameColumn,
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.tableName),
+			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
 		),
 	)
 	lMigrationsRows, rError := pDatabase.SQLExecutor().Query(q, p...)
@@ -162,34 +164,29 @@ func getAppliedMigrationNames(pDatabase ormshift.Database, pConfig MigratorConfi
 	return
 }
 
-func ensureMigrationsTableExists(pDatabase ormshift.Database, pConfig MigratorConfig) error {
-	lMigrationsTable, lError := schema.NewTable(pConfig.tableName)
+func ensureMigrationsTableExists(pDatabase *ormshift.Database, pConfig *MigratorConfig) error {
+	lMigrationsTable := schema.NewTable(pConfig.TableName())
+	if pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
+		return nil
+	}
+	lError := lMigrationsTable.AddColumns(
+		schema.NewColumnParams{
+			Name:       pConfig.MigrationNameColumn(),
+			Type:       schema.Varchar,
+			Size:       pConfig.MigrationNameMaxLength(),
+			PrimaryKey: true,
+			NotNull:    true,
+		},
+		schema.NewColumnParams{
+			Name:    pConfig.AppliedAtColumn(),
+			Type:    schema.DateTime,
+			NotNull: true,
+		},
+	)
 	if lError != nil {
 		return lError
 	}
-	if !pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
-		columns := []schema.NewColumnParams{
-			{
-				Name:       pConfig.migrationNameColumn,
-				Type:       schema.Varchar,
-				Size:       pConfig.migrationNameMaxLength,
-				PrimaryKey: true,
-				NotNull:    true,
-			},
-			{
-				Name:    pConfig.appliedAtColumn,
-				Type:    schema.DateTime,
-				NotNull: true,
-			},
-		}
 
-		for _, col := range columns {
-			if err := lMigrationsTable.AddColumn(col); err != nil {
-				return err
-			}
-		}
-
-		_, lError = pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(*lMigrationsTable)) // NOSONAR go:S2077 - Dynamic SQL is controlled and sanitized internally
-	}
+	_, lError = pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(lMigrationsTable))
 	return lError
 }

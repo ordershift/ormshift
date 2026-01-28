@@ -120,23 +120,18 @@ defer db.Close()
 ### Create a table with the SQLBuilder
 
 ```go
-table, err := ormshift.NewTable("users")
+table := schema.NewTable("users")
+
+err := table.AddColumns(
+	schema.NewColumnParams{Name: "id", Type: schema.Integer, PrimaryKey: true, AutoIncrement: true},
+	schema.NewColumnParams{Name: "name", Type: schema.Varchar, Size: 50, NotNull: false},
+)
+
 if err != nil {
 	// handle error
 }
 
-columns := []schema.NewColumnParams{
-	{Name: "id", Type: ormshift.Integer, PrimaryKey: true, AutoIncrement: true},
-	{Name: "name", Type: ormshift.Varchar, Size: 50, NotNull: false},
-}
-
-for _, col := range columns {
-	if err := table.AddColumn(col); err != nil {
-		// handle error
-	}
-}
-
-db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(*table))
+db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 ```
 
 ### CRUD with the SQLBuilder and SQLExecutor
@@ -209,41 +204,35 @@ type M0001CreateUserTable struct{}
 
 func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	table, err := schema.NewTable("user")
-	if err != nil {
-		return err
-	}
+	table := schema.NewTable("user")
 
 	if db.DBSchema().HasTable(table.Name()) {
 		// if the table already exists, nothing to do here
 		return nil
 	}
 
-	columns := []schema.NewColumnParams{
-		{Name: "id", Type: schema.Integer, PrimaryKey: true, AutoIncrement: true},
-		{Name: "name", Type: schema.Varchar, Size: 50, NotNull: false},
-		{Name: "email", Type: schema.Varchar, Size: 120, NotNull: false},
-		{Name: "is_active", Type: schema.Boolean, NotNull: false},
+	err := table.AddColumns(
+		schema.NewColumnParams{Name: "id", Type: schema.Integer, PrimaryKey: true, AutoIncrement: true},
+		schema.NewColumnParams{Name: "name", Type: schema.Varchar, Size: 50, NotNull: false},
+		schema.NewColumnParams{Name: "email", Type: schema.Varchar, Size: 120, NotNull: false},
+		schema.NewColumnParams{Name: "is_active", Type: schema.Boolean, NotNull: false},
+	)
+	if err != nil {
+		return err
 	}
 
-	for _, col := range columns {
-		if err := table.AddColumn(col); err != nil {
-			return err
-		}
-	}
-
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(*table))
+	_, err = db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 	return err
 }
 
 func (m M0001CreateUserTable) Down(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName, _ := schema.NewTableName("user")
-	if !db.DBSchema().HasTable(*tableName) {
+	tableName := "user"
+	if !db.DBSchema().HasTable(tableName) {
 		// if the table already doesn't exist, nothing to do here
 		return nil
 	}
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().DropTable(*tableName))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().DropTable(tableName))
 	return err
 }
 ```
@@ -256,42 +245,28 @@ type M0002AddUpdatedAtColumn struct{}
 
 func (m M0002AddUpdatedAtColumn) Up(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName, err := schema.NewTableName("user")
-	if err != nil {
-		return err
-	}
+	tableName := "user"
+	col := schema.NewColumn(schema.NewColumnParams{Name: "updated_at", Type: schema.DateTime})
 
-	col, err := schema.NewColumn(schema.NewColumnParams{Name: "updated_at", Type: schema.DateTime})
-	if err != nil {
-		return err
-	}
-
-	if db.DBSchema().HasColumn(*tableName, col.Name()) {
+	if db.DBSchema().HasColumn(tableName, col.Name()) {
 		// if the column already exists, nothing to do here
 		return nil
 	}
 	
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableAddColumn(*tableName, *col))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableAddColumn(tableName, col))
 	return err
 }
 
 func (m M0002AddUpdatedAtColumn) Down(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName, err := schema.NewTableName("user")
-	if err != nil {
-		return err
-	}
+	tableName := "user"
+	colName := "updated_at"
 
-	colName, err := schema.NewColumnName("updated_at")
-	if err != nil {
-		return err
-	}
-
-	if !db.DBSchema().HasColumn(*tableName, *colName) {
+	if !db.DBSchema().HasColumn(tableName, colName) {
 		// if the column already doesn't exist, nothing to do here
 		return nil
 	}
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableDropColumn(*tableName, *colName))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableDropColumn(tableName, colName))
 	return err
 }
 ```

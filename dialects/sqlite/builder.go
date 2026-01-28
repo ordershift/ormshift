@@ -14,12 +14,12 @@ type sqliteBuilder struct {
 }
 
 func newSQLiteBuilder() ormshift.SQLBuilder {
-	lBuilder := sqliteBuilder{}
-	lBuilder.generic = internal.NewGenericSQLBuilder(lBuilder.columnDefinition, nil)
-	return lBuilder
+	sb := sqliteBuilder{}
+	sb.generic = internal.NewGenericSQLBuilder(sb.columnDefinition, nil, nil)
+	return &sb
 }
 
-func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
+func (sb *sqliteBuilder) CreateTable(pTable schema.Table) string {
 	lColumns := ""
 	lPKColumns := ""
 	lHasAutoIncrementColumn := false
@@ -33,7 +33,7 @@ func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
 			if lPKColumns != "" {
 				lPKColumns += ","
 			}
-			lPKColumns += lColumn.Name().String()
+			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
 		}
 
 		if !lHasAutoIncrementColumn {
@@ -45,24 +45,25 @@ func (sb sqliteBuilder) CreateTable(pTable schema.Table) string {
 		if lColumns != "" {
 			lColumns += ","
 		}
-		lColumns += fmt.Sprintf("CONSTRAINT PK_%s PRIMARY KEY (%s)", pTable.Name().String(), lPKColumns)
+		lPKConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
+		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", pTable.Name().String(), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
 }
 
-func (sb sqliteBuilder) DropTable(pTableName schema.TableName) string {
+func (sb *sqliteBuilder) DropTable(pTableName string) string {
 	return sb.generic.DropTable(pTableName)
 }
 
-func (sb sqliteBuilder) AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string {
+func (sb *sqliteBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
 	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
 }
 
-func (sb sqliteBuilder) AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string {
+func (sb *sqliteBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
 	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
 }
 
-func (sb sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
+func (sb *sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
 	switch pColumnType {
 	case schema.Varchar:
 		return "TEXT"
@@ -83,8 +84,8 @@ func (sb sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string
 	}
 }
 
-func (sb sqliteBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := fmt.Sprintf("%s %s", pColumn.Name().String(), sb.ColumnTypeAsString(pColumn.Type()))
+func (sb *sqliteBuilder) columnDefinition(pColumn schema.Column) string {
+	lColumnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
 	if pColumn.NotNull() {
 		lColumnDef += " NOT NULL"
 	}
@@ -94,42 +95,46 @@ func (sb sqliteBuilder) columnDefinition(pColumn schema.Column) string {
 	return lColumnDef
 }
 
-func (sb sqliteBuilder) Insert(pTableName string, pColumns []string) string {
+func (sb *sqliteBuilder) Insert(pTableName string, pColumns []string) string {
 	return sb.generic.Insert(pTableName, pColumns)
 }
 
-func (sb sqliteBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
+func (sb *sqliteBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
 }
 
-func (sb sqliteBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
+func (sb *sqliteBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
 	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqliteBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
+func (sb *sqliteBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
 }
 
-func (sb sqliteBuilder) Delete(pTableName string, pColumnsWhere []string) string {
+func (sb *sqliteBuilder) Delete(pTableName string, pColumnsWhere []string) string {
 	return sb.generic.Delete(pTableName, pColumnsWhere)
 }
 
-func (sb sqliteBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+func (sb *sqliteBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
 }
 
-func (sb sqliteBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
+func (sb *sqliteBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
 	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
 }
 
-func (sb sqliteBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
+func (sb *sqliteBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
 }
 
-func (sb sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
+func (sb *sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
 	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
 }
 
-func (sb sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+func (sb *sqliteBuilder) QuoteIdentifier(pIdentifier string) string {
+	return sb.generic.QuoteIdentifier(pIdentifier)
+}
+
+func (sb *sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
 	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
 }

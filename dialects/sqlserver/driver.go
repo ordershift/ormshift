@@ -11,17 +11,21 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-type sqlserverDriver struct{}
-
-func Driver() ormshift.DatabaseDriver {
-	return sqlserverDriver{}
+type sqlserverDriver struct {
+	sqlBuilder ormshift.SQLBuilder
 }
 
-func (d sqlserverDriver) Name() string {
+func Driver() ormshift.DatabaseDriver {
+	return &sqlserverDriver{
+		sqlBuilder: newSQLServerBuilder(),
+	}
+}
+
+func (d *sqlserverDriver) Name() string {
 	return "sqlserver"
 }
 
-func (d sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
+func (d *sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
 	lHostInstanceAndPort := pParams.Host
 	if pParams.Instance != "" {
 		lHostInstanceAndPort = fmt.Sprintf("%s\\%s", pParams.Host, pParams.Instance)
@@ -32,10 +36,10 @@ func (d sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) str
 	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
 }
 
-func (d sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {
-	return newSQLServerBuilder()
+func (d *sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {
+	return d.sqlBuilder
 }
 
-func (d sqlserverDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return schema.NewDBSchema(pDB, tableNamesQuery)
+func (d *sqlserverDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc(d.sqlBuilder))
 }

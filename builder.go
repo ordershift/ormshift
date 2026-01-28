@@ -10,9 +10,9 @@ import (
 // DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
 	CreateTable(pTable schema.Table) string
-	DropTable(pTableName schema.TableName) string
-	AlterTableAddColumn(pTableName schema.TableName, pColumn schema.Column) string
-	AlterTableDropColumn(pTableName schema.TableName, pColumnName schema.ColumnName) string
+	DropTable(pTableName string) string
+	AlterTableAddColumn(pTableName string, pColumn schema.Column) string
+	AlterTableDropColumn(pTableName, pColumnName string) string
 	ColumnTypeAsString(pColumnType schema.ColumnType) string
 }
 
@@ -24,9 +24,9 @@ type ColumnsValues map[string]any
 //	lColumnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
 //	lNamedArgs := lColumnsValues.ToNamedArgs()
 //	//lNamedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
-func (cv ColumnsValues) ToNamedArgs() []sql.NamedArg {
+func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
 	lNamedArgs := []sql.NamedArg{}
-	for c, v := range cv {
+	for c, v := range *cv {
 		lNamedArgs = append(lNamedArgs, sql.Named(c, v))
 	}
 	slices.SortFunc(lNamedArgs, func(a, b sql.NamedArg) int {
@@ -39,9 +39,9 @@ func (cv ColumnsValues) ToNamedArgs() []sql.NamedArg {
 }
 
 // ToColumns returns the column names from ColumnsValues as a string array ordered by name, e.g.:
-func (cv ColumnsValues) ToColumns() []string {
+func (cv *ColumnsValues) ToColumns() []string {
 	lColumns := []string{}
-	for c := range cv {
+	for c := range *cv {
 		lColumns = append(lColumns, c)
 	}
 	slices.Sort(lColumns)
@@ -91,4 +91,5 @@ type DMLSQLBuilder interface {
 type SQLBuilder interface {
 	DDLSQLBuilder
 	DMLSQLBuilder
+	QuoteIdentifier(pIdentifier string) string
 }

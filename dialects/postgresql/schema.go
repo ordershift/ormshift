@@ -1,5 +1,11 @@
 package postgresql
 
+import (
+	"fmt"
+
+	"github.com/ordershift/ormshift"
+)
+
 const tableNamesQuery = `
 		SELECT
 			table_name
@@ -11,3 +17,9 @@ const tableNamesQuery = `
 		ORDER BY
 			table_name
 	`
+
+func columnTypesQueryFunc(pSQLBuilder ormshift.SQLBuilder) func(string) string {
+	return func(pTableName string) string {
+		return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pSQLBuilder.QuoteIdentifier(pTableName))
+	}
+}

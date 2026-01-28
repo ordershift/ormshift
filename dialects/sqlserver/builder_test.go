@@ -22,15 +22,15 @@ func TestCreateTable(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTable := testutils.FakeUserTable(t)
-	lExpectedSQL := "CREATE TABLE user (id BIGINT NOT NULL IDENTITY (1, 1),email VARCHAR(80) NOT NULL,name VARCHAR(50) NOT NULL," +
-		"password_hash VARCHAR(256),active BIT,created_at DATETIME2(6),user_master BIGINT,master_user_id BIGINT," +
-		"licence_price MONEY,relevance FLOAT,photo VARBINARY(MAX),any VARCHAR,CONSTRAINT PK_user PRIMARY KEY (id,email));"
-	lReturnedSQL := lSQLBuilder.CreateTable(*lUserTable)
+	lExpectedSQL := "CREATE TABLE [user] ([id] BIGINT NOT NULL IDENTITY (1, 1),[email] VARCHAR(80) NOT NULL,[name] VARCHAR(50) NOT NULL," +
+		"[password_hash] VARCHAR(256),[active] BIT,[created_at] DATETIME2(6),[user_master] BIGINT,[master_user_id] BIGINT," +
+		"[licence_price] MONEY,[relevance] FLOAT,[photo] VARBINARY(MAX),[any] VARCHAR,CONSTRAINT [PK_user] PRIMARY KEY ([id],[email]));"
+	lReturnedSQL := lSQLBuilder.CreateTable(lUserTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 
 	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	lExpectedSQL = "CREATE TABLE product_attribute (product_id BIGINT NOT NULL,attribute_id BIGINT NOT NULL,value VARCHAR(75),position BIGINT,CONSTRAINT PK_product_attribute PRIMARY KEY (product_id,attribute_id));"
-	lReturnedSQL = lSQLBuilder.CreateTable(*lProductAttributeTable)
+	lExpectedSQL = "CREATE TABLE [product_attribute] ([product_id] BIGINT NOT NULL,[attribute_id] BIGINT NOT NULL,[value] VARCHAR(75),[position] BIGINT,CONSTRAINT [PK_product_attribute] PRIMARY KEY ([product_id],[attribute_id]));"
+	lReturnedSQL = lSQLBuilder.CreateTable(lProductAttributeTable)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.CreateTable")
 }
 
@@ -38,8 +38,8 @@ func TestDropTable(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lUserTableName := testutils.FakeUserTableName(t)
-	lExpectedSQL := "DROP TABLE user;"
-	lReturnedSQL := lSQLBuilder.DropTable(*lUserTableName)
+	lExpectedSQL := "DROP TABLE [user];"
+	lReturnedSQL := lSQLBuilder.DropTable(lUserTableName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.DropTable")
 }
 
@@ -48,8 +48,8 @@ func TestAlterTableAddColumn(t *testing.T) {
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumn := testutils.FakeUpdatedAtColumn(t)
-	lExpectedSQL := "ALTER TABLE user ADD COLUMN updated_at DATETIME2(6);"
-	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(*lUserTableName, *lUpdatedAtColumn)
+	lExpectedSQL := "ALTER TABLE [user] ADD COLUMN [updated_at] DATETIME2(6);"
+	lReturnedSQL := lSQLBuilder.AlterTableAddColumn(lUserTableName, lUpdatedAtColumn)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableAddColumn")
 }
 
@@ -58,8 +58,8 @@ func TestAlterTableDropColumn(t *testing.T) {
 
 	lUserTableName := testutils.FakeUserTableName(t)
 	lUpdatedAtColumnName := testutils.FakeUpdatedAtColumnName(t)
-	lExpectedSQL := "ALTER TABLE user DROP COLUMN updated_at;"
-	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(*lUserTableName, *lUpdatedAtColumnName)
+	lExpectedSQL := "ALTER TABLE [user] DROP COLUMN [updated_at];"
+	lReturnedSQL := lSQLBuilder.AlterTableDropColumn(lUserTableName, lUpdatedAtColumnName)
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.AlterTableDropColumn")
 }
 
@@ -67,7 +67,7 @@ func TestInsert(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Insert("product", []string{"id", "sku", "name", "description"})
-	lExpectedSQL := "insert into product (id,sku,name,description) values (@id,@sku,@name,@description)"
+	lExpectedSQL := "insert into [product] ([id],[sku],[name],[description]) values (@id,@sku,@name,@description)"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.Insert")
 }
 
@@ -75,7 +75,7 @@ func TestInsertWithValues(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.InsertWithValues("product", ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.9", "name": "Trufa Sabor Amarula 30g Cacaushow"})
-	lExpectedSQL := "insert into product (id,name,sku) values (@id,@name,@sku)"
+	lExpectedSQL := "insert into [product] ([id],[name],[sku]) values (@id,@name,@sku)"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.InsertWithValues.SQL")
 	testutils.AssertEqualWithLabel(t, 3, len(lReturnedValues), "SQLBuilder.InsertWithValues.Values")
 	testutils.AssertNamedArgEqualWithLabel(t, lReturnedValues[0], sql.NamedArg{Name: "id", Value: 1}, "SQLBuilder.InsertWithValues.Values[0]")
@@ -87,7 +87,7 @@ func TestUpdate(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Update("product", []string{"sku", "name", "description"}, []string{"id"})
-	lExpectedSQL := "update product set sku = @sku,name = @name,description = @description where id = @id"
+	lExpectedSQL := "update [product] set [sku] = @sku,[name] = @name,[description] = @description where [id] = @id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.Update")
 }
 
@@ -95,7 +95,7 @@ func TestUpdateWithValues(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.UpdateWithValues("product", []string{"sku", "name"}, []string{"id"}, ormshift.ColumnsValues{"id": 1, "sku": "1.005.12.5", "name": "Trufa Sabor Amarula 18g Cacaushow"})
-	lExpectedSQL := "update product set sku = @sku,name = @name where id = @id"
+	lExpectedSQL := "update [product] set [sku] = @sku,[name] = @name where [id] = @id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.UpdateWithValues.SQL")
 	testutils.AssertEqualWithLabel(t, 3, len(lReturnedValues), "SQLBuilder.UpdateWithValues.Values")
 	testutils.AssertNamedArgEqualWithLabel(t, lReturnedValues[0], sql.NamedArg{Name: "id", Value: 1}, "SQLBuilder.UpdateWithValues.Values[0]")
@@ -107,7 +107,7 @@ func TestDelete(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Delete("product", []string{"id"})
-	lExpectedSQL := "delete from product where id = @id"
+	lExpectedSQL := "delete from [product] where [id] = @id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.Delete")
 }
 
@@ -115,7 +115,7 @@ func TestDeleteWithValues(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.DeleteWithValues("product", ormshift.ColumnsValues{"id": 1})
-	lExpectedSQL := "delete from product where id = @id"
+	lExpectedSQL := "delete from [product] where [id] = @id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.DeleteWithValues.SQL")
 	testutils.AssertEqualWithLabel(t, 1, len(lReturnedValues), "SQLBuilder.DeleteWithValues.Values")
 	testutils.AssertNamedArgEqualWithLabel(t, lReturnedValues[0], sql.NamedArg{Name: "id", Value: 1}, "SQLBuilder.DeleteWithValues.Values[0]")
@@ -125,7 +125,7 @@ func TestSelect(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL := lSQLBuilder.Select("product", []string{"id", "name", "description"}, []string{"sku", "active"})
-	lExpectedSQL := "select id,name,description from product where sku = @sku and active = @active"
+	lExpectedSQL := "select [id],[name],[description] from [product] where [sku] = @sku and [active] = @active"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.Select")
 }
 
@@ -133,7 +133,7 @@ func TestSelectWithValues(t *testing.T) {
 	lSQLBuilder := sqlserver.Driver().SQLBuilder()
 
 	lReturnedSQL, lReturnedValues := lSQLBuilder.SelectWithValues("product", []string{"id", "sku", "name", "description"}, ormshift.ColumnsValues{"category_id": 1, "active": true})
-	lExpectedSQL := "select id,sku,name,description from product where active = @active and category_id = @category_id"
+	lExpectedSQL := "select [id],[sku],[name],[description] from [product] where [active] = @active and [category_id] = @category_id"
 	testutils.AssertEqualWithLabel(t, lExpectedSQL, lReturnedSQL, "SQLBuilder.SelectWithValues.SQL")
 	testutils.AssertEqualWithLabel(t, 2, len(lReturnedValues), "SQLBuilder.SelectWithValues.Values")
 	testutils.AssertNamedArgEqualWithLabel(t, lReturnedValues[0], sql.NamedArg{Name: "active", Value: true}, "SQLBuilder.SelectWithValues.Values[0]")

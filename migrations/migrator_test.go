@@ -8,13 +8,24 @@ import (
 	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
 	"github.com/ordershift/ormshift/migrations"
-	"github.com/ordershift/ormshift/schema"
 )
 
 func TestNewMigratorWhenDatabaseIsNil(t *testing.T) {
 	lMigrator, lError := migrations.NewMigrator(nil, migrations.NewMigratorConfig())
 	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[database=nil]")
 	testutils.AssertErrorMessage(t, "database cannot be nil", lError, "migrations.NewMigrator[database=nil]")
+}
+
+func TestNewMigratorWhenConfigIsNil(t *testing.T) {
+	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+		return
+	}
+	defer func() { _ = lDB.Close() }()
+
+	lMigrator, lError := migrations.NewMigrator(lDB, nil)
+	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[config=nil]")
+	testutils.AssertErrorMessage(t, "migrator config cannot be nil", lError, "migrations.NewMigrator[config=nil]")
 }
 
 func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
@@ -69,21 +80,16 @@ func TestRevertLastAppliedMigration(t *testing.T) {
 		return
 	}
 
-	lUserTableName, lError := schema.NewTableName("user")
-	if !testutils.AssertNilError(t, lError, "migrations.NewTableName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasTable(*lUserTableName), "Migrator.DBSchema.HasTable[user]")
+	lUserTableName := "user"
+	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasTable(lUserTableName), "Migrator.DBSchema.HasTable[user]")
 
 	lError = lMigrator.RevertLastAppliedMigration()
 	if !testutils.AssertNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
-	lUpdatedAtColumnName, lError := schema.NewColumnName("updated_at")
-	if !testutils.AssertNilError(t, lError, "migrations.NewColumnName") {
-		return
-	}
-	testutils.AssertEqualWithLabel(t, false, lDB.DBSchema().HasColumn(*lUserTableName, *lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+
+	lUpdatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, false, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
 }
 
 func TestRevertLastAppliedMigrationWhenNoMigrationsApplied(t *testing.T) {
