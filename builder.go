@@ -7,7 +7,7 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-// DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
+// DDLSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
 	CreateTable(table schema.Table) string
 	DropTable(table string) string
