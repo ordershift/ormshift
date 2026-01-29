@@ -8,16 +8,16 @@ type Migration interface {
 }
 
 func Migrate(database *ormshift.Database, config *MigratorConfig, migrations ...Migration) (*Migrator, error) {
-	lMigrator, lError := NewMigrator(database, config)
-	if lError != nil {
-		return nil, lError
+	migrator, err := NewMigrator(database, config)
+	if err != nil {
+		return nil, err
 	}
-	for _, lMigration := range migrations {
-		lMigrator.Add(lMigration)
+	for _, migration := range migrations {
+		migrator.Add(migration)
 	}
-	lError = lMigrator.ApplyAllMigrations()
-	if lError != nil {
-		return nil, lError
+	err = migrator.ApplyAllMigrations()
+	if err != nil {
+		return nil, err
 	}
-	return lMigrator, nil
+	return migrator, nil
 }

@@ -21,9 +21,9 @@ type ColumnsValues map[string]any
 
 // ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
-//	lColumnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
-//	lNamedArgs := lColumnsValues.ToNamedArgs()
-//	//lNamedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
+//	columnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
+//	namedArgs := columnsValues.ToNamedArgs()
+//	//namedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
 func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
 	namedArgs := []sql.NamedArg{}
 	for c, v := range *cv {
