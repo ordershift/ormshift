@@ -1,24 +1,24 @@
-# Development Guide
+# Contributing to ormshift
 
 ## Table of Contents
 
-- [Development Guide](#development-guide)
+- [Contributing to ormshift](#contributing-to-ormshift)
   - [Table of Contents](#table-of-contents)
-  - [Contribution Workflow](#contribution-workflow)
-    - [Conventional Commits](#conventional-commits)
+  - [How to Contribute](#how-to-contribute)
+    - [Commit Message Guidelines](#commit-message-guidelines)
       - [Format](#format)
       - [Types](#types)
       - [Scope](#scope)
       - [Examples](#examples)
-    - [Pull Request Squashing](#pull-request-squashing)
-    - [Review Checklist](#review-checklist)
+    - [Merging Pull Requests](#merging-pull-requests)
+    - [Pre-Submission Checklist](#pre-submission-checklist)
 
 
-## Contribution Workflow
+## How to Contribute
 
-### Conventional Commits
+### Commit Message Guidelines
 
-All pull request titles **must** follow the [Conventional Commits](https://www.conventionalcommits.org/) specification to maintain a clear and organized commit history.
+All pull request titles **must** follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Individual commits within your PR can use any format you prefer; only the PR title matters, as it becomes the commit message on `main` after squashing.
 
 #### Format
 
@@ -56,15 +56,15 @@ Optional but recommended. Use the affected component:
 - `test(dialects/postgresql): add boolean conversion tests`
 - `refactor: remove hungarian notation from variable names`
 
-### Pull Request Squashing
+### Merging Pull Requests
 
-All pull requests **must be squashed** before merging to `main`. This keeps the commit history clean and aligns with the conventional commit history.
+All pull requests **must be squashed** before merging to `main`. This ensures that only the PR title (following Conventional Commits) becomes a commit on the main branch.
 
 - Use GitHub's **"Squash and merge"** option when merging
-- Ensure the squashed commit message follows the Conventional Commits format
+- The PR title becomes the commit message on `main`
 - One logical change = one squashed commit
 
-### Review Checklist
+### Pre-Submission Checklist
 
 Before opening a PR:
 
