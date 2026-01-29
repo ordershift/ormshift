@@ -22,20 +22,20 @@ type ColumnsValues map[string]any
 // ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
 //	values := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
-//	namedArgs := values.ToNamedArgs()
-//	//namedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
+//	args := values.ToNamedArgs()
+//	//args == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
 func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
-	namedArgs := []sql.NamedArg{}
+	args := []sql.NamedArg{}
 	for c, v := range *cv {
-		namedArgs = append(namedArgs, sql.Named(c, v))
+		args = append(args, sql.Named(c, v))
 	}
-	slices.SortFunc(namedArgs, func(a, b sql.NamedArg) int {
+	slices.SortFunc(args, func(a, b sql.NamedArg) int {
 		if a.Name < b.Name {
 			return -1
 		}
 		return 1
 	})
-	return namedArgs
+	return args
 }
 
 // ToColumns returns the column names from ColumnsValues as a string array ordered by name, e.g.:
@@ -85,7 +85,7 @@ type DMLSQLBuilder interface {
 	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = ?"
 	//	//p == 123
-	InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any)
+	InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any)
 }
 
 type SQLBuilder interface {

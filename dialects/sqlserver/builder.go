@@ -148,6 +148,6 @@ func (sb *sqlserverBuilder) QuoteIdentifier(identifier string) string {
 	return fmt.Sprintf("[%s]", identifier)
 }
 
-func (sb *sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(sql, namedArgs...)
+func (sb *sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(sql, args...)
 }

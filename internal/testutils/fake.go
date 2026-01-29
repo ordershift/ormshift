@@ -154,12 +154,12 @@ func FakeUpdatedAtColumnName(t *testing.T) string {
 	return "updated_at"
 }
 
-func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, namedArgs ...sql.NamedArg) (string, []any) {
-	args := make([]any, len(namedArgs))
-	for i, v := range namedArgs {
-		args[i] = v
+func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, args ...sql.NamedArg) (string, []any) {
+	a := make([]any, len(args))
+	for i, v := range args {
+		a[i] = v
 	}
-	return "command has been modified", args
+	return "command has been modified", a
 }
 
 func FakeColumnDefinitionFunc(column schema.Column) string {

@@ -9,14 +9,14 @@ import (
 
 func TestColumnsValuesToNamedArgs(t *testing.T) {
 	values := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234", "active": true}
-	namedArgs := values.ToNamedArgs()
-	testutils.AssertEqualWithLabel(t, 3, len(namedArgs), "ColumnsValues.ToNamedArgs")
-	testutils.AssertEqualWithLabel(t, namedArgs[0].Name, "active", "ColumnsValues.ToNamedArgs[0].Name")
-	testutils.AssertEqualWithLabel(t, namedArgs[0].Value, true, "ColumnsValues.ToNamedArgs[0].Value")
-	testutils.AssertEqualWithLabel(t, namedArgs[1].Name, "id", "ColumnsValues.ToNamedArgs[1].Name")
-	testutils.AssertEqualWithLabel(t, namedArgs[1].Value, 1, "ColumnsValues.ToNamedArgs[1].Value")
-	testutils.AssertEqualWithLabel(t, namedArgs[2].Name, "sku", "ColumnsValues.ToNamedArgs[2].Name")
-	testutils.AssertEqualWithLabel(t, namedArgs[2].Value, "ABC1234", "ColumnsValues.ToNamedArgs[2].Value")
+	args := values.ToNamedArgs()
+	testutils.AssertEqualWithLabel(t, 3, len(args), "ColumnsValues.ToNamedArgs")
+	testutils.AssertEqualWithLabel(t, args[0].Name, "active", "ColumnsValues.ToNamedArgs[0].Name")
+	testutils.AssertEqualWithLabel(t, args[0].Value, true, "ColumnsValues.ToNamedArgs[0].Value")
+	testutils.AssertEqualWithLabel(t, args[1].Name, "id", "ColumnsValues.ToNamedArgs[1].Name")
+	testutils.AssertEqualWithLabel(t, args[1].Value, 1, "ColumnsValues.ToNamedArgs[1].Value")
+	testutils.AssertEqualWithLabel(t, args[2].Name, "sku", "ColumnsValues.ToNamedArgs[2].Name")
+	testutils.AssertEqualWithLabel(t, args[2].Value, "ABC1234", "ColumnsValues.ToNamedArgs[2].Value")
 }
 
 func TestColumnsValuesToColumns(t *testing.T) {

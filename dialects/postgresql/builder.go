@@ -115,20 +115,20 @@ func (sb *postgresqlBuilder) QuoteIdentifier(identifier string) string {
 	return sb.generic.QuoteIdentifier(identifier)
 }
 
-func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any) {
-	args := []any{}
+func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any) {
+	a := []any{}
 	indexes := map[string]int{}
-	for i, param := range namedArgs {
+	for i, param := range args {
 		indexes[strings.ToLower(param.Name)] = i + 1
 		booleanValue, isBoolean := param.Value.(bool)
 		if isBoolean {
 			if booleanValue {
-				args = append(args, int(1))
+				a = append(a, int(1))
 			} else {
-				args = append(args, int(0))
+				a = append(a, int(0))
 			}
 		} else {
-			args = append(args, param.Value)
+			a = append(a, param.Value)
 		}
 	}
 	regex := regexp.MustCompile(`@([a-zA-Z_][a-zA-Z0-9_]*)`)
@@ -139,5 +139,5 @@ func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sql string, nam
 		}
 		return m
 	})
-	return sql, args
+	return sql, a
 }

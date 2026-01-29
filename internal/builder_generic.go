@@ -13,7 +13,7 @@ type ColumnDefinitionFunc func(schema.Column) string
 
 type QuoteIdentifierFunc func(string) string
 
-type InteroperateSQLCommandWithNamedArgsFunc func(sql string, namedArgs ...sql.NamedArg) (string, []any)
+type InteroperateSQLCommandWithNamedArgsFunc func(sql string, args ...sql.NamedArg) (string, []any)
 
 type genericSQLBuilder struct {
 	ColumnDefinitionFunc                    ColumnDefinitionFunc
@@ -185,14 +185,14 @@ func (sb *genericSQLBuilder) QuoteIdentifier(identifier string) string {
 	return fmt.Sprintf(`"%s"`, identifier)
 }
 
-func (sb *genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any) {
+func (sb *genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any) {
 	if sb.InteroperateSQLCommandWithNamedArgsFunc != nil {
-		return sb.InteroperateSQLCommandWithNamedArgsFunc(sql, namedArgs...)
+		return sb.InteroperateSQLCommandWithNamedArgsFunc(sql, args...)
 	}
 
-	args := []any{}
-	for _, param := range namedArgs {
-		args = append(args, param)
+	a := []any{}
+	for _, param := range args {
+		a = append(a, param)
 	}
-	return sql, args
+	return sql, a
 }
