@@ -79,8 +79,8 @@ func (sb *postgresqlBuilder) Insert(table string, columns []string) string {
 	return sb.generic.Insert(table, columns)
 }
 
-func (sb *postgresqlBuilder) InsertWithValues(table string, columnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(table, columnsValues)
+func (sb *postgresqlBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(table, values)
 }
 
 func (sb *postgresqlBuilder) Update(table string, columns, columnsWhere []string) string {

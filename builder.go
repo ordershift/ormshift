@@ -21,8 +21,8 @@ type ColumnsValues map[string]any
 
 // ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
-//	columnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
-//	namedArgs := columnsValues.ToNamedArgs()
+//	values := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
+//	namedArgs := values.ToNamedArgs()
 //	//namedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
 func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
 	namedArgs := []sql.NamedArg{}
@@ -51,7 +51,7 @@ func (cv *ColumnsValues) ToColumns() []string {
 // DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.
 type DMLSQLBuilder interface {
 	Insert(table string, columns []string) string
-	InsertWithValues(table string, columnsValues ColumnsValues) (string, []any)
+	InsertWithValues(table string, values ColumnsValues) (string, []any)
 	Update(table string, columns, columnsWhere []string) string
 	UpdateWithValues(table string, columns, columnsWhere []string, values ColumnsValues) (string, []any)
 	Delete(table string, columnsWhere []string) string

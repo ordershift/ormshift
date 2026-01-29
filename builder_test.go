@@ -8,8 +8,8 @@ import (
 )
 
 func TestColumnsValuesToNamedArgs(t *testing.T) {
-	columnsValues := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234", "active": true}
-	namedArgs := columnsValues.ToNamedArgs()
+	values := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234", "active": true}
+	namedArgs := values.ToNamedArgs()
 	testutils.AssertEqualWithLabel(t, 3, len(namedArgs), "ColumnsValues.ToNamedArgs")
 	testutils.AssertEqualWithLabel(t, namedArgs[0].Name, "active", "ColumnsValues.ToNamedArgs[0].Name")
 	testutils.AssertEqualWithLabel(t, namedArgs[0].Value, true, "ColumnsValues.ToNamedArgs[0].Value")
@@ -20,8 +20,8 @@ func TestColumnsValuesToNamedArgs(t *testing.T) {
 }
 
 func TestColumnsValuesToColumns(t *testing.T) {
-	columnsValues := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234"}
-	columns := columnsValues.ToColumns()
+	values := ormshift.ColumnsValues{"id": 1, "sku": "ABC1234"}
+	columns := values.ToColumns()
 	testutils.AssertEqualWithLabel(t, 2, len(columns), "ColumnsValues.ToColumns")
 	testutils.AssertEqualWithLabel(t, columns[0], "id", "ColumnsValues.ToColumns[0]")
 	testutils.AssertEqualWithLabel(t, columns[1], "sku", "ColumnsValues.ToColumns[1]")

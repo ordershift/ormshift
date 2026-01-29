@@ -99,8 +99,8 @@ func (sb *sqliteBuilder) Insert(table string, columns []string) string {
 	return sb.generic.Insert(table, columns)
 }
 
-func (sb *sqliteBuilder) InsertWithValues(table string, columnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(table, columnsValues)
+func (sb *sqliteBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(table, values)
 }
 
 func (sb *sqliteBuilder) Update(table string, columns, columnsWhere []string) string {

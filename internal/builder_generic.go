@@ -87,9 +87,9 @@ func (sb *genericSQLBuilder) Insert(table string, columns []string) string {
 	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.QuoteIdentifier(table), sb.columnsList(columns), sb.namesList(columns))
 }
 
-func (sb *genericSQLBuilder) InsertWithValues(table string, columnsValues ormshift.ColumnsValues) (string, []any) {
-	insertSQL := sb.Insert(table, columnsValues.ToColumns())
-	insertArgs := columnsValues.ToNamedArgs()
+func (sb *genericSQLBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	insertSQL := sb.Insert(table, values.ToColumns())
+	insertArgs := values.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(insertSQL, insertArgs...)
 }
 

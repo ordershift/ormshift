@@ -100,8 +100,8 @@ func (sb *sqlserverBuilder) Insert(table string, columns []string) string {
 	return sb.generic.Insert(table, columns)
 }
 
-func (sb *sqlserverBuilder) InsertWithValues(table string, columnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(table, columnsValues)
+func (sb *sqlserverBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(table, values)
 }
 
 func (sb *sqlserverBuilder) Update(table string, columns, columnsWhere []string) string {
