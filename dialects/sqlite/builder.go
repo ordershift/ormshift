@@ -127,8 +127,8 @@ func (sb *sqliteBuilder) SelectWithValues(table string, columns []string, where 
 	return sb.generic.SelectWithValues(table, columns, where)
 }
 
-func (sb *sqliteBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {
-	return sb.generic.SelectWithPagination(sqlSelectCommand, rowsPerPage, pageNumber)
+func (sb *sqliteBuilder) SelectWithPagination(sqlSelectCommand string, size, number uint) string {
+	return sb.generic.SelectWithPagination(sqlSelectCommand, size, number)
 }
 
 func (sb *sqliteBuilder) QuoteIdentifier(identifier string) string {

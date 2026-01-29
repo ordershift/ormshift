@@ -135,12 +135,12 @@ func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, wh
 	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }
 
-func (sb *genericSQLBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {
+func (sb *genericSQLBuilder) SelectWithPagination(sqlSelectCommand string, size, number uint) string {
 	selectWithPagination := sqlSelectCommand
-	if rowsPerPage > 0 {
-		selectWithPagination += fmt.Sprintf(" LIMIT %d", rowsPerPage)
-		if pageNumber > 1 {
-			selectWithPagination += fmt.Sprintf(" OFFSET %d", rowsPerPage*(pageNumber-1))
+	if size > 0 {
+		selectWithPagination += fmt.Sprintf(" LIMIT %d", size)
+		if number > 1 {
+			selectWithPagination += fmt.Sprintf(" OFFSET %d", size*(number-1))
 		}
 	}
 	return selectWithPagination
