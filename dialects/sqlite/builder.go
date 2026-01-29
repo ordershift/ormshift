@@ -22,7 +22,7 @@ func newSQLiteBuilder() ormshift.SQLBuilder {
 func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
 	columns := ""
 	pkColumns := ""
-	hasAutoIncrementColumn := false
+	autoInc := false
 	for _, column := range table.Columns() {
 		if columns != "" {
 			columns += ","
@@ -36,12 +36,12 @@ func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
 			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 
-		if !hasAutoIncrementColumn {
-			hasAutoIncrementColumn = column.AutoIncrement()
+		if !autoInc {
+			autoInc = column.AutoIncrement()
 		}
 	}
 
-	if !hasAutoIncrementColumn && pkColumns != "" {
+	if !autoInc && pkColumns != "" {
 		if columns != "" {
 			columns += ","
 		}

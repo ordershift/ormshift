@@ -29,10 +29,10 @@ func (t *Table) Columns() []Column {
 func (t *Table) AddColumns(params ...NewColumnParams) error {
 	for _, colParams := range params {
 		column := NewColumn(colParams)
-		columnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
+		exists := slices.ContainsFunc(t.columns, func(c Column) bool {
 			return strings.EqualFold(column.Name(), c.Name())
 		})
-		if columnAlreadyExists {
+		if exists {
 			return fmt.Errorf("column %q already exists in table %q", column.Name(), t.Name())
 		}
 		t.columns = append(t.columns, column)
