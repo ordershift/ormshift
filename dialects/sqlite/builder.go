@@ -135,6 +135,6 @@ func (sb *sqliteBuilder) QuoteIdentifier(identifier string) string {
 	return sb.generic.QuoteIdentifier(identifier)
 }
 
-func (sb *sqliteBuilder) InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArgs...)
+func (sb *sqliteBuilder) InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(sql, namedArgs...)
 }

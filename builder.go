@@ -62,30 +62,30 @@ type DMLSQLBuilder interface {
 
 	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,
 	//
-	//	sqlCommand := "select * from user where id = @id"
+	//	sql := "select * from user where id = @id"
 	//	namedArg := sql.Named("id", 123)
 	//
 	// PostgreSQL:
-	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
+	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = $1"
 	//	//p == 123
 	//
 	// SQLite:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// SQL Server:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// MySQL (not yet supported, expects question marks in parameters):
 	//
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = ?"
 	//	//p == 123
-	InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any)
+	InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any)
 }
 
 type SQLBuilder interface {

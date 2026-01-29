@@ -115,7 +115,7 @@ func (sb *postgresqlBuilder) QuoteIdentifier(identifier string) string {
 	return sb.generic.QuoteIdentifier(identifier)
 }
 
-func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any) {
+func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sql string, namedArgs ...sql.NamedArg) (string, []any) {
 	args := []any{}
 	indexes := map[string]int{}
 	for i, param := range namedArgs {
@@ -132,12 +132,12 @@ func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sqlCommand stri
 		}
 	}
 	regex := regexp.MustCompile(`@([a-zA-Z_][a-zA-Z0-9_]*)`)
-	sqlCommand = regex.ReplaceAllStringFunc(sqlCommand, func(m string) string {
+	sql = regex.ReplaceAllStringFunc(sql, func(m string) string {
 		name := m[1:]
 		if idx, ok := indexes[strings.ToLower(name)]; ok {
 			return fmt.Sprintf("$%d", idx)
 		}
 		return m
 	})
-	return sqlCommand, args
+	return sql, args
 }
