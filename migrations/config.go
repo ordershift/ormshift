@@ -1,7 +1,7 @@
 package migrations
 
 type MigratorConfig struct {
-	tableName              string
+	table                  string
 	migrationNameColumn    string
 	migrationNameMaxLength uint
 	appliedAtColumn        string
@@ -9,7 +9,7 @@ type MigratorConfig struct {
 
 func NewMigratorConfig() *MigratorConfig {
 	config := MigratorConfig{
-		tableName:              "__ormshift_migrations",
+		table:                  "__ormshift_migrations",
 		migrationNameColumn:    "name",
 		migrationNameMaxLength: 250,
 		appliedAtColumn:        "applied_at",
@@ -17,8 +17,8 @@ func NewMigratorConfig() *MigratorConfig {
 	return &config
 }
 
-func (mc *MigratorConfig) WithTableName(tableName string) *MigratorConfig {
-	mc.tableName = tableName
+func (mc *MigratorConfig) WithTableName(table string) *MigratorConfig {
+	mc.table = table
 	return mc
 }
 func (mc *MigratorConfig) WithColumnNames(migrationNameColumn, appliedAtColumn string) *MigratorConfig {
@@ -32,7 +32,7 @@ func (mc *MigratorConfig) WithMigrationNameMaxLength(maxLength uint) *MigratorCo
 }
 
 func (mc *MigratorConfig) TableName() string {
-	return mc.tableName
+	return mc.table
 }
 func (mc *MigratorConfig) MigrationNameColumn() string {
 	return mc.migrationNameColumn

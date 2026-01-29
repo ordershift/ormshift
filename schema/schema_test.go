@@ -10,8 +10,8 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-func testColumnTypesQueryFunc(tableName string) string {
-	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", tableName)
+func testColumnTypesQueryFunc(table string) string {
+	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", table)
 }
 
 func TestNewDBSchema(t *testing.T) {

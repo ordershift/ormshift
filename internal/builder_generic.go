@@ -59,16 +59,16 @@ func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
 	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 
-func (sb *genericSQLBuilder) DropTable(tableName string) string {
-	return fmt.Sprintf("DROP TABLE %s;", sb.QuoteIdentifier(tableName))
+func (sb *genericSQLBuilder) DropTable(table string) string {
+	return fmt.Sprintf("DROP TABLE %s;", sb.QuoteIdentifier(table))
 }
 
-func (sb *genericSQLBuilder) AlterTableAddColumn(tableName string, column schema.Column) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(tableName), sb.columnDefinition(column))
+func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Column) string {
+	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(table), sb.columnDefinition(column))
 }
 
-func (sb *genericSQLBuilder) AlterTableDropColumn(tableName, columnName string) string {
-	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(tableName), sb.QuoteIdentifier(columnName))
+func (sb *genericSQLBuilder) AlterTableDropColumn(table, columnName string) string {
+	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(table), sb.QuoteIdentifier(columnName))
 }
 
 func (sb *genericSQLBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {
@@ -83,54 +83,54 @@ func (sb *genericSQLBuilder) columnDefinition(column schema.Column) string {
 	return fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
 }
 
-func (sb *genericSQLBuilder) Insert(tableName string, columns []string) string {
-	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.QuoteIdentifier(tableName), sb.columnsList(columns), sb.namesList(columns))
+func (sb *genericSQLBuilder) Insert(table string, columns []string) string {
+	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.QuoteIdentifier(table), sb.columnsList(columns), sb.namesList(columns))
 }
 
-func (sb *genericSQLBuilder) InsertWithValues(tableName string, columnsValues ormshift.ColumnsValues) (string, []any) {
-	insertSQL := sb.Insert(tableName, columnsValues.ToColumns())
+func (sb *genericSQLBuilder) InsertWithValues(table string, columnsValues ormshift.ColumnsValues) (string, []any) {
+	insertSQL := sb.Insert(table, columnsValues.ToColumns())
 	insertArgs := columnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(insertSQL, insertArgs...)
 }
 
-func (sb *genericSQLBuilder) Update(tableName string, columns, columnsWhere []string) string {
-	update := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(tableName), sb.columnEqualNameList(columns, ","))
+func (sb *genericSQLBuilder) Update(table string, columns, columnsWhere []string) string {
+	update := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(table), sb.columnEqualNameList(columns, ","))
 	if len(columnsWhere) > 0 {
 		update += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return update
 }
 
-func (sb *genericSQLBuilder) UpdateWithValues(tableName string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
-	updateSQL := sb.Update(tableName, columns, columnsWhere)
+func (sb *genericSQLBuilder) UpdateWithValues(table string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
+	updateSQL := sb.Update(table, columns, columnsWhere)
 	updateArgs := values.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(updateSQL, updateArgs...)
 }
 
-func (sb *genericSQLBuilder) Delete(tableName string, columnsWhere []string) string {
-	delete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(tableName))
+func (sb *genericSQLBuilder) Delete(table string, columnsWhere []string) string {
+	delete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(table))
 	if len(columnsWhere) > 0 {
 		delete += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return delete
 }
 
-func (sb *genericSQLBuilder) DeleteWithValues(tableName string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	deleteSQL := sb.Delete(tableName, whereColumnsValues.ToColumns())
+func (sb *genericSQLBuilder) DeleteWithValues(table string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	deleteSQL := sb.Delete(table, whereColumnsValues.ToColumns())
 	deleteArgs := whereColumnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(deleteSQL, deleteArgs...)
 }
 
-func (sb *genericSQLBuilder) Select(tableName string, columns, columnsWhere []string) string {
-	update := fmt.Sprintf("select %s from %s ", sb.columnsList(columns), sb.QuoteIdentifier(tableName))
+func (sb *genericSQLBuilder) Select(table string, columns, columnsWhere []string) string {
+	update := fmt.Sprintf("select %s from %s ", sb.columnsList(columns), sb.QuoteIdentifier(table))
 	if len(columnsWhere) > 0 {
 		update += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return update
 }
 
-func (sb *genericSQLBuilder) SelectWithValues(tableName string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	selectSQL := sb.Select(tableName, columns, whereColumnsValues.ToColumns())
+func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	selectSQL := sb.Select(table, columns, whereColumnsValues.ToColumns())
 	selectArgs := whereColumnsValues.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }

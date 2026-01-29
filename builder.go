@@ -10,9 +10,9 @@ import (
 // DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
 	CreateTable(table schema.Table) string
-	DropTable(tableName string) string
-	AlterTableAddColumn(tableName string, column schema.Column) string
-	AlterTableDropColumn(tableName, columnName string) string
+	DropTable(table string) string
+	AlterTableAddColumn(table string, column schema.Column) string
+	AlterTableDropColumn(table, columnName string) string
 	ColumnTypeAsString(columnType schema.ColumnType) string
 }
 
@@ -50,14 +50,14 @@ func (cv *ColumnsValues) ToColumns() []string {
 
 // DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.
 type DMLSQLBuilder interface {
-	Insert(tableName string, columns []string) string
-	InsertWithValues(tableName string, columnsValues ColumnsValues) (string, []any)
-	Update(tableName string, columns, columnsWhere []string) string
-	UpdateWithValues(tableName string, columns, columnsWhere []string, values ColumnsValues) (string, []any)
-	Delete(tableName string, columnsWhere []string) string
-	DeleteWithValues(tableName string, whereColumnsValues ColumnsValues) (string, []any)
-	Select(tableName string, columns, columnsWhere []string) string
-	SelectWithValues(tableName string, columns []string, whereColumnsValues ColumnsValues) (string, []any)
+	Insert(table string, columns []string) string
+	InsertWithValues(table string, columnsValues ColumnsValues) (string, []any)
+	Update(table string, columns, columnsWhere []string) string
+	UpdateWithValues(table string, columns, columnsWhere []string, values ColumnsValues) (string, []any)
+	Delete(table string, columnsWhere []string) string
+	DeleteWithValues(table string, whereColumnsValues ColumnsValues) (string, []any)
+	Select(table string, columns, columnsWhere []string) string
+	SelectWithValues(table string, columns []string, whereColumnsValues ColumnsValues) (string, []any)
 	SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string
 
 	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,

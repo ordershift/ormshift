@@ -23,7 +23,7 @@ const tableNamesQuery = `
 	`
 
 func columnTypesQueryFunc(sqlBuilder ormshift.SQLBuilder) func(string) string {
-	return func(tableName string) string {
-		return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", sqlBuilder.QuoteIdentifier(tableName))
+	return func(table string) string {
+		return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", sqlBuilder.QuoteIdentifier(table))
 	}
 }

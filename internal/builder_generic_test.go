@@ -152,15 +152,15 @@ func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
 func TestColumnDefinition(t *testing.T) {
 	sqlBuilder := internal.NewGenericSQLBuilder(testutils.FakeColumnDefinitionFunc, nil, nil)
 	column := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
-	tableName := "test_table"
-	returnedSQL := sqlBuilder.AlterTableAddColumn(tableName, column)
+	table := "test_table"
+	returnedSQL := sqlBuilder.AlterTableAddColumn(table, column)
 	testutils.AssertEqualWithLabel(t, "ALTER TABLE \"test_table\" ADD COLUMN fake;", returnedSQL, "SQLBuilder.ColumnDefinition")
 }
 
 func TestQuoteIdentifier(t *testing.T) {
 	sqlBuilder := internal.NewGenericSQLBuilder(nil, testutils.FakeQuoteIdentifierFunc, nil)
 	column := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
-	tableName := "test_table"
-	returnedSQL := sqlBuilder.AlterTableAddColumn(tableName, column)
+	table := "test_table"
+	returnedSQL := sqlBuilder.AlterTableAddColumn(table, column)
 	testutils.AssertEqualWithLabel(t, "ALTER TABLE quoted_test_table ADD COLUMN quoted_column_name <<TYPE_0>>;", returnedSQL, "SQLBuilder.QuoteIdentifier")
 }

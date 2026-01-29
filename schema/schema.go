@@ -13,7 +13,7 @@ type DBSchema struct {
 	columnTypesQueryFunc ColumnTypesQueryFunc
 }
 
-type ColumnTypesQueryFunc func(tableName string) string
+type ColumnTypesQueryFunc func(table string) string
 
 func NewDBSchema(
 	db *sql.DB,
@@ -30,13 +30,13 @@ func NewDBSchema(
 	}, nil
 }
 
-func (s *DBSchema) HasTable(tableName string) bool {
+func (s *DBSchema) HasTable(table string) bool {
 	tables, err := s.fetchTableNames()
 	if err != nil {
 		return false
 	}
 	return slices.ContainsFunc(tables, func(t string) bool {
-		return strings.EqualFold(t, tableName)
+		return strings.EqualFold(t, table)
 	})
 }
 
@@ -50,19 +50,19 @@ func (s *DBSchema) fetchTableNames() (tableNames []string, err error) {
 			err = closeErr
 		}
 	}()
-	tableName := ""
+	table := ""
 	for rows.Next() {
-		err = rows.Scan(&tableName)
+		err = rows.Scan(&table)
 		if err != nil {
 			return
 		}
-		tableNames = append(tableNames, tableName)
+		tableNames = append(tableNames, table)
 	}
 	return
 }
 
-func (s *DBSchema) HasColumn(tableName, columnName string) bool {
-	columnTypes, err := s.fetchColumnTypes(tableName)
+func (s *DBSchema) HasColumn(table, columnName string) bool {
+	columnTypes, err := s.fetchColumnTypes(table)
 	if err != nil {
 		return false
 	}
@@ -71,8 +71,8 @@ func (s *DBSchema) HasColumn(tableName, columnName string) bool {
 	})
 }
 
-func (s *DBSchema) fetchColumnTypes(tableName string) (columnTypes []*sql.ColumnType, err error) {
-	rows, err := s.db.Query(s.columnTypesQueryFunc(tableName))
+func (s *DBSchema) fetchColumnTypes(table string) (columnTypes []*sql.ColumnType, err error) {
+	rows, err := s.db.Query(s.columnTypesQueryFunc(table))
 	if err != nil {
 		return
 	}
