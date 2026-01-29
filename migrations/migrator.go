@@ -16,48 +16,48 @@ type Migrator struct {
 	appliedMigrations map[string]bool
 }
 
-func NewMigrator(pDatabase *ormshift.Database, pConfig *MigratorConfig) (*Migrator, error) {
-	if pDatabase == nil {
+func NewMigrator(database *ormshift.Database, config *MigratorConfig) (*Migrator, error) {
+	if database == nil {
 		return nil, fmt.Errorf("database cannot be nil")
 	}
-	if pConfig == nil {
+	if config == nil {
 		return nil, fmt.Errorf("migrator config cannot be nil")
 	}
 
-	lAppliedMigrationNames, lError := getAppliedMigrationNames(pDatabase, pConfig)
-	if lError != nil {
-		return nil, fmt.Errorf("failed to get applied migration names: %w", lError)
+	appliedMigrationNames, err := getAppliedMigrationNames(database, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get applied migration names: %w", err)
 	}
-	lAppliedMigrations := make(map[string]bool, len(lAppliedMigrationNames))
-	for _, name := range lAppliedMigrationNames {
-		lAppliedMigrations[name] = true
+	appliedMigrations := make(map[string]bool, len(appliedMigrationNames))
+	for _, name := range appliedMigrationNames {
+		appliedMigrations[name] = true
 	}
 
 	return &Migrator{
-		database:          pDatabase,
-		config:            pConfig,
+		database:          database,
+		config:            config,
 		migrations:        []Migration{},
-		appliedMigrations: lAppliedMigrations,
+		appliedMigrations: appliedMigrations,
 	}, nil
 }
 
-func (m *Migrator) Add(pMigration Migration) {
-	m.migrations = append(m.migrations, pMigration)
+func (m *Migrator) Add(migration Migration) {
+	m.migrations = append(m.migrations, migration)
 }
 
 func (m *Migrator) ApplyAllMigrations() error {
-	for _, lMigration := range m.migrations {
-		lMigrationName := reflect.TypeOf(lMigration).Name()
-		if !m.isApplied(lMigrationName) {
-			lError := lMigration.Up(m)
-			if lError != nil {
-				return fmt.Errorf("failed to apply migration %q: %w", lMigrationName, lError)
+	for _, migration := range m.migrations {
+		migrationName := reflect.TypeOf(migration).Name()
+		if !m.isApplied(migrationName) {
+			err := migration.Up(m)
+			if err != nil {
+				return fmt.Errorf("failed to apply migration %q: %w", migrationName, err)
 			}
-			lError = m.recordAppliedMigration(lMigrationName)
-			if lError != nil {
-				return fmt.Errorf("failed to record applied migration %q: %w", lMigrationName, lError)
+			err = m.recordAppliedMigration(migrationName)
+			if err != nil {
+				return fmt.Errorf("failed to record applied migration %q: %w", migrationName, err)
 			}
-			m.appliedMigrations[lMigrationName] = true
+			m.appliedMigrations[migrationName] = true
 		}
 	}
 	return nil
@@ -65,18 +65,18 @@ func (m *Migrator) ApplyAllMigrations() error {
 
 func (m *Migrator) RevertLastAppliedMigration() error {
 	for i := len(m.migrations) - 1; i >= 0; i-- {
-		lMigration := m.migrations[i]
-		lMigrationName := reflect.TypeOf(lMigration).Name()
-		if m.isApplied(lMigrationName) {
-			lError := lMigration.Down(m)
-			if lError != nil {
-				return fmt.Errorf("failed to revert migration %q: %w", lMigrationName, lError)
+		migration := m.migrations[i]
+		migrationName := reflect.TypeOf(migration).Name()
+		if m.isApplied(migrationName) {
+			err := migration.Down(m)
+			if err != nil {
+				return fmt.Errorf("failed to revert migration %q: %w", migrationName, err)
 			}
-			lError = m.deleteAppliedMigration(lMigrationName)
-			if lError != nil {
-				return fmt.Errorf("failed to delete applied migration %q: %w", lMigrationName, lError)
+			err = m.deleteAppliedMigration(migrationName)
+			if err != nil {
+				return fmt.Errorf("failed to delete applied migration %q: %w", migrationName, err)
 			}
-			delete(m.appliedMigrations, lMigrationName)
+			delete(m.appliedMigrations, migrationName)
 			return nil
 		}
 	}
@@ -92,101 +92,101 @@ func (m *Migrator) Migrations() []Migration {
 }
 
 func (m *Migrator) AppliedMigrations() []Migration {
-	lMigrations := []Migration{}
+	migrations := []Migration{}
 	for _, migration := range m.Migrations() {
 		name := reflect.TypeOf(migration).Name()
 		if m.appliedMigrations[name] {
-			lMigrations = append(lMigrations, migration)
+			migrations = append(migrations, migration)
 		}
 	}
-	return lMigrations
+	return migrations
 }
 
-func (m *Migrator) isApplied(pMigrationName string) bool {
-	_, exists := m.appliedMigrations[pMigrationName]
+func (m *Migrator) isApplied(migrationName string) bool {
+	_, exists := m.appliedMigrations[migrationName]
 	return exists
 }
 
-func (m *Migrator) recordAppliedMigration(pMigrationName string) error {
+func (m *Migrator) recordAppliedMigration(migrationName string) error {
 	q, p := m.database.SQLBuilder().InsertWithValues(
-		m.config.tableName,
+		m.config.table,
 		ormshift.ColumnsValues{
-			m.config.migrationNameColumn: pMigrationName,
-			m.config.appliedAtColumn:     time.Now().UTC(),
+			m.config.nameCol:      migrationName,
+			m.config.appliedAtCol: time.Now().UTC(),
 		},
 	)
-	_, lError := m.database.SQLExecutor().Exec(q, p...)
-	return lError
+	_, err := m.database.SQLExecutor().Exec(q, p...)
+	return err
 }
 
-func (m *Migrator) deleteAppliedMigration(pMigrationName string) error {
+func (m *Migrator) deleteAppliedMigration(migrationName string) error {
 	q, p := m.database.SQLBuilder().DeleteWithValues(
-		m.config.tableName,
+		m.config.table,
 		ormshift.ColumnsValues{
-			m.config.migrationNameColumn: pMigrationName,
+			m.config.nameCol: migrationName,
 		},
 	)
-	_, lError := m.database.SQLExecutor().Exec(q, p...)
-	return lError
+	_, err := m.database.SQLExecutor().Exec(q, p...)
+	return err
 }
 
-func getAppliedMigrationNames(pDatabase *ormshift.Database, pConfig *MigratorConfig) (rMigrationNames []string, rError error) {
-	rError = ensureMigrationsTableExists(pDatabase, pConfig)
-	if rError != nil {
+func getAppliedMigrationNames(database *ormshift.Database, config *MigratorConfig) (migrationNames []string, err error) {
+	err = ensureMigrationsTableExists(database, config)
+	if err != nil {
 		return
 	}
 
-	q, p := pDatabase.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
+	q, p := database.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
 		fmt.Sprintf(
 			"select %s from %s order by %s",
-			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
-			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.tableName),
-			pDatabase.SQLBuilder().QuoteIdentifier(pConfig.migrationNameColumn),
+			database.SQLBuilder().QuoteIdentifier(config.nameCol),
+			database.SQLBuilder().QuoteIdentifier(config.table),
+			database.SQLBuilder().QuoteIdentifier(config.nameCol),
 		),
 	)
-	lMigrationsRows, rError := pDatabase.SQLExecutor().Query(q, p...)
-	if rError != nil {
+	migrationsRows, err := database.SQLExecutor().Query(q, p...)
+	if err != nil {
 		return
 	}
 	defer func() {
-		if err := lMigrationsRows.Close(); err != nil && rError == nil {
-			rError = err
+		if closeErr := migrationsRows.Close(); closeErr != nil && err == nil {
+			err = closeErr
 		}
 	}()
-	for lMigrationsRows.Next() {
-		var lMigrationName string
-		rError = lMigrationsRows.Scan(&lMigrationName)
-		if rError != nil {
+	for migrationsRows.Next() {
+		var migrationName string
+		err = migrationsRows.Scan(&migrationName)
+		if err != nil {
 			break
 		}
-		rMigrationNames = append(rMigrationNames, lMigrationName)
+		migrationNames = append(migrationNames, migrationName)
 	}
 	return
 }
 
-func ensureMigrationsTableExists(pDatabase *ormshift.Database, pConfig *MigratorConfig) error {
-	lMigrationsTable := schema.NewTable(pConfig.TableName())
-	if pDatabase.DBSchema().HasTable(lMigrationsTable.Name()) {
+func ensureMigrationsTableExists(database *ormshift.Database, config *MigratorConfig) error {
+	migrationsTable := schema.NewTable(config.TableName())
+	if database.DBSchema().HasTable(migrationsTable.Name()) {
 		return nil
 	}
-	lError := lMigrationsTable.AddColumns(
+	err := migrationsTable.AddColumns(
 		schema.NewColumnParams{
-			Name:       pConfig.MigrationNameColumn(),
+			Name:       config.MigrationNameColumn(),
 			Type:       schema.Varchar,
-			Size:       pConfig.MigrationNameMaxLength(),
+			Size:       config.MigrationNameMaxLength(),
 			PrimaryKey: true,
 			NotNull:    true,
 		},
 		schema.NewColumnParams{
-			Name:    pConfig.AppliedAtColumn(),
+			Name:    config.AppliedAtColumn(),
 			Type:    schema.DateTime,
 			NotNull: true,
 		},
 	)
-	if lError != nil {
-		return lError
+	if err != nil {
+		return err
 	}
 
-	_, lError = pDatabase.SQLExecutor().Exec(pDatabase.SQLBuilder().CreateTable(lMigrationsTable))
-	return lError
+	_, err = database.SQLExecutor().Exec(database.SQLBuilder().CreateTable(migrationsTable))
+	return err
 }

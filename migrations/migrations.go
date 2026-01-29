@@ -3,21 +3,21 @@ package migrations
 import "github.com/ordershift/ormshift"
 
 type Migration interface {
-	Up(pMigrator *Migrator) error
-	Down(pMigrator *Migrator) error
+	Up(migrator *Migrator) error
+	Down(migrator *Migrator) error
 }
 
-func Migrate(pDatabase *ormshift.Database, pConfig *MigratorConfig, pMigrations ...Migration) (*Migrator, error) {
-	lMigrator, lError := NewMigrator(pDatabase, pConfig)
-	if lError != nil {
-		return nil, lError
+func Migrate(database *ormshift.Database, config *MigratorConfig, migrations ...Migration) (*Migrator, error) {
+	migrator, err := NewMigrator(database, config)
+	if err != nil {
+		return nil, err
 	}
-	for _, lMigration := range pMigrations {
-		lMigrator.Add(lMigration)
+	for _, migration := range migrations {
+		migrator.Add(migration)
 	}
-	lError = lMigrator.ApplyAllMigrations()
-	if lError != nil {
-		return nil, lError
+	err = migrator.ApplyAllMigrations()
+	if err != nil {
+		return nil, err
 	}
-	return lMigrator, nil
+	return migrator, nil
 }

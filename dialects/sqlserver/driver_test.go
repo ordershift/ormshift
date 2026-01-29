@@ -10,13 +10,13 @@ import (
 )
 
 func TestName(t *testing.T) {
-	lDriver := sqlserver.Driver()
-	testutils.AssertEqualWithLabel(t, "sqlserver", lDriver.Name(), "lDriver.Name")
+	driver := sqlserver.Driver()
+	testutils.AssertEqualWithLabel(t, "sqlserver", driver.Name(), "driver.Name")
 }
 
 func TestConnectionString(t *testing.T) {
-	lDriver := sqlserver.Driver()
-	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
+	driver := sqlserver.Driver()
+	returnedConnectionString := driver.ConnectionString(ormshift.ConnectionParams{
 		Host:     "my-server",
 		Port:     1433,
 		Instance: "sqlexpress",
@@ -24,29 +24,29 @@ func TestConnectionString(t *testing.T) {
 		Password: "123456",
 		Database: "my-db",
 	})
-	lExpectedConnectionString := "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
+	expectedConnectionString := "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db"
+	testutils.AssertEqualWithLabel(t, expectedConnectionString, returnedConnectionString, "driver.ConnectionString")
 }
 
 func TestDBSchema(t *testing.T) {
-	lDriver := sqlserver.Driver()
-	lDB, lError := sql.Open(lDriver.Name(), "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db")
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
+	driver := sqlserver.Driver()
+	db, err := sql.Open(driver.Name(), "server=my-server\\sqlexpress;port=1433;user id=sa;password=123456;database=my-db")
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "sql.Open") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	schema, err := driver.DBSchema(db)
+	if !testutils.AssertNotNilResultAndNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
 }
 
 func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDriver := sqlserver.Driver()
-	lSchema, lError := lDriver.DBSchema(nil)
-	if !testutils.AssertNilResultAndNotNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	driver := sqlserver.Driver()
+	schema, err := driver.DBSchema(nil)
+	if !testutils.AssertNilResultAndNotNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "lDriver.DBSchema")
+	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "driver.DBSchema")
 }

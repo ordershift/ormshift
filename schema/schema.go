@@ -13,74 +13,74 @@ type DBSchema struct {
 	columnTypesQueryFunc ColumnTypesQueryFunc
 }
 
-type ColumnTypesQueryFunc func(pTableName string) string
+type ColumnTypesQueryFunc func(table string) string
 
 func NewDBSchema(
-	pDB *sql.DB,
-	pTableNamesQuery string,
-	pColumnTypesQueryFunc ColumnTypesQueryFunc,
+	db *sql.DB,
+	tableNamesQuery string,
+	columnTypesQueryFunc ColumnTypesQueryFunc,
 ) (*DBSchema, error) {
-	if pDB == nil {
+	if db == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
 	return &DBSchema{
-		db:                   pDB,
-		tableNamesQuery:      pTableNamesQuery,
-		columnTypesQueryFunc: pColumnTypesQueryFunc,
+		db:                   db,
+		tableNamesQuery:      tableNamesQuery,
+		columnTypesQueryFunc: columnTypesQueryFunc,
 	}, nil
 }
 
-func (s *DBSchema) HasTable(pTableName string) bool {
-	lTables, lError := s.fetchTableNames()
-	if lError != nil {
+func (s *DBSchema) HasTable(table string) bool {
+	tables, err := s.fetchTableNames()
+	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(lTables, func(t string) bool {
-		return strings.EqualFold(t, pTableName)
+	return slices.ContainsFunc(tables, func(t string) bool {
+		return strings.EqualFold(t, table)
 	})
 }
 
-func (s *DBSchema) fetchTableNames() (rTableNames []string, rError error) {
-	lRows, rError := s.db.Query(s.tableNamesQuery)
-	if rError != nil {
+func (s *DBSchema) fetchTableNames() (tableNames []string, err error) {
+	rows, err := s.db.Query(s.tableNamesQuery)
+	if err != nil {
 		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && rError == nil {
-			rError = err
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = closeErr
 		}
 	}()
-	lTableName := ""
-	for lRows.Next() {
-		rError = lRows.Scan(&lTableName)
-		if rError != nil {
+	table := ""
+	for rows.Next() {
+		err = rows.Scan(&table)
+		if err != nil {
 			return
 		}
-		rTableNames = append(rTableNames, lTableName)
+		tableNames = append(tableNames, table)
 	}
 	return
 }
 
-func (s *DBSchema) HasColumn(pTableName, pColumnName string) bool {
-	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
-	if lError != nil {
+func (s *DBSchema) HasColumn(table, column string) bool {
+	columnTypes, err := s.fetchColumnTypes(table)
+	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
-		return strings.EqualFold(ct.Name(), pColumnName)
+	return slices.ContainsFunc(columnTypes, func(ct *sql.ColumnType) bool {
+		return strings.EqualFold(ct.Name(), column)
 	})
 }
 
-func (s *DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
-	lRows, rError := s.db.Query(s.columnTypesQueryFunc(pTableName))
-	if rError != nil {
+func (s *DBSchema) fetchColumnTypes(table string) (columnTypes []*sql.ColumnType, err error) {
+	rows, err := s.db.Query(s.columnTypesQueryFunc(table))
+	if err != nil {
 		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && rError == nil {
-			rError = err
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = closeErr
 		}
 	}()
-	rColumnTypes, rError = lRows.ColumnTypes()
+	columnTypes, err = rows.ColumnTypes()
 	return
 }

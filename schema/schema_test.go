@@ -10,74 +10,74 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-func testColumnTypesQueryFunc(pTableName string) string {
-	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pTableName)
+func testColumnTypesQueryFunc(table string) string {
+	return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", table)
 }
 
 func TestNewDBSchema(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lDBSchema, lError := schema.NewDBSchema(lDB.DB(), "query", testColumnTypesQueryFunc)
-	if !testutils.AssertNotNilResultAndNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
+	dbSchema, err := schema.NewDBSchema(db.DB(), "query", testColumnTypesQueryFunc)
+	if !testutils.AssertNotNilResultAndNilError(t, dbSchema, err, "schema.NewDBSchema") {
 		return
 	}
 }
 
 func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDBSchema, lError := schema.NewDBSchema(nil, "query", testColumnTypesQueryFunc)
-	if !testutils.AssertNilResultAndNotNilError(t, lDBSchema, lError, "schema.NewDBSchema") {
+	dbSchema, err := schema.NewDBSchema(nil, "query", testColumnTypesQueryFunc)
+	if !testutils.AssertNilResultAndNotNilError(t, dbSchema, err, "schema.NewDBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "schema.NewDBSchema")
+	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "schema.NewDBSchema")
 }
 
 func TestHasColumn(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
+	productAttributeTable := testutils.FakeProductAttributeTable(t)
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
-	if !testutils.AssertNilError(t, lError, "DB.Exec") {
+	_, err = db.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(productAttributeTable))
+	if !testutils.AssertNilError(t, err, "DB.Exec") {
 		return
 	}
 
-	lDBSchema := lDB.DBSchema()
-	testutils.AssertEqualWithLabel(t, true, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
-	for _, lColumn := range lProductAttributeTable.Columns() {
-		testutils.AssertEqualWithLabel(t, true, lDBSchema.HasColumn(lProductAttributeTable.Name(), lColumn.Name()), "DBSchema.HasColumn")
+	dbSchema := db.DBSchema()
+	testutils.AssertEqualWithLabel(t, true, dbSchema.HasTable(productAttributeTable.Name()), "DBSchema.HasTable")
+	for _, column := range productAttributeTable.Columns() {
+		testutils.AssertEqualWithLabel(t, true, dbSchema.HasColumn(productAttributeTable.Name(), column.Name()), "DBSchema.HasColumn")
 	}
-	lAnyTableName := "any_table"
-	lAnyColumnName := "any_col"
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lProductAttributeTable.Name(), lAnyColumnName), "DBSchema.HasColumn")
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasColumn(lAnyTableName, lAnyColumnName), "DBSchema.HasColumn")
+	anyTableName := "any_table"
+	anyColumnName := "any_col"
+	testutils.AssertEqualWithLabel(t, false, dbSchema.HasColumn(productAttributeTable.Name(), anyColumnName), "DBSchema.HasColumn")
+	testutils.AssertEqualWithLabel(t, false, dbSchema.HasColumn(anyTableName, anyColumnName), "DBSchema.HasColumn")
 }
 
 func TestHasTableReturnsFalseWhenDatabaseIsInvalid(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
+	productAttributeTable := testutils.FakeProductAttributeTable(t)
 
-	_, lError = lDB.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(lProductAttributeTable))
-	if !testutils.AssertNilError(t, lError, "DB.Exec") {
+	_, err = db.SQLExecutor().Exec(sqlite.Driver().SQLBuilder().CreateTable(productAttributeTable))
+	if !testutils.AssertNilError(t, err, "DB.Exec") {
 		return
 	}
 
-	lError = lDB.Close()
-	if !testutils.AssertNilError(t, lError, "DB.Close") {
+	err = db.Close()
+	if !testutils.AssertNilError(t, err, "DB.Close") {
 		return
 	}
-	lDBSchema := lDB.DBSchema()
-	testutils.AssertEqualWithLabel(t, false, lDBSchema.HasTable(lProductAttributeTable.Name()), "DBSchema.HasTable")
+	dbSchema := db.DBSchema()
+	testutils.AssertEqualWithLabel(t, false, dbSchema.HasTable(productAttributeTable.Name()), "DBSchema.HasTable")
 }

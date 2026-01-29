@@ -30,14 +30,14 @@ type Column struct {
 	autoIncrement bool
 }
 
-func NewColumn(pParams NewColumnParams) Column {
+func NewColumn(params NewColumnParams) Column {
 	return Column{
-		name:          pParams.Name,
-		columnType:    pParams.Type,
-		size:          pParams.Size,
-		primaryKey:    pParams.PrimaryKey,
-		notNull:       pParams.NotNull,
-		autoIncrement: pParams.AutoIncrement,
+		name:          params.Name,
+		columnType:    params.Type,
+		size:          params.Size,
+		primaryKey:    params.PrimaryKey,
+		notNull:       params.NotNull,
+		autoIncrement: params.AutoIncrement,
 	}
 }
 

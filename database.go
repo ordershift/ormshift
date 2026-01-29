@@ -20,9 +20,9 @@ type ConnectionParams struct {
 
 type DatabaseDriver interface {
 	Name() string
-	ConnectionString(pParams ConnectionParams) string
+	ConnectionString(params ConnectionParams) string
 	SQLBuilder() SQLBuilder
-	DBSchema(pDB *sql.DB) (*schema.DBSchema, error)
+	DBSchema(db *sql.DB) (*schema.DBSchema, error)
 }
 
 type Database struct {
@@ -33,26 +33,26 @@ type Database struct {
 	dbSchema         *schema.DBSchema
 }
 
-func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, error) {
-	if pDriver == nil {
+func OpenDatabase(driver DatabaseDriver, params ConnectionParams) (*Database, error) {
+	if driver == nil {
 		return nil, errors.New("DatabaseDriver cannot be nil")
 	}
-	lConnectionString := pDriver.ConnectionString(pParams)
-	lDB, lError := sql.Open(pDriver.Name(), lConnectionString)
-	if lError != nil {
-		return nil, fmt.Errorf("sql.Open failed: %w", lError)
+	connectionString := driver.ConnectionString(params)
+	db, err := sql.Open(driver.Name(), connectionString)
+	if err != nil {
+		return nil, fmt.Errorf("sql.Open failed: %w", err)
 	}
-	lDBSchema, lError := pDriver.DBSchema(lDB)
-	if lError != nil {
-		return nil, fmt.Errorf("failed to get DB schema: %w", lError)
+	dbSchema, err := driver.DBSchema(db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DB schema: %w", err)
 	}
 
 	return &Database{
-		driver:           pDriver,
-		db:               lDB,
-		connectionString: lConnectionString,
-		sqlBuilder:       pDriver.SQLBuilder(),
-		dbSchema:         lDBSchema,
+		driver:           driver,
+		db:               db,
+		connectionString: connectionString,
+		sqlBuilder:       driver.SQLBuilder(),
+		dbSchema:         dbSchema,
 	}, nil
 }
 

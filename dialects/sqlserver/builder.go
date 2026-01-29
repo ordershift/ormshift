@@ -20,47 +20,47 @@ func newSQLServerBuilder() ormshift.SQLBuilder {
 	return &sb
 }
 
-func (sb *sqlserverBuilder) CreateTable(pTable schema.Table) string {
-	lColumns := ""
-	lPKColumns := ""
-	for _, lColumn := range pTable.Columns() {
-		if lColumns != "" {
-			lColumns += ","
+func (sb *sqlserverBuilder) CreateTable(table schema.Table) string {
+	columns := ""
+	pkColumns := ""
+	for _, column := range table.Columns() {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += sb.columnDefinition(lColumn)
+		columns += sb.columnDefinition(column)
 
-		if lColumn.PrimaryKey() {
-			if lPKColumns != "" {
-				lPKColumns += ","
+		if column.PrimaryKey() {
+			if pkColumns != "" {
+				pkColumns += ","
 			}
-			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
+			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 	}
 
-	if lPKColumns != "" {
-		if lColumns != "" {
-			lColumns += ","
+	if pkColumns != "" {
+		if columns != "" {
+			columns += ","
 		}
-		lPKConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
-		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
+		pkConstraintName := sb.QuoteIdentifier("PK_" + table.Name())
+		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 
-func (sb *sqlserverBuilder) DropTable(pTableName string) string {
-	return sb.generic.DropTable(pTableName)
+func (sb *sqlserverBuilder) DropTable(table string) string {
+	return sb.generic.DropTable(table)
 }
 
-func (sb *sqlserverBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
-	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
+func (sb *sqlserverBuilder) AlterTableAddColumn(table string, column schema.Column) string {
+	return sb.generic.AlterTableAddColumn(table, column)
 }
 
-func (sb *sqlserverBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
-	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
+func (sb *sqlserverBuilder) AlterTableDropColumn(table, column string) string {
+	return sb.generic.AlterTableDropColumn(table, column)
 }
 
-func (sb *sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
-	switch pColumnType {
+func (sb *sqlserverBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {
+	switch columnType {
 	case schema.Varchar:
 		return "VARCHAR"
 	case schema.Boolean:
@@ -80,74 +80,74 @@ func (sb *sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) st
 	}
 }
 
-func (sb *sqlserverBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := sb.QuoteIdentifier(pColumn.Name())
-	if pColumn.Type() == schema.Varchar {
-		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
+func (sb *sqlserverBuilder) columnDefinition(column schema.Column) string {
+	columnDef := sb.QuoteIdentifier(column.Name())
+	if column.Type() == schema.Varchar {
+		columnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(column.Type()), column.Size())
 	} else {
-		lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
+		columnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(column.Type()))
 	}
-	if pColumn.NotNull() {
-		lColumnDef += " NOT NULL"
+	if column.NotNull() {
+		columnDef += " NOT NULL"
 	}
-	if pColumn.AutoIncrement() {
-		lColumnDef += " IDENTITY (1, 1)"
+	if column.AutoIncrement() {
+		columnDef += " IDENTITY (1, 1)"
 	}
-	return lColumnDef
+	return columnDef
 }
 
-func (sb *sqlserverBuilder) Insert(pTableName string, pColumns []string) string {
-	return sb.generic.Insert(pTableName, pColumns)
+func (sb *sqlserverBuilder) Insert(table string, columns []string) string {
+	return sb.generic.Insert(table, columns)
 }
 
-func (sb *sqlserverBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
+func (sb *sqlserverBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(table, values)
 }
 
-func (sb *sqlserverBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
+func (sb *sqlserverBuilder) Update(table string, columns, where []string) string {
+	return sb.generic.Update(table, columns, where)
 }
 
-func (sb *sqlserverBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
+func (sb *sqlserverBuilder) UpdateWithValues(table string, columns, where []string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(table, columns, where, values)
 }
 
-func (sb *sqlserverBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	return sb.generic.Delete(pTableName, pColumnsWhere)
+func (sb *sqlserverBuilder) Delete(table string, where []string) string {
+	return sb.generic.Delete(table, where)
 }
 
-func (sb *sqlserverBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
+func (sb *sqlserverBuilder) DeleteWithValues(table string, where ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(table, where)
 }
 
-func (sb *sqlserverBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
+func (sb *sqlserverBuilder) Select(table string, columns, where []string) string {
+	return sb.generic.Select(table, columns, where)
 }
 
-func (sb *sqlserverBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
+func (sb *sqlserverBuilder) SelectWithValues(table string, columns []string, where ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(table, columns, where)
 }
 
-func (sb *sqlserverBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	lSelectWithPagination := pSQLSelectCommand
-	if pRowsPerPage > 0 {
-		lOffSet := uint(0)
-		if pPageNumber > 1 {
-			lOffSet = pRowsPerPage * (pPageNumber - 1)
+func (sb *sqlserverBuilder) SelectWithPagination(sql string, size, number uint) string {
+	selectWithPagination := sql
+	if size > 0 {
+		offset := uint(0)
+		if number > 1 {
+			offset = size * (number - 1)
 		}
-		lSelectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", lOffSet, pRowsPerPage)
+		selectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, size)
 	}
-	return lSelectWithPagination
+	return selectWithPagination
 }
 
-func (sb *sqlserverBuilder) QuoteIdentifier(pIdentifier string) string {
+func (sb *sqlserverBuilder) QuoteIdentifier(identifier string) string {
 	// SQL Server uses square brackets: [identifier]
 	// Escape rule: ] becomes ]]
 	// Example: users -> [users], table]name -> [table]]name]
-	pIdentifier = strings.ReplaceAll(pIdentifier, "]", "]]")
-	return fmt.Sprintf("[%s]", pIdentifier)
+	identifier = strings.ReplaceAll(identifier, "]", "]]")
+	return fmt.Sprintf("[%s]", identifier)
 }
 
-func (sb *sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
+func (sb *sqlserverBuilder) InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(sql, args...)
 }

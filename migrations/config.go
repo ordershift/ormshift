@@ -1,45 +1,45 @@
 package migrations
 
 type MigratorConfig struct {
-	tableName              string
-	migrationNameColumn    string
-	migrationNameMaxLength uint
-	appliedAtColumn        string
+	table        string
+	nameCol      string
+	nameMaxLen   uint
+	appliedAtCol string
 }
 
 func NewMigratorConfig() *MigratorConfig {
-	lConfig := MigratorConfig{
-		tableName:              "__ormshift_migrations",
-		migrationNameColumn:    "name",
-		migrationNameMaxLength: 250,
-		appliedAtColumn:        "applied_at",
+	config := MigratorConfig{
+		table:        "__ormshift_migrations",
+		nameCol:      "name",
+		nameMaxLen:   250,
+		appliedAtCol: "applied_at",
 	}
-	return &lConfig
+	return &config
 }
 
-func (mc *MigratorConfig) WithTableName(pTableName string) *MigratorConfig {
-	mc.tableName = pTableName
+func (mc *MigratorConfig) WithTableName(table string) *MigratorConfig {
+	mc.table = table
 	return mc
 }
-func (mc *MigratorConfig) WithColumnNames(pMigrationNameColumn, pAppliedAtColumn string) *MigratorConfig {
-	mc.migrationNameColumn = pMigrationNameColumn
-	mc.appliedAtColumn = pAppliedAtColumn
+func (mc *MigratorConfig) WithColumnNames(nameCol, appliedAtCol string) *MigratorConfig {
+	mc.nameCol = nameCol
+	mc.appliedAtCol = appliedAtCol
 	return mc
 }
-func (mc *MigratorConfig) WithMigrationNameMaxLength(pMaxLength uint) *MigratorConfig {
-	mc.migrationNameMaxLength = pMaxLength
+func (mc *MigratorConfig) WithMigrationNameMaxLength(maxLength uint) *MigratorConfig {
+	mc.nameMaxLen = maxLength
 	return mc
 }
 
 func (mc *MigratorConfig) TableName() string {
-	return mc.tableName
+	return mc.table
 }
 func (mc *MigratorConfig) MigrationNameColumn() string {
-	return mc.migrationNameColumn
+	return mc.nameCol
 }
 func (mc *MigratorConfig) MigrationNameMaxLength() uint {
-	return mc.migrationNameMaxLength
+	return mc.nameMaxLen
 }
 func (mc *MigratorConfig) AppliedAtColumn() string {
-	return mc.appliedAtColumn
+	return mc.appliedAtCol
 }

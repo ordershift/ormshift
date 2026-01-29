@@ -227,12 +227,12 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 
 func (m M0001CreateUserTable) Down(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName := "user"
-	if !db.DBSchema().HasTable(tableName) {
+	table := "user"
+	if !db.DBSchema().HasTable(table) {
 		// if the table already doesn't exist, nothing to do here
 		return nil
 	}
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().DropTable(tableName))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().DropTable(table))
 	return err
 }
 ```
@@ -245,28 +245,28 @@ type M0002AddUpdatedAtColumn struct{}
 
 func (m M0002AddUpdatedAtColumn) Up(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName := "user"
+	table := "user"
 	col := schema.NewColumn(schema.NewColumnParams{Name: "updated_at", Type: schema.DateTime})
 
-	if db.DBSchema().HasColumn(tableName, col.Name()) {
+	if db.DBSchema().HasColumn(table, col.Name()) {
 		// if the column already exists, nothing to do here
 		return nil
 	}
 	
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableAddColumn(tableName, col))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableAddColumn(table, col))
 	return err
 }
 
 func (m M0002AddUpdatedAtColumn) Down(migrator *migrations.Migrator) error {
 	db := migrator.Database()
-	tableName := "user"
+	table := "user"
 	colName := "updated_at"
 
-	if !db.DBSchema().HasColumn(tableName, colName) {
+	if !db.DBSchema().HasColumn(table, colName) {
 		// if the column already doesn't exist, nothing to do here
 		return nil
 	}
-	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableDropColumn(tableName, colName))
+	_, err := db.SQLExecutor().Exec(db.SQLBuilder().AlterTableDropColumn(table, colName))
 	return err
 }
 ```

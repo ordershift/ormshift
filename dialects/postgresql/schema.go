@@ -18,8 +18,8 @@ const tableNamesQuery = `
 			table_name
 	`
 
-func columnTypesQueryFunc(pSQLBuilder ormshift.SQLBuilder) func(string) string {
-	return func(pTableName string) string {
-		return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", pSQLBuilder.QuoteIdentifier(pTableName))
+func columnTypesQueryFunc(sqlBuilder ormshift.SQLBuilder) func(string) string {
+	return func(table string) string {
+		return fmt.Sprintf("SELECT * FROM %s WHERE 1=0", sqlBuilder.QuoteIdentifier(table))
 	}
 }

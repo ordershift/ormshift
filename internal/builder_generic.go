@@ -13,7 +13,7 @@ type ColumnDefinitionFunc func(schema.Column) string
 
 type QuoteIdentifierFunc func(string) string
 
-type InteroperateSQLCommandWithNamedArgsFunc func(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
+type InteroperateSQLCommandWithNamedArgsFunc func(sql string, args ...sql.NamedArg) (string, []any)
 
 type genericSQLBuilder struct {
 	ColumnDefinitionFunc                    ColumnDefinitionFunc
@@ -22,178 +22,177 @@ type genericSQLBuilder struct {
 }
 
 func NewGenericSQLBuilder(
-	pColumnDefinitionFunc ColumnDefinitionFunc,
-	pQuoteIdentifierFunc QuoteIdentifierFunc,
-	pInteroperateSQLCommandWithNamedArgsFunc InteroperateSQLCommandWithNamedArgsFunc,
+	columnDefinitionFunc ColumnDefinitionFunc,
+	quoteIdentifierFunc QuoteIdentifierFunc,
+	interoperateSQLCommandWithNamedArgsFunc InteroperateSQLCommandWithNamedArgsFunc,
 ) ormshift.SQLBuilder {
 	return &genericSQLBuilder{
-		ColumnDefinitionFunc:                    pColumnDefinitionFunc,
-		QuoteIdentifierFunc:                     pQuoteIdentifierFunc,
-		InteroperateSQLCommandWithNamedArgsFunc: pInteroperateSQLCommandWithNamedArgsFunc,
+		ColumnDefinitionFunc:                    columnDefinitionFunc,
+		QuoteIdentifierFunc:                     quoteIdentifierFunc,
+		InteroperateSQLCommandWithNamedArgsFunc: interoperateSQLCommandWithNamedArgsFunc,
 	}
 }
 
-func (sb *genericSQLBuilder) CreateTable(pTable schema.Table) string {
-	lColumns := ""
-	lPKColumns := ""
-	for _, lColumn := range pTable.Columns() {
-		if lColumns != "" {
-			lColumns += ","
+func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
+	columns := ""
+	pkColumns := ""
+	for _, column := range table.Columns() {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += sb.columnDefinition(lColumn)
+		columns += sb.columnDefinition(column)
 
-		if lColumn.PrimaryKey() {
-			if lPKColumns != "" {
-				lPKColumns += ","
+		if column.PrimaryKey() {
+			if pkColumns != "" {
+				pkColumns += ","
 			}
-			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
+			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 	}
 
-	if lPKColumns != "" {
-		if lColumns != "" {
-			lColumns += ","
+	if pkColumns != "" {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += fmt.Sprintf("PRIMARY KEY (%s)", lPKColumns)
+		columns += fmt.Sprintf("PRIMARY KEY (%s)", pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 
-func (sb *genericSQLBuilder) DropTable(pTableName string) string {
-	return fmt.Sprintf("DROP TABLE %s;", sb.QuoteIdentifier(pTableName))
+func (sb *genericSQLBuilder) DropTable(table string) string {
+	return fmt.Sprintf("DROP TABLE %s;", sb.QuoteIdentifier(table))
 }
 
-func (sb *genericSQLBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(pTableName), sb.columnDefinition(pColumn))
+func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Column) string {
+	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(table), sb.columnDefinition(column))
 }
 
-func (sb *genericSQLBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
-	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(pTableName), sb.QuoteIdentifier(pColumnName))
+func (sb *genericSQLBuilder) AlterTableDropColumn(table, column string) string {
+	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(table), sb.QuoteIdentifier(column))
 }
 
-func (sb *genericSQLBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
+func (sb *genericSQLBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {
 	// Generic implementation, should be overridden by specific SQL builders
-	return fmt.Sprintf("<<TYPE_%d>>", pColumnType)
+	return fmt.Sprintf("<<TYPE_%d>>", columnType)
 }
 
-func (sb *genericSQLBuilder) columnDefinition(pColumn schema.Column) string {
+func (sb *genericSQLBuilder) columnDefinition(column schema.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
-		return sb.ColumnDefinitionFunc(pColumn)
+		return sb.ColumnDefinitionFunc(column)
 	}
-	return fmt.Sprintf("%s %s", sb.QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
+	return fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
 }
 
-func (sb *genericSQLBuilder) Insert(pTableName string, pColumns []string) string {
-	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.QuoteIdentifier(pTableName), sb.columnsList(pColumns), sb.namesList(pColumns))
+func (sb *genericSQLBuilder) Insert(table string, columns []string) string {
+	return fmt.Sprintf("insert into %s (%s) values (%s)", sb.QuoteIdentifier(table), sb.columnsList(columns), sb.namesList(columns))
 }
 
-func (sb *genericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lInsertSQL := sb.Insert(pTableName, pColumnsValues.ToColumns())
-	lInsertArgs := pColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lInsertSQL, lInsertArgs...)
+func (sb *genericSQLBuilder) InsertWithValues(table string, values ormshift.ColumnsValues) (string, []any) {
+	insertSQL := sb.Insert(table, values.ToColumns())
+	insertArgs := values.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(insertSQL, insertArgs...)
 }
 
-func (sb *genericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(pTableName), sb.columnEqualNameList(pColumns, ","))
-	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+func (sb *genericSQLBuilder) Update(table string, columns, where []string) string {
+	update := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(table), sb.columnEqualNameList(columns, ","))
+	if len(where) > 0 {
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lUpdate
+	return update
 }
 
-func (sb *genericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	lUpdateSQL := sb.Update(pTableName, pColumns, pColumnsWhere)
-	lUpdateArgs := pValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lUpdateSQL, lUpdateArgs...)
+func (sb *genericSQLBuilder) UpdateWithValues(table string, columns, where []string, values ormshift.ColumnsValues) (string, []any) {
+	updateSQL := sb.Update(table, columns, where)
+	updateArgs := values.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(updateSQL, updateArgs...)
 }
 
-func (sb *genericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	lDelete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(pTableName))
-	if len(pColumnsWhere) > 0 {
-		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+func (sb *genericSQLBuilder) Delete(table string, where []string) string {
+	delete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(table))
+	if len(where) > 0 {
+		delete += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lDelete
+	return delete
 }
 
-func (sb *genericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lDeleteSQL := sb.Delete(pTableName, pWhereColumnsValues.ToColumns())
-	lDeleteArgs := pWhereColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lDeleteSQL, lDeleteArgs...)
+func (sb *genericSQLBuilder) DeleteWithValues(table string, where ormshift.ColumnsValues) (string, []any) {
+	deleteSQL := sb.Delete(table, where.ToColumns())
+	deleteArgs := where.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(deleteSQL, deleteArgs...)
 }
 
-func (sb *genericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), sb.QuoteIdentifier(pTableName))
-	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+func (sb *genericSQLBuilder) Select(table string, columns, where []string) string {
+	update := fmt.Sprintf("select %s from %s ", sb.columnsList(columns), sb.QuoteIdentifier(table))
+	if len(where) > 0 {
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lUpdate
+	return update
 }
 
-func (sb *genericSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lSelectSQL := sb.Select(pTableName, pColumns, pWhereColumnsValues.ToColumns())
-	lSelectArgs := pWhereColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lSelectSQL, lSelectArgs...)
+func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, where ormshift.ColumnsValues) (string, []any) {
+	selectSQL := sb.Select(table, columns, where.ToColumns())
+	selectArgs := where.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }
 
-func (sb *genericSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	lSelectWithPagination := pSQLSelectCommand
-	if pRowsPerPage > 0 {
-		lSelectWithPagination += fmt.Sprintf(" LIMIT %d", pRowsPerPage)
-		if pPageNumber > 1 {
-			lSelectWithPagination += fmt.Sprintf(" OFFSET %d", pRowsPerPage*(pPageNumber-1))
+func (sb *genericSQLBuilder) SelectWithPagination(sql string, size, number uint) string {
+	selectWithPagination := sql
+	if size > 0 {
+		selectWithPagination += fmt.Sprintf(" LIMIT %d", size)
+		if number > 1 {
+			selectWithPagination += fmt.Sprintf(" OFFSET %d", size*(number-1))
 		}
 	}
-	return lSelectWithPagination
+	return selectWithPagination
 }
 
-func (sb *genericSQLBuilder) columnsList(pColumns []string) string {
-	lQuotedColumns := []string{}
-	for _, col := range pColumns {
-		lQuotedColumns = append(lQuotedColumns, sb.QuoteIdentifier(col))
+func (sb *genericSQLBuilder) columnsList(columns []string) string {
+	quotedColumns := []string{}
+	for _, col := range columns {
+		quotedColumns = append(quotedColumns, sb.QuoteIdentifier(col))
 	}
-	return strings.Join(lQuotedColumns, ",")
+	return strings.Join(quotedColumns, ",")
 }
 
-func (sb *genericSQLBuilder) namesList(pColumns []string) string {
-	lNames := []string{}
-	for _, lColumn := range pColumns {
-		lNames = append(lNames, "@"+lColumn)
+func (sb *genericSQLBuilder) namesList(columns []string) string {
+	names := []string{}
+	for _, column := range columns {
+		names = append(names, "@"+column)
 	}
-	return strings.Join(lNames, ",")
+	return strings.Join(names, ",")
 }
 
-func (sb *genericSQLBuilder) columnEqualNameList(pColumns []string, pSeparator string) string {
-	lColumnEqualNameList := ""
-	for _, lColumn := range pColumns {
-		if lColumnEqualNameList != "" {
-			lColumnEqualNameList += pSeparator
+func (sb *genericSQLBuilder) columnEqualNameList(columns []string, separator string) string {
+	columnEqualNameList := ""
+	for _, column := range columns {
+		if columnEqualNameList != "" {
+			columnEqualNameList += separator
 		}
-		lColumnEqualNameList += fmt.Sprintf("%s = @%s", sb.QuoteIdentifier(lColumn), lColumn)
+		columnEqualNameList += fmt.Sprintf("%s = @%s", sb.QuoteIdentifier(column), column)
 	}
-	return lColumnEqualNameList
+	return columnEqualNameList
 }
 
-func (sb *genericSQLBuilder) QuoteIdentifier(pIdentifier string) string {
+func (sb *genericSQLBuilder) QuoteIdentifier(identifier string) string {
 	if sb.QuoteIdentifierFunc != nil {
-		return sb.QuoteIdentifierFunc(pIdentifier)
+		return sb.QuoteIdentifierFunc(identifier)
 	}
 
 	// Most databases uses double quotes: "identifier" (PostgreSQL, SQLite, etc.)
 	// Escape rule: double quote becomes two double quotes
 	// Example: users -> "users", table"name -> "table""name"
-	pIdentifier = strings.ReplaceAll(pIdentifier, `"`, `""`)
-	return fmt.Sprintf(`"%s"`, pIdentifier)
+	identifier = strings.ReplaceAll(identifier, `"`, `""`)
+	return fmt.Sprintf(`"%s"`, identifier)
 }
 
-func (sb *genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
+func (sb *genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any) {
 	if sb.InteroperateSQLCommandWithNamedArgsFunc != nil {
-		return sb.InteroperateSQLCommandWithNamedArgsFunc(pSQLCommand, pNamedArgs...)
+		return sb.InteroperateSQLCommandWithNamedArgsFunc(sql, args...)
 	}
 
-	lSQLCommand := pSQLCommand
-	lArgs := []any{}
-	for _, lParam := range pNamedArgs {
-		lArgs = append(lArgs, lParam)
+	a := []any{}
+	for _, param := range args {
+		a = append(a, param)
 	}
-	return lSQLCommand, lArgs
+	return sql, a
 }

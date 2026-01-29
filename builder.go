@@ -7,13 +7,13 @@ import (
 	"github.com/ordershift/ormshift/schema"
 )
 
-// DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
+// DDLSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
-	CreateTable(pTable schema.Table) string
-	DropTable(pTableName string) string
-	AlterTableAddColumn(pTableName string, pColumn schema.Column) string
-	AlterTableDropColumn(pTableName, pColumnName string) string
-	ColumnTypeAsString(pColumnType schema.ColumnType) string
+	CreateTable(table schema.Table) string
+	DropTable(table string) string
+	AlterTableAddColumn(table string, column schema.Column) string
+	AlterTableDropColumn(table, column string) string
+	ColumnTypeAsString(columnType schema.ColumnType) string
 }
 
 // ColumnsValues represents a mapping between column names and their corresponding values.
@@ -21,75 +21,75 @@ type ColumnsValues map[string]any
 
 // ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
-//	lColumnsValues := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
-//	lNamedArgs := lColumnsValues.ToNamedArgs()
-//	//lNamedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
+//	values := ColumnsValues{"id": 5, "sku": "ZTX-9000", "is_simple": true}
+//	args := values.ToNamedArgs()
+//	//args == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
 func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
-	lNamedArgs := []sql.NamedArg{}
+	args := []sql.NamedArg{}
 	for c, v := range *cv {
-		lNamedArgs = append(lNamedArgs, sql.Named(c, v))
+		args = append(args, sql.Named(c, v))
 	}
-	slices.SortFunc(lNamedArgs, func(a, b sql.NamedArg) int {
+	slices.SortFunc(args, func(a, b sql.NamedArg) int {
 		if a.Name < b.Name {
 			return -1
 		}
 		return 1
 	})
-	return lNamedArgs
+	return args
 }
 
 // ToColumns returns the column names from ColumnsValues as a string array ordered by name, e.g.:
 func (cv *ColumnsValues) ToColumns() []string {
-	lColumns := []string{}
+	columns := []string{}
 	for c := range *cv {
-		lColumns = append(lColumns, c)
+		columns = append(columns, c)
 	}
-	slices.Sort(lColumns)
-	return lColumns
+	slices.Sort(columns)
+	return columns
 }
 
 // DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.
 type DMLSQLBuilder interface {
-	Insert(pTableName string, pColumns []string) string
-	InsertWithValues(pTableName string, pColumnsValues ColumnsValues) (string, []any)
-	Update(pTableName string, pColumns, pColumnsWhere []string) string
-	UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ColumnsValues) (string, []any)
-	Delete(pTableName string, pColumnsWhere []string) string
-	DeleteWithValues(pTableName string, pWhereColumnsValues ColumnsValues) (string, []any)
-	Select(pTableName string, pColumns, pColumnsWhere []string) string
-	SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ColumnsValues) (string, []any)
-	SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string
+	Insert(table string, columns []string) string
+	InsertWithValues(table string, values ColumnsValues) (string, []any)
+	Update(table string, columns, where []string) string
+	UpdateWithValues(table string, columns, where []string, values ColumnsValues) (string, []any)
+	Delete(table string, where []string) string
+	DeleteWithValues(table string, where ColumnsValues) (string, []any)
+	Select(table string, columns, where []string) string
+	SelectWithValues(table string, columns []string, where ColumnsValues) (string, []any)
+	SelectWithPagination(sql string, size, number uint) string
 
 	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,
 	//
-	//	pSQLCommand := "select * from user where id = @id"
-	//	pNamedArg := sql.Named("id", 123)
+	//	sql := "select * from user where id = @id"
+	//	namedArg := sql.Named("id", 123)
 	//
 	// PostgreSQL:
-	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = $1"
 	//	//p == 123
 	//
 	// SQLite:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// SQL Server:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// MySQL (not yet supported, expects question marks in parameters):
 	//
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sql, namedArg)
 	//	//q == "select * from user where id = ?"
 	//	//p == 123
-	InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
+	InteroperateSQLCommandWithNamedArgs(sql string, args ...sql.NamedArg) (string, []any)
 }
 
 type SQLBuilder interface {
 	DDLSQLBuilder
 	DMLSQLBuilder
-	QuoteIdentifier(pIdentifier string) string
+	QuoteIdentifier(identifier string) string
 }
