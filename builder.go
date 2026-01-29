@@ -9,11 +9,11 @@ import (
 
 // DDSQLBuilder creates DDL (Data Definition Language) SQL commands for defining schema in DBMS.
 type DDLSQLBuilder interface {
-	CreateTable(pTable schema.Table) string
-	DropTable(pTableName string) string
-	AlterTableAddColumn(pTableName string, pColumn schema.Column) string
-	AlterTableDropColumn(pTableName, pColumnName string) string
-	ColumnTypeAsString(pColumnType schema.ColumnType) string
+	CreateTable(table schema.Table) string
+	DropTable(tableName string) string
+	AlterTableAddColumn(tableName string, column schema.Column) string
+	AlterTableDropColumn(tableName, columnName string) string
+	ColumnTypeAsString(columnType schema.ColumnType) string
 }
 
 // ColumnsValues represents a mapping between column names and their corresponding values.
@@ -50,46 +50,46 @@ func (cv *ColumnsValues) ToColumns() []string {
 
 // DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.
 type DMLSQLBuilder interface {
-	Insert(pTableName string, pColumns []string) string
-	InsertWithValues(pTableName string, pColumnsValues ColumnsValues) (string, []any)
-	Update(pTableName string, pColumns, pColumnsWhere []string) string
-	UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ColumnsValues) (string, []any)
-	Delete(pTableName string, pColumnsWhere []string) string
-	DeleteWithValues(pTableName string, pWhereColumnsValues ColumnsValues) (string, []any)
-	Select(pTableName string, pColumns, pColumnsWhere []string) string
-	SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ColumnsValues) (string, []any)
-	SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string
+	Insert(tableName string, columns []string) string
+	InsertWithValues(tableName string, columnsValues ColumnsValues) (string, []any)
+	Update(tableName string, columns, columnsWhere []string) string
+	UpdateWithValues(tableName string, columns, columnsWhere []string, values ColumnsValues) (string, []any)
+	Delete(tableName string, columnsWhere []string) string
+	DeleteWithValues(tableName string, whereColumnsValues ColumnsValues) (string, []any)
+	Select(tableName string, columns, columnsWhere []string) string
+	SelectWithValues(tableName string, columns []string, whereColumnsValues ColumnsValues) (string, []any)
+	SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string
 
 	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,
 	//
-	//	pSQLCommand := "select * from user where id = @id"
-	//	pNamedArg := sql.Named("id", 123)
+	//	sqlCommand := "select * from user where id = @id"
+	//	namedArg := sql.Named("id", 123)
 	//
 	// PostgreSQL:
-	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p := sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
 	//	//q == "select * from user where id = $1"
 	//	//p == 123
 	//
 	// SQLite:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// SQL Server:
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
 	//	//q == "select * from user where id = @id"
 	//	//p == sql.Named("id", 123)
 	//
 	// MySQL (not yet supported, expects question marks in parameters):
 	//
-	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArg)
+	//	q, p = sqlbuilder.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArg)
 	//	//q == "select * from user where id = ?"
 	//	//p == 123
-	InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any)
+	InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any)
 }
 
 type SQLBuilder interface {
 	DDLSQLBuilder
 	DMLSQLBuilder
-	QuoteIdentifier(pIdentifier string) string
+	QuoteIdentifier(identifier string) string
 }

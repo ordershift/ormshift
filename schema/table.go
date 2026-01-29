@@ -11,9 +11,9 @@ type Table struct {
 	columns []Column
 }
 
-func NewTable(pName string) Table {
+func NewTable(name string) Table {
 	return Table{
-		name:    pName,
+		name:    name,
 		columns: []Column{},
 	}
 }
@@ -26,8 +26,8 @@ func (t *Table) Columns() []Column {
 	return t.columns
 }
 
-func (t *Table) AddColumns(pParams ...NewColumnParams) error {
-	for _, colParams := range pParams {
+func (t *Table) AddColumns(params ...NewColumnParams) error {
+	for _, colParams := range params {
 		column := NewColumn(colParams)
 		columnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
 			return strings.EqualFold(column.Name(), c.Name())

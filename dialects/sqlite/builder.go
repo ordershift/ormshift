@@ -19,11 +19,11 @@ func newSQLiteBuilder() ormshift.SQLBuilder {
 	return &sb
 }
 
-func (sb *sqliteBuilder) CreateTable(pTable schema.Table) string {
+func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
 	columns := ""
 	pkColumns := ""
 	hasAutoIncrementColumn := false
-	for _, column := range pTable.Columns() {
+	for _, column := range table.Columns() {
 		if columns != "" {
 			columns += ","
 		}
@@ -45,26 +45,26 @@ func (sb *sqliteBuilder) CreateTable(pTable schema.Table) string {
 		if columns != "" {
 			columns += ","
 		}
-		pkConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
+		pkConstraintName := sb.QuoteIdentifier("PK_" + table.Name())
 		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), columns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 
-func (sb *sqliteBuilder) DropTable(pTableName string) string {
-	return sb.generic.DropTable(pTableName)
+func (sb *sqliteBuilder) DropTable(tableName string) string {
+	return sb.generic.DropTable(tableName)
 }
 
-func (sb *sqliteBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
-	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
+func (sb *sqliteBuilder) AlterTableAddColumn(tableName string, column schema.Column) string {
+	return sb.generic.AlterTableAddColumn(tableName, column)
 }
 
-func (sb *sqliteBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
-	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
+func (sb *sqliteBuilder) AlterTableDropColumn(tableName, columnName string) string {
+	return sb.generic.AlterTableDropColumn(tableName, columnName)
 }
 
-func (sb *sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
-	switch pColumnType {
+func (sb *sqliteBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {
+	switch columnType {
 	case schema.Varchar:
 		return "TEXT"
 	case schema.Boolean:
@@ -84,57 +84,57 @@ func (sb *sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) strin
 	}
 }
 
-func (sb *sqliteBuilder) columnDefinition(pColumn schema.Column) string {
-	columnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
-	if pColumn.NotNull() {
+func (sb *sqliteBuilder) columnDefinition(column schema.Column) string {
+	columnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
+	if column.NotNull() {
 		columnDef += " NOT NULL"
 	}
-	if pColumn.AutoIncrement() {
+	if column.AutoIncrement() {
 		columnDef += " PRIMARY KEY AUTOINCREMENT"
 	}
 	return columnDef
 }
 
-func (sb *sqliteBuilder) Insert(pTableName string, pColumns []string) string {
-	return sb.generic.Insert(pTableName, pColumns)
+func (sb *sqliteBuilder) Insert(tableName string, columns []string) string {
+	return sb.generic.Insert(tableName, columns)
 }
 
-func (sb *sqliteBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
+func (sb *sqliteBuilder) InsertWithValues(tableName string, columnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(tableName, columnsValues)
 }
 
-func (sb *sqliteBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
+func (sb *sqliteBuilder) Update(tableName string, columns, columnsWhere []string) string {
+	return sb.generic.Update(tableName, columns, columnsWhere)
 }
 
-func (sb *sqliteBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
+func (sb *sqliteBuilder) UpdateWithValues(tableName string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(tableName, columns, columnsWhere, values)
 }
 
-func (sb *sqliteBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	return sb.generic.Delete(pTableName, pColumnsWhere)
+func (sb *sqliteBuilder) Delete(tableName string, columnsWhere []string) string {
+	return sb.generic.Delete(tableName, columnsWhere)
 }
 
-func (sb *sqliteBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
+func (sb *sqliteBuilder) DeleteWithValues(tableName string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(tableName, whereColumnsValues)
 }
 
-func (sb *sqliteBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
+func (sb *sqliteBuilder) Select(tableName string, columns, columnsWhere []string) string {
+	return sb.generic.Select(tableName, columns, columnsWhere)
 }
 
-func (sb *sqliteBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
+func (sb *sqliteBuilder) SelectWithValues(tableName string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(tableName, columns, whereColumnsValues)
 }
 
-func (sb *sqliteBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
+func (sb *sqliteBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {
+	return sb.generic.SelectWithPagination(sqlSelectCommand, rowsPerPage, pageNumber)
 }
 
-func (sb *sqliteBuilder) QuoteIdentifier(pIdentifier string) string {
-	return sb.generic.QuoteIdentifier(pIdentifier)
+func (sb *sqliteBuilder) QuoteIdentifier(identifier string) string {
+	return sb.generic.QuoteIdentifier(identifier)
 }
 
-func (sb *sqliteBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	return sb.generic.InteroperateSQLCommandWithNamedArgs(pSQLCommand, pNamedArgs...)
+func (sb *sqliteBuilder) InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any) {
+	return sb.generic.InteroperateSQLCommandWithNamedArgs(sqlCommand, namedArgs...)
 }

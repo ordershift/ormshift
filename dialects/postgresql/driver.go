@@ -25,22 +25,22 @@ func (d *postgresqlDriver) Name() string {
 	return "postgres"
 }
 
-func (d *postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
-	host := pParams.Host
+func (d *postgresqlDriver) ConnectionString(params ormshift.ConnectionParams) string {
+	host := params.Host
 	if host == "" {
 		host = "localhost"
 	}
-	port := pParams.Port
+	port := params.Port
 	if port == 0 {
 		port = 5432
 	}
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, pParams.User, pParams.Password, pParams.Database)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, params.User, params.Password, params.Database)
 }
 
 func (d *postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {
 	return d.sqlBuilder
 }
 
-func (d *postgresqlDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return schema.NewDBSchema(pDB, tableNamesQuery, columnTypesQueryFunc(d.sqlBuilder))
+func (d *postgresqlDriver) DBSchema(db *sql.DB) (*schema.DBSchema, error) {
+	return schema.NewDBSchema(db, tableNamesQuery, columnTypesQueryFunc(d.sqlBuilder))
 }

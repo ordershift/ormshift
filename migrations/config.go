@@ -17,17 +17,17 @@ func NewMigratorConfig() *MigratorConfig {
 	return &config
 }
 
-func (mc *MigratorConfig) WithTableName(pTableName string) *MigratorConfig {
-	mc.tableName = pTableName
+func (mc *MigratorConfig) WithTableName(tableName string) *MigratorConfig {
+	mc.tableName = tableName
 	return mc
 }
-func (mc *MigratorConfig) WithColumnNames(pMigrationNameColumn, pAppliedAtColumn string) *MigratorConfig {
-	mc.migrationNameColumn = pMigrationNameColumn
-	mc.appliedAtColumn = pAppliedAtColumn
+func (mc *MigratorConfig) WithColumnNames(migrationNameColumn, appliedAtColumn string) *MigratorConfig {
+	mc.migrationNameColumn = migrationNameColumn
+	mc.appliedAtColumn = appliedAtColumn
 	return mc
 }
-func (mc *MigratorConfig) WithMigrationNameMaxLength(pMaxLength uint) *MigratorConfig {
-	mc.migrationNameMaxLength = pMaxLength
+func (mc *MigratorConfig) WithMigrationNameMaxLength(maxLength uint) *MigratorConfig {
+	mc.migrationNameMaxLength = maxLength
 	return mc
 }
 

@@ -13,30 +13,30 @@ type DBSchema struct {
 	columnTypesQueryFunc ColumnTypesQueryFunc
 }
 
-type ColumnTypesQueryFunc func(pTableName string) string
+type ColumnTypesQueryFunc func(tableName string) string
 
 func NewDBSchema(
-	pDB *sql.DB,
-	pTableNamesQuery string,
-	pColumnTypesQueryFunc ColumnTypesQueryFunc,
+	db *sql.DB,
+	tableNamesQuery string,
+	columnTypesQueryFunc ColumnTypesQueryFunc,
 ) (*DBSchema, error) {
-	if pDB == nil {
+	if db == nil {
 		return nil, errors.New("sql.DB cannot be nil")
 	}
 	return &DBSchema{
-		db:                   pDB,
-		tableNamesQuery:      pTableNamesQuery,
-		columnTypesQueryFunc: pColumnTypesQueryFunc,
+		db:                   db,
+		tableNamesQuery:      tableNamesQuery,
+		columnTypesQueryFunc: columnTypesQueryFunc,
 	}, nil
 }
 
-func (s *DBSchema) HasTable(pTableName string) bool {
+func (s *DBSchema) HasTable(tableName string) bool {
 	tables, err := s.fetchTableNames()
 	if err != nil {
 		return false
 	}
 	return slices.ContainsFunc(tables, func(t string) bool {
-		return strings.EqualFold(t, pTableName)
+		return strings.EqualFold(t, tableName)
 	})
 }
 
@@ -61,18 +61,18 @@ func (s *DBSchema) fetchTableNames() (tableNames []string, err error) {
 	return
 }
 
-func (s *DBSchema) HasColumn(pTableName, pColumnName string) bool {
-	columnTypes, err := s.fetchColumnTypes(pTableName)
+func (s *DBSchema) HasColumn(tableName, columnName string) bool {
+	columnTypes, err := s.fetchColumnTypes(tableName)
 	if err != nil {
 		return false
 	}
 	return slices.ContainsFunc(columnTypes, func(ct *sql.ColumnType) bool {
-		return strings.EqualFold(ct.Name(), pColumnName)
+		return strings.EqualFold(ct.Name(), columnName)
 	})
 }
 
-func (s *DBSchema) fetchColumnTypes(pTableName string) (columnTypes []*sql.ColumnType, err error) {
-	rows, err := s.db.Query(s.columnTypesQueryFunc(pTableName))
+func (s *DBSchema) fetchColumnTypes(tableName string) (columnTypes []*sql.ColumnType, err error) {
+	rows, err := s.db.Query(s.columnTypesQueryFunc(tableName))
 	if err != nil {
 		return
 	}

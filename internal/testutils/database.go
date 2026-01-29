@@ -27,8 +27,8 @@ func (d *FakeDriver) Name() string {
 func (d *FakeDriver) SQLBuilder() ormshift.SQLBuilder {
 	return d.underlyingDriver.SQLBuilder()
 }
-func (d *FakeDriver) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return d.underlyingDriver.DBSchema(pDB)
+func (d *FakeDriver) DBSchema(db *sql.DB) (*schema.DBSchema, error) {
+	return d.underlyingDriver.DBSchema(db)
 }
 
 // FakeDriverInvalidConnectionString always returns an empty connection string.
@@ -50,8 +50,8 @@ func (d *FakeDriverInvalidConnectionString) Name() string {
 func (d *FakeDriverInvalidConnectionString) SQLBuilder() ormshift.SQLBuilder {
 	return d.underlyingDriver.SQLBuilder()
 }
-func (d *FakeDriverInvalidConnectionString) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return d.underlyingDriver.DBSchema(pDB)
+func (d *FakeDriverInvalidConnectionString) DBSchema(db *sql.DB) (*schema.DBSchema, error) {
+	return d.underlyingDriver.DBSchema(db)
 }
 
 // FakeDriverBadSchema always returns an error when attempting to get the DB schema.
@@ -73,7 +73,7 @@ func (d *FakeDriverBadSchema) Name() string {
 func (d *FakeDriverBadSchema) SQLBuilder() ormshift.SQLBuilder {
 	return d.underlyingDriver.SQLBuilder()
 }
-func (d *FakeDriverBadSchema) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
+func (d *FakeDriverBadSchema) DBSchema(db *sql.DB) (*schema.DBSchema, error) {
 	return nil, fmt.Errorf("intentionally bad schema")
 }
 
@@ -96,6 +96,6 @@ func (d *FakeDriverBadName) Name() string {
 func (d *FakeDriverBadName) SQLBuilder() ormshift.SQLBuilder {
 	return d.underlyingDriver.SQLBuilder()
 }
-func (d *FakeDriverBadName) DBSchema(pDB *sql.DB) (*schema.DBSchema, error) {
-	return d.underlyingDriver.DBSchema(pDB)
+func (d *FakeDriverBadName) DBSchema(db *sql.DB) (*schema.DBSchema, error) {
+	return d.underlyingDriver.DBSchema(db)
 }

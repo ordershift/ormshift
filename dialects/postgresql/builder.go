@@ -21,24 +21,24 @@ func newPostgreSQLBuilder() ormshift.SQLBuilder {
 	return &sb
 }
 
-func (sb *postgresqlBuilder) CreateTable(pTable schema.Table) string {
-	return sb.generic.CreateTable(pTable)
+func (sb *postgresqlBuilder) CreateTable(table schema.Table) string {
+	return sb.generic.CreateTable(table)
 }
 
-func (sb *postgresqlBuilder) DropTable(pTableName string) string {
-	return sb.generic.DropTable(pTableName)
+func (sb *postgresqlBuilder) DropTable(tableName string) string {
+	return sb.generic.DropTable(tableName)
 }
 
-func (sb *postgresqlBuilder) AlterTableAddColumn(pTableName string, pColumn schema.Column) string {
-	return sb.generic.AlterTableAddColumn(pTableName, pColumn)
+func (sb *postgresqlBuilder) AlterTableAddColumn(tableName string, column schema.Column) string {
+	return sb.generic.AlterTableAddColumn(tableName, column)
 }
 
-func (sb *postgresqlBuilder) AlterTableDropColumn(pTableName, pColumnName string) string {
-	return sb.generic.AlterTableDropColumn(pTableName, pColumnName)
+func (sb *postgresqlBuilder) AlterTableDropColumn(tableName, columnName string) string {
+	return sb.generic.AlterTableDropColumn(tableName, columnName)
 }
 
-func (sb *postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) string {
-	switch pColumnType {
+func (sb *postgresqlBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {
+	switch columnType {
 	case schema.Varchar:
 		return "VARCHAR"
 	case schema.Boolean:
@@ -58,68 +58,67 @@ func (sb *postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) s
 	}
 }
 
-func (sb *postgresqlBuilder) columnDefinition(pColumn schema.Column) string {
-	columnDef := sb.QuoteIdentifier(pColumn.Name())
-	if pColumn.AutoIncrement() {
+func (sb *postgresqlBuilder) columnDefinition(column schema.Column) string {
+	columnDef := sb.QuoteIdentifier(column.Name())
+	if column.AutoIncrement() {
 		columnDef += " BIGSERIAL"
 	} else {
-		if pColumn.Type() == schema.Varchar {
-			columnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
+		if column.Type() == schema.Varchar {
+			columnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(column.Type()), column.Size())
 		} else {
-			columnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
+			columnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(column.Type()))
 		}
 	}
-	if pColumn.NotNull() {
+	if column.NotNull() {
 		columnDef += " NOT NULL"
 	}
 	return columnDef
 }
 
-func (sb *postgresqlBuilder) Insert(pTableName string, pColumns []string) string {
-	return sb.generic.Insert(pTableName, pColumns)
+func (sb *postgresqlBuilder) Insert(tableName string, columns []string) string {
+	return sb.generic.Insert(tableName, columns)
 }
 
-func (sb *postgresqlBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.InsertWithValues(pTableName, pColumnsValues)
+func (sb *postgresqlBuilder) InsertWithValues(tableName string, columnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.InsertWithValues(tableName, columnsValues)
 }
 
-func (sb *postgresqlBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Update(pTableName, pColumns, pColumnsWhere)
+func (sb *postgresqlBuilder) Update(tableName string, columns, columnsWhere []string) string {
+	return sb.generic.Update(tableName, columns, columnsWhere)
 }
 
-func (sb *postgresqlBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.UpdateWithValues(pTableName, pColumns, pColumnsWhere, pValues)
+func (sb *postgresqlBuilder) UpdateWithValues(tableName string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(tableName, columns, columnsWhere, values)
 }
 
-func (sb *postgresqlBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	return sb.generic.Delete(pTableName, pColumnsWhere)
+func (sb *postgresqlBuilder) Delete(tableName string, columnsWhere []string) string {
+	return sb.generic.Delete(tableName, columnsWhere)
 }
 
-func (sb *postgresqlBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.DeleteWithValues(pTableName, pWhereColumnsValues)
+func (sb *postgresqlBuilder) DeleteWithValues(tableName string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(tableName, whereColumnsValues)
 }
 
-func (sb *postgresqlBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	return sb.generic.Select(pTableName, pColumns, pColumnsWhere)
+func (sb *postgresqlBuilder) Select(tableName string, columns, columnsWhere []string) string {
+	return sb.generic.Select(tableName, columns, columnsWhere)
 }
 
-func (sb *postgresqlBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.SelectWithValues(pTableName, pColumns, pWhereColumnsValues)
+func (sb *postgresqlBuilder) SelectWithValues(tableName string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(tableName, columns, whereColumnsValues)
 }
 
-func (sb *postgresqlBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	return sb.generic.SelectWithPagination(pSQLSelectCommand, pRowsPerPage, pPageNumber)
+func (sb *postgresqlBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {
+	return sb.generic.SelectWithPagination(sqlSelectCommand, rowsPerPage, pageNumber)
 }
 
-func (sb *postgresqlBuilder) QuoteIdentifier(pIdentifier string) string {
-	return sb.generic.QuoteIdentifier(pIdentifier)
+func (sb *postgresqlBuilder) QuoteIdentifier(identifier string) string {
+	return sb.generic.QuoteIdentifier(identifier)
 }
 
-func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	sqlCommand := pSQLCommand
+func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(sqlCommand string, namedArgs ...sql.NamedArg) (string, []any) {
 	args := []any{}
 	indexes := map[string]int{}
-	for i, param := range pNamedArgs {
+	for i, param := range namedArgs {
 		indexes[strings.ToLower(param.Name)] = i + 1
 		booleanValue, isBoolean := param.Value.(bool)
 		if isBoolean {
