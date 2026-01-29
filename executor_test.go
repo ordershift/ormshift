@@ -51,8 +51,8 @@ func TestExecutor(t *testing.T) {
 		"ammount":    5000.00,
 		"percent":    25.54325,
 	}
-	sqlInsert, args := sqlBuilder.InsertWithValues("user", values)
-	result, err := sqlExecutor.Exec(sqlInsert, args...)
+	sql, args := sqlBuilder.InsertWithValues("user", values)
+	result, err := sqlExecutor.Exec(sql, args...)
 	if !testutils.AssertNilError(t, err, "sqlExecutor.Exec") {
 		return
 	}
@@ -67,12 +67,12 @@ func TestExecutor(t *testing.T) {
 	}
 
 	//SELECT
-	sqlSelect, args := sqlBuilder.SelectWithValues(
+	sql, args = sqlBuilder.SelectWithValues(
 		"user",
 		[]string{"id", "name", "email", "updated_at", "active", "ammount", "percent", "photo"},
 		ormshift.ColumnsValues{"id": i},
 	)
-	userRows, err := sqlExecutor.Query(sqlSelect, args...)
+	userRows, err := sqlExecutor.Query(sql, args...)
 	if !testutils.AssertNotNilResultAndNilError(t, userRows, err, "sqlExecutor.Query") {
 		return
 	}

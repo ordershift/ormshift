@@ -107,8 +107,8 @@ func (sb *postgresqlBuilder) SelectWithValues(table string, columns []string, wh
 	return sb.generic.SelectWithValues(table, columns, where)
 }
 
-func (sb *postgresqlBuilder) SelectWithPagination(sqlSelectCommand string, size, number uint) string {
-	return sb.generic.SelectWithPagination(sqlSelectCommand, size, number)
+func (sb *postgresqlBuilder) SelectWithPagination(sql string, size, number uint) string {
+	return sb.generic.SelectWithPagination(sql, size, number)
 }
 
 func (sb *postgresqlBuilder) QuoteIdentifier(identifier string) string {

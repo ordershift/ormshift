@@ -128,8 +128,8 @@ func (sb *sqlserverBuilder) SelectWithValues(table string, columns []string, whe
 	return sb.generic.SelectWithValues(table, columns, where)
 }
 
-func (sb *sqlserverBuilder) SelectWithPagination(sqlSelectCommand string, size, number uint) string {
-	selectWithPagination := sqlSelectCommand
+func (sb *sqlserverBuilder) SelectWithPagination(sql string, size, number uint) string {
+	selectWithPagination := sql
 	if size > 0 {
 		offset := uint(0)
 		if number > 1 {

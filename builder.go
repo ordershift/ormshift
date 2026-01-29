@@ -58,7 +58,7 @@ type DMLSQLBuilder interface {
 	DeleteWithValues(table string, where ColumnsValues) (string, []any)
 	Select(table string, columns, where []string) string
 	SelectWithValues(table string, columns []string, where ColumnsValues) (string, []any)
-	SelectWithPagination(sqlSelectCommand string, size, number uint) string
+	SelectWithPagination(sql string, size, number uint) string
 
 	// InteroperateSQLCommandWithNamedArgs acts as a SQL command translator that standardizes SQL commands according to the database driver being used e.g.,
 	//

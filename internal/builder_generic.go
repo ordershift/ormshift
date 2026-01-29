@@ -135,8 +135,8 @@ func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, wh
 	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }
 
-func (sb *genericSQLBuilder) SelectWithPagination(sqlSelectCommand string, size, number uint) string {
-	selectWithPagination := sqlSelectCommand
+func (sb *genericSQLBuilder) SelectWithPagination(sql string, size, number uint) string {
+	selectWithPagination := sql
 	if size > 0 {
 		selectWithPagination += fmt.Sprintf(" LIMIT %d", size)
 		if number > 1 {
