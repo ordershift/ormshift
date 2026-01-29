@@ -131,11 +131,11 @@ func (sb *sqlserverBuilder) SelectWithValues(table string, columns []string, whe
 func (sb *sqlserverBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {
 	selectWithPagination := sqlSelectCommand
 	if rowsPerPage > 0 {
-		offSet := uint(0)
+		offset := uint(0)
 		if pageNumber > 1 {
-			offSet = rowsPerPage * (pageNumber - 1)
+			offset = rowsPerPage * (pageNumber - 1)
 		}
-		selectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offSet, rowsPerPage)
+		selectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, rowsPerPage)
 	}
 	return selectWithPagination
 }
