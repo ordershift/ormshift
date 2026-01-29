@@ -61,13 +61,13 @@ func (s *DBSchema) fetchTableNames() (tableNames []string, err error) {
 	return
 }
 
-func (s *DBSchema) HasColumn(table, columnName string) bool {
+func (s *DBSchema) HasColumn(table, column string) bool {
 	columnTypes, err := s.fetchColumnTypes(table)
 	if err != nil {
 		return false
 	}
 	return slices.ContainsFunc(columnTypes, func(ct *sql.ColumnType) bool {
-		return strings.EqualFold(ct.Name(), columnName)
+		return strings.EqualFold(ct.Name(), column)
 	})
 }
 

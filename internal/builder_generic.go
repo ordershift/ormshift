@@ -67,8 +67,8 @@ func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Col
 	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(table), sb.columnDefinition(column))
 }
 
-func (sb *genericSQLBuilder) AlterTableDropColumn(table, columnName string) string {
-	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(table), sb.QuoteIdentifier(columnName))
+func (sb *genericSQLBuilder) AlterTableDropColumn(table, column string) string {
+	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", sb.QuoteIdentifier(table), sb.QuoteIdentifier(column))
 }
 
 func (sb *genericSQLBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {

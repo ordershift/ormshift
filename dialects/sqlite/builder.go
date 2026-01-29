@@ -59,8 +59,8 @@ func (sb *sqliteBuilder) AlterTableAddColumn(table string, column schema.Column)
 	return sb.generic.AlterTableAddColumn(table, column)
 }
 
-func (sb *sqliteBuilder) AlterTableDropColumn(table, columnName string) string {
-	return sb.generic.AlterTableDropColumn(table, columnName)
+func (sb *sqliteBuilder) AlterTableDropColumn(table, column string) string {
+	return sb.generic.AlterTableDropColumn(table, column)
 }
 
 func (sb *sqliteBuilder) ColumnTypeAsString(columnType schema.ColumnType) string {

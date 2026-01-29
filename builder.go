@@ -12,7 +12,7 @@ type DDLSQLBuilder interface {
 	CreateTable(table schema.Table) string
 	DropTable(table string) string
 	AlterTableAddColumn(table string, column schema.Column) string
-	AlterTableDropColumn(table, columnName string) string
+	AlterTableDropColumn(table, column string) string
 	ColumnTypeAsString(columnType schema.ColumnType) string
 }
 
