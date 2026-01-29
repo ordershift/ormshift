@@ -9,13 +9,13 @@ import (
 )
 
 func TestAddColumnFailsWhenAlreadyExists(t *testing.T) {
-	lProductAttributeTable := testutils.FakeProductAttributeTable(t)
-	lError := lProductAttributeTable.AddColumns(schema.NewColumnParams{
+	productAttributeTable := testutils.FakeProductAttributeTable(t)
+	err := productAttributeTable.AddColumns(schema.NewColumnParams{
 		Name: "value",
 		Type: schema.Integer,
 	})
-	if !testutils.AssertNotNilError(t, lError, "Table.AddColumns") {
+	if !testutils.AssertNotNilError(t, err, "Table.AddColumns") {
 		return
 	}
-	testutils.AssertErrorMessage(t, fmt.Sprintf("column %q already exists in table %q", "value", "product_attribute"), lError, "Table.AddColumns")
+	testutils.AssertErrorMessage(t, fmt.Sprintf("column %q already exists in table %q", "value", "product_attribute"), err, "Table.AddColumns")
 }

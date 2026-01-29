@@ -59,20 +59,20 @@ func (sb *postgresqlBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) s
 }
 
 func (sb *postgresqlBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := sb.QuoteIdentifier(pColumn.Name())
+	columnDef := sb.QuoteIdentifier(pColumn.Name())
 	if pColumn.AutoIncrement() {
-		lColumnDef += " BIGSERIAL"
+		columnDef += " BIGSERIAL"
 	} else {
 		if pColumn.Type() == schema.Varchar {
-			lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
+			columnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 		} else {
-			lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
+			columnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
 		}
 	}
 	if pColumn.NotNull() {
-		lColumnDef += " NOT NULL"
+		columnDef += " NOT NULL"
 	}
-	return lColumnDef
+	return columnDef
 }
 
 func (sb *postgresqlBuilder) Insert(pTableName string, pColumns []string) string {
@@ -116,29 +116,29 @@ func (sb *postgresqlBuilder) QuoteIdentifier(pIdentifier string) string {
 }
 
 func (sb *postgresqlBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand string, pNamedArgs ...sql.NamedArg) (string, []any) {
-	lSQLCommand := pSQLCommand
-	lArgs := []any{}
-	lIndexes := map[string]int{}
-	for i, lParam := range pNamedArgs {
-		lIndexes[strings.ToLower(lParam.Name)] = i + 1
-		lBooleanValue, lIsBoolean := lParam.Value.(bool)
-		if lIsBoolean {
-			if lBooleanValue {
-				lArgs = append(lArgs, int(1))
+	sqlCommand := pSQLCommand
+	args := []any{}
+	indexes := map[string]int{}
+	for i, param := range pNamedArgs {
+		indexes[strings.ToLower(param.Name)] = i + 1
+		booleanValue, isBoolean := param.Value.(bool)
+		if isBoolean {
+			if booleanValue {
+				args = append(args, int(1))
 			} else {
-				lArgs = append(lArgs, int(0))
+				args = append(args, int(0))
 			}
 		} else {
-			lArgs = append(lArgs, lParam.Value)
+			args = append(args, param.Value)
 		}
 	}
-	lRegex := regexp.MustCompile(`@([a-zA-Z_][a-zA-Z0-9_]*)`)
-	lSQLCommand = lRegex.ReplaceAllStringFunc(lSQLCommand, func(m string) string {
-		lName := m[1:]
-		if idx, ok := lIndexes[strings.ToLower(lName)]; ok {
+	regex := regexp.MustCompile(`@([a-zA-Z_][a-zA-Z0-9_]*)`)
+	sqlCommand = regex.ReplaceAllStringFunc(sqlCommand, func(m string) string {
+		name := m[1:]
+		if idx, ok := indexes[strings.ToLower(name)]; ok {
 			return fmt.Sprintf("$%d", idx)
 		}
 		return m
 	})
-	return lSQLCommand, lArgs
+	return sqlCommand, args
 }

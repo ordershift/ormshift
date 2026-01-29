@@ -8,8 +8,8 @@ import (
 )
 
 func FakeProductAttributeTable(t *testing.T) schema.Table {
-	lProductAttributeTable := schema.NewTable("product_attribute")
-	lError := lProductAttributeTable.AddColumns(
+	productAttributeTable := schema.NewTable("product_attribute")
+	err := productAttributeTable.AddColumns(
 		schema.NewColumnParams{
 			Name:       "product_id",
 			Type:       schema.Integer,
@@ -32,15 +32,15 @@ func FakeProductAttributeTable(t *testing.T) schema.Table {
 			Type: schema.Integer,
 		},
 	)
-	if !AssertNilError(t, lError, "ProductAttributeTable.AddColumns") {
-		panic(lError)
+	if !AssertNilError(t, err, "ProductAttributeTable.AddColumns") {
+		panic(err)
 	}
-	return lProductAttributeTable
+	return productAttributeTable
 }
 
 func FakeUserTable(t *testing.T) schema.Table {
-	lUserTable := schema.NewTable("user")
-	lError := lUserTable.AddColumns(
+	userTable := schema.NewTable("user")
+	err := userTable.AddColumns(
 		schema.NewColumnParams{
 			Name:          "id",
 			Type:          schema.Integer,
@@ -129,10 +129,10 @@ func FakeUserTable(t *testing.T) schema.Table {
 			AutoIncrement: false,
 		},
 	)
-	if !AssertNilError(t, lError, "UserTable.AddColumns") {
-		panic(lError)
+	if !AssertNilError(t, err, "UserTable.AddColumns") {
+		panic(err)
 	}
-	return lUserTable
+	return userTable
 }
 
 func FakeUserTableName(t *testing.T) string {
@@ -140,14 +140,14 @@ func FakeUserTableName(t *testing.T) string {
 }
 
 func FakeUpdatedAtColumn(t *testing.T) schema.Column {
-	lUpdatedAtColumn := schema.NewColumn(schema.NewColumnParams{
+	updatedAtColumn := schema.NewColumn(schema.NewColumnParams{
 		Name:          "updated_at",
 		Type:          schema.DateTime,
 		PrimaryKey:    false,
 		NotNull:       false,
 		AutoIncrement: false,
 	})
-	return lUpdatedAtColumn
+	return updatedAtColumn
 }
 
 func FakeUpdatedAtColumnName(t *testing.T) string {
@@ -155,11 +155,11 @@ func FakeUpdatedAtColumnName(t *testing.T) string {
 }
 
 func FakeInteroperateSQLCommandWithNamedArgsFunc(command string, namedArgs ...sql.NamedArg) (string, []any) {
-	lArgs := make([]any, len(namedArgs))
+	args := make([]any, len(namedArgs))
 	for i, v := range namedArgs {
-		lArgs[i] = v
+		args[i] = v
 	}
-	return "command has been modified", lArgs
+	return "command has been modified", args
 }
 
 func FakeColumnDefinitionFunc(column schema.Column) string {

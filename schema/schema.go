@@ -31,56 +31,56 @@ func NewDBSchema(
 }
 
 func (s *DBSchema) HasTable(pTableName string) bool {
-	lTables, lError := s.fetchTableNames()
-	if lError != nil {
+	tables, err := s.fetchTableNames()
+	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(lTables, func(t string) bool {
+	return slices.ContainsFunc(tables, func(t string) bool {
 		return strings.EqualFold(t, pTableName)
 	})
 }
 
-func (s *DBSchema) fetchTableNames() (rTableNames []string, rError error) {
-	lRows, rError := s.db.Query(s.tableNamesQuery)
-	if rError != nil {
+func (s *DBSchema) fetchTableNames() (tableNames []string, err error) {
+	rows, err := s.db.Query(s.tableNamesQuery)
+	if err != nil {
 		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && rError == nil {
-			rError = err
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = closeErr
 		}
 	}()
-	lTableName := ""
-	for lRows.Next() {
-		rError = lRows.Scan(&lTableName)
-		if rError != nil {
+	tableName := ""
+	for rows.Next() {
+		err = rows.Scan(&tableName)
+		if err != nil {
 			return
 		}
-		rTableNames = append(rTableNames, lTableName)
+		tableNames = append(tableNames, tableName)
 	}
 	return
 }
 
 func (s *DBSchema) HasColumn(pTableName, pColumnName string) bool {
-	lColumnTypes, lError := s.fetchColumnTypes(pTableName)
-	if lError != nil {
+	columnTypes, err := s.fetchColumnTypes(pTableName)
+	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(lColumnTypes, func(ct *sql.ColumnType) bool {
+	return slices.ContainsFunc(columnTypes, func(ct *sql.ColumnType) bool {
 		return strings.EqualFold(ct.Name(), pColumnName)
 	})
 }
 
-func (s *DBSchema) fetchColumnTypes(pTableName string) (rColumnTypes []*sql.ColumnType, rError error) {
-	lRows, rError := s.db.Query(s.columnTypesQueryFunc(pTableName))
-	if rError != nil {
+func (s *DBSchema) fetchColumnTypes(pTableName string) (columnTypes []*sql.ColumnType, err error) {
+	rows, err := s.db.Query(s.columnTypesQueryFunc(pTableName))
+	if err != nil {
 		return
 	}
 	defer func() {
-		if err := lRows.Close(); err != nil && rError == nil {
-			rError = err
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = closeErr
 		}
 	}()
-	rColumnTypes, rError = lRows.ColumnTypes()
+	columnTypes, err = rows.ColumnTypes()
 	return
 }

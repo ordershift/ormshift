@@ -34,29 +34,29 @@ func NewGenericSQLBuilder(
 }
 
 func (sb *genericSQLBuilder) CreateTable(pTable schema.Table) string {
-	lColumns := ""
-	lPKColumns := ""
-	for _, lColumn := range pTable.Columns() {
-		if lColumns != "" {
-			lColumns += ","
+	columns := ""
+	pkColumns := ""
+	for _, column := range pTable.Columns() {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += sb.columnDefinition(lColumn)
+		columns += sb.columnDefinition(column)
 
-		if lColumn.PrimaryKey() {
-			if lPKColumns != "" {
-				lPKColumns += ","
+		if column.PrimaryKey() {
+			if pkColumns != "" {
+				pkColumns += ","
 			}
-			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
+			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 	}
 
-	if lPKColumns != "" {
-		if lColumns != "" {
-			lColumns += ","
+	if pkColumns != "" {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += fmt.Sprintf("PRIMARY KEY (%s)", lPKColumns)
+		columns += fmt.Sprintf("PRIMARY KEY (%s)", pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), columns)
 }
 
 func (sb *genericSQLBuilder) DropTable(pTableName string) string {
@@ -88,89 +88,89 @@ func (sb *genericSQLBuilder) Insert(pTableName string, pColumns []string) string
 }
 
 func (sb *genericSQLBuilder) InsertWithValues(pTableName string, pColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lInsertSQL := sb.Insert(pTableName, pColumnsValues.ToColumns())
-	lInsertArgs := pColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lInsertSQL, lInsertArgs...)
+	insertSQL := sb.Insert(pTableName, pColumnsValues.ToColumns())
+	insertArgs := pColumnsValues.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(insertSQL, insertArgs...)
 }
 
 func (sb *genericSQLBuilder) Update(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(pTableName), sb.columnEqualNameList(pColumns, ","))
+	update := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(pTableName), sb.columnEqualNameList(pColumns, ","))
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lUpdate
+	return update
 }
 
 func (sb *genericSQLBuilder) UpdateWithValues(pTableName string, pColumns, pColumnsWhere []string, pValues ormshift.ColumnsValues) (string, []any) {
-	lUpdateSQL := sb.Update(pTableName, pColumns, pColumnsWhere)
-	lUpdateArgs := pValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lUpdateSQL, lUpdateArgs...)
+	updateSQL := sb.Update(pTableName, pColumns, pColumnsWhere)
+	updateArgs := pValues.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(updateSQL, updateArgs...)
 }
 
 func (sb *genericSQLBuilder) Delete(pTableName string, pColumnsWhere []string) string {
-	lDelete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(pTableName))
+	delete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(pTableName))
 	if len(pColumnsWhere) > 0 {
-		lDelete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+		delete += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lDelete
+	return delete
 }
 
 func (sb *genericSQLBuilder) DeleteWithValues(pTableName string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lDeleteSQL := sb.Delete(pTableName, pWhereColumnsValues.ToColumns())
-	lDeleteArgs := pWhereColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lDeleteSQL, lDeleteArgs...)
+	deleteSQL := sb.Delete(pTableName, pWhereColumnsValues.ToColumns())
+	deleteArgs := pWhereColumnsValues.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(deleteSQL, deleteArgs...)
 }
 
 func (sb *genericSQLBuilder) Select(pTableName string, pColumns, pColumnsWhere []string) string {
-	lUpdate := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), sb.QuoteIdentifier(pTableName))
+	update := fmt.Sprintf("select %s from %s ", sb.columnsList(pColumns), sb.QuoteIdentifier(pTableName))
 	if len(pColumnsWhere) > 0 {
-		lUpdate += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(pColumnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
-	return lUpdate
+	return update
 }
 
 func (sb *genericSQLBuilder) SelectWithValues(pTableName string, pColumns []string, pWhereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	lSelectSQL := sb.Select(pTableName, pColumns, pWhereColumnsValues.ToColumns())
-	lSelectArgs := pWhereColumnsValues.ToNamedArgs()
-	return sb.InteroperateSQLCommandWithNamedArgs(lSelectSQL, lSelectArgs...)
+	selectSQL := sb.Select(pTableName, pColumns, pWhereColumnsValues.ToColumns())
+	selectArgs := pWhereColumnsValues.ToNamedArgs()
+	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }
 
 func (sb *genericSQLBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	lSelectWithPagination := pSQLSelectCommand
+	selectWithPagination := pSQLSelectCommand
 	if pRowsPerPage > 0 {
-		lSelectWithPagination += fmt.Sprintf(" LIMIT %d", pRowsPerPage)
+		selectWithPagination += fmt.Sprintf(" LIMIT %d", pRowsPerPage)
 		if pPageNumber > 1 {
-			lSelectWithPagination += fmt.Sprintf(" OFFSET %d", pRowsPerPage*(pPageNumber-1))
+			selectWithPagination += fmt.Sprintf(" OFFSET %d", pRowsPerPage*(pPageNumber-1))
 		}
 	}
-	return lSelectWithPagination
+	return selectWithPagination
 }
 
 func (sb *genericSQLBuilder) columnsList(pColumns []string) string {
-	lQuotedColumns := []string{}
+	quotedColumns := []string{}
 	for _, col := range pColumns {
-		lQuotedColumns = append(lQuotedColumns, sb.QuoteIdentifier(col))
+		quotedColumns = append(quotedColumns, sb.QuoteIdentifier(col))
 	}
-	return strings.Join(lQuotedColumns, ",")
+	return strings.Join(quotedColumns, ",")
 }
 
 func (sb *genericSQLBuilder) namesList(pColumns []string) string {
-	lNames := []string{}
-	for _, lColumn := range pColumns {
-		lNames = append(lNames, "@"+lColumn)
+	names := []string{}
+	for _, column := range pColumns {
+		names = append(names, "@"+column)
 	}
-	return strings.Join(lNames, ",")
+	return strings.Join(names, ",")
 }
 
 func (sb *genericSQLBuilder) columnEqualNameList(pColumns []string, pSeparator string) string {
-	lColumnEqualNameList := ""
-	for _, lColumn := range pColumns {
-		if lColumnEqualNameList != "" {
-			lColumnEqualNameList += pSeparator
+	columnEqualNameList := ""
+	for _, column := range pColumns {
+		if columnEqualNameList != "" {
+			columnEqualNameList += pSeparator
 		}
-		lColumnEqualNameList += fmt.Sprintf("%s = @%s", sb.QuoteIdentifier(lColumn), lColumn)
+		columnEqualNameList += fmt.Sprintf("%s = @%s", sb.QuoteIdentifier(column), column)
 	}
-	return lColumnEqualNameList
+	return columnEqualNameList
 }
 
 func (sb *genericSQLBuilder) QuoteIdentifier(pIdentifier string) string {
@@ -190,10 +190,10 @@ func (sb *genericSQLBuilder) InteroperateSQLCommandWithNamedArgs(pSQLCommand str
 		return sb.InteroperateSQLCommandWithNamedArgsFunc(pSQLCommand, pNamedArgs...)
 	}
 
-	lSQLCommand := pSQLCommand
-	lArgs := []any{}
-	for _, lParam := range pNamedArgs {
-		lArgs = append(lArgs, lParam)
+	sqlCommand := pSQLCommand
+	args := []any{}
+	for _, param := range pNamedArgs {
+		args = append(args, param)
 	}
-	return lSQLCommand, lArgs
+	return sqlCommand, args
 }

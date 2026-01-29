@@ -25,27 +25,27 @@ type ColumnsValues map[string]any
 //	lNamedArgs := lColumnsValues.ToNamedArgs()
 //	//lNamedArgs == []sql.NamedArg{{Name: "id", Value: 5},{Name: "is_simple", Value: true},{Name: "sku", Value: "ZTX-9000"}}
 func (cv *ColumnsValues) ToNamedArgs() []sql.NamedArg {
-	lNamedArgs := []sql.NamedArg{}
+	namedArgs := []sql.NamedArg{}
 	for c, v := range *cv {
-		lNamedArgs = append(lNamedArgs, sql.Named(c, v))
+		namedArgs = append(namedArgs, sql.Named(c, v))
 	}
-	slices.SortFunc(lNamedArgs, func(a, b sql.NamedArg) int {
+	slices.SortFunc(namedArgs, func(a, b sql.NamedArg) int {
 		if a.Name < b.Name {
 			return -1
 		}
 		return 1
 	})
-	return lNamedArgs
+	return namedArgs
 }
 
 // ToColumns returns the column names from ColumnsValues as a string array ordered by name, e.g.:
 func (cv *ColumnsValues) ToColumns() []string {
-	lColumns := []string{}
+	columns := []string{}
 	for c := range *cv {
-		lColumns = append(lColumns, c)
+		columns = append(columns, c)
 	}
-	slices.Sort(lColumns)
-	return lColumns
+	slices.Sort(columns)
+	return columns
 }
 
 // DMLSQLBuilder creates DML (Data Manipulation Language) SQL commands for manipulating data in DBMS.

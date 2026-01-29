@@ -10,40 +10,40 @@ import (
 )
 
 func TestName(t *testing.T) {
-	lDriver := postgresql.Driver()
-	testutils.AssertEqualWithLabel(t, "postgres", lDriver.Name(), "lDriver.Name")
+	driver := postgresql.Driver()
+	testutils.AssertEqualWithLabel(t, "postgres", driver.Name(), "driver.Name")
 }
 
 func TestConnectionString(t *testing.T) {
-	lDriver := postgresql.Driver()
-	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
+	driver := postgresql.Driver()
+	returnedConnectionString := driver.ConnectionString(ormshift.ConnectionParams{
 		User:     "pg",
 		Password: "123456",
 		Database: "my-db",
 	})
-	lExpectedConnectionString := "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
+	expectedConnectionString := "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable"
+	testutils.AssertEqualWithLabel(t, expectedConnectionString, returnedConnectionString, "driver.ConnectionString")
 }
 
 func TestDBSchema(t *testing.T) {
-	lDriver := postgresql.Driver()
-	lDB, lError := sql.Open(lDriver.Name(), "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable")
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
+	driver := postgresql.Driver()
+	db, err := sql.Open(driver.Name(), "host=localhost port=5432 user=pg password=123456 dbname=my-db sslmode=disable")
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "sql.Open") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	schema, err := driver.DBSchema(db)
+	if !testutils.AssertNotNilResultAndNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
 }
 
 func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDriver := postgresql.Driver()
-	lSchema, lError := lDriver.DBSchema(nil)
-	if !testutils.AssertNilResultAndNotNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	driver := postgresql.Driver()
+	schema, err := driver.DBSchema(nil)
+	if !testutils.AssertNilResultAndNotNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "lDriver.DBSchema")
+	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "driver.DBSchema")
 }

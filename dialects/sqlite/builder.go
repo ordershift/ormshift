@@ -20,35 +20,35 @@ func newSQLiteBuilder() ormshift.SQLBuilder {
 }
 
 func (sb *sqliteBuilder) CreateTable(pTable schema.Table) string {
-	lColumns := ""
-	lPKColumns := ""
-	lHasAutoIncrementColumn := false
-	for _, lColumn := range pTable.Columns() {
-		if lColumns != "" {
-			lColumns += ","
+	columns := ""
+	pkColumns := ""
+	hasAutoIncrementColumn := false
+	for _, column := range pTable.Columns() {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += sb.columnDefinition(lColumn)
+		columns += sb.columnDefinition(column)
 
-		if lColumn.PrimaryKey() {
-			if lPKColumns != "" {
-				lPKColumns += ","
+		if column.PrimaryKey() {
+			if pkColumns != "" {
+				pkColumns += ","
 			}
-			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
+			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 
-		if !lHasAutoIncrementColumn {
-			lHasAutoIncrementColumn = lColumn.AutoIncrement()
+		if !hasAutoIncrementColumn {
+			hasAutoIncrementColumn = column.AutoIncrement()
 		}
 	}
 
-	if !lHasAutoIncrementColumn && lPKColumns != "" {
-		if lColumns != "" {
-			lColumns += ","
+	if !hasAutoIncrementColumn && pkColumns != "" {
+		if columns != "" {
+			columns += ","
 		}
-		lPKConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
-		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
+		pkConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
+		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), columns)
 }
 
 func (sb *sqliteBuilder) DropTable(pTableName string) string {
@@ -85,14 +85,14 @@ func (sb *sqliteBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) strin
 }
 
 func (sb *sqliteBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
+	columnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(pColumn.Name()), sb.ColumnTypeAsString(pColumn.Type()))
 	if pColumn.NotNull() {
-		lColumnDef += " NOT NULL"
+		columnDef += " NOT NULL"
 	}
 	if pColumn.AutoIncrement() {
-		lColumnDef += " PRIMARY KEY AUTOINCREMENT"
+		columnDef += " PRIMARY KEY AUTOINCREMENT"
 	}
-	return lColumnDef
+	return columnDef
 }
 
 func (sb *sqliteBuilder) Insert(pTableName string, pColumns []string) string {

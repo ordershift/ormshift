@@ -11,149 +11,149 @@ import (
 )
 
 func TestNewMigratorWhenDatabaseIsNil(t *testing.T) {
-	lMigrator, lError := migrations.NewMigrator(nil, migrations.NewMigratorConfig())
-	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[database=nil]")
-	testutils.AssertErrorMessage(t, "database cannot be nil", lError, "migrations.NewMigrator[database=nil]")
+	migrator, err := migrations.NewMigrator(nil, migrations.NewMigratorConfig())
+	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[database=nil]")
+	testutils.AssertErrorMessage(t, "database cannot be nil", err, "migrations.NewMigrator[database=nil]")
 }
 
 func TestNewMigratorWhenConfigIsNil(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDB, nil)
-	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[config=nil]")
-	testutils.AssertErrorMessage(t, "migrator config cannot be nil", lError, "migrations.NewMigrator[config=nil]")
+	migrator, err := migrations.NewMigrator(db, nil)
+	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[config=nil]")
+	testutils.AssertErrorMessage(t, "migrator config cannot be nil", err, "migrations.NewMigrator[config=nil]")
 }
 
 func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
-	lDriver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
-	lDB, lError := ormshift.OpenDatabase(lDriver, ormshift.ConnectionParams{})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	driver := testutils.NewFakeDriverInvalidConnectionString(postgresql.Driver())
+	db, err := ormshift.OpenDatabase(driver, ormshift.ConnectionParams{})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
-	testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.NewMigrator[database=invalid]")
-	testutils.AssertErrorMessage(t, "failed to get applied migration names: missing \"=\" after \"invalid-connection-string\" in connection info string\"", lError, "migrations.NewMigrator[database=invalid]")
+	migrator, err := migrations.NewMigrator(db, migrations.NewMigratorConfig())
+	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[database=invalid]")
+	testutils.AssertErrorMessage(t, "failed to get applied migration names: missing \"=\" after \"invalid-connection-string\" in connection info string\"", err, "migrations.NewMigrator[database=invalid]")
 }
 
 func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
+	migrator, err := migrations.NewMigrator(db, migrations.NewMigratorConfig())
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.NewMigrator") {
 		return
 	}
-	lMigrator.Add(testutils.M005_Blank_Migration{})
+	migrator.Add(testutils.M005_Blank_Migration{})
 
-	_ = lDB.Close()
+	_ = db.Close()
 
-	lError = lMigrator.ApplyAllMigrations()
-	if !testutils.AssertNotNilError(t, lError, "Migrator.ApplyAllMigrations") {
+	err = migrator.ApplyAllMigrations()
+	if !testutils.AssertNotNilError(t, err, "Migrator.ApplyAllMigrations") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to record applied migration \"M005_Blank_Migration\": sql: database is closed", lError, "Migrator.ApplyAllMigrations")
+	testutils.AssertErrorMessage(t, "failed to record applied migration \"M005_Blank_Migration\": sql: database is closed", err, "Migrator.ApplyAllMigrations")
 }
 
 func TestRevertLastAppliedMigration(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.NewMigrator") {
 		return
 	}
 
-	lUserTableName := "user"
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasTable(lUserTableName), "Migrator.DBSchema.HasTable[user]")
+	userTableName := "user"
+	testutils.AssertEqualWithLabel(t, true, db.DBSchema().HasTable(userTableName), "Migrator.DBSchema.HasTable[user]")
 
-	lError = lMigrator.RevertLastAppliedMigration()
-	if !testutils.AssertNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
+	err = migrator.RevertLastAppliedMigration()
+	if !testutils.AssertNilError(t, err, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
 
-	lUpdatedAtColumnName := "updated_at"
-	testutils.AssertEqualWithLabel(t, false, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+	updatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, false, db.DBSchema().HasColumn(userTableName, updatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
 }
 
 func TestRevertLastAppliedMigrationWhenNoMigrationsApplied(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
+	migrator, err := migrations.NewMigrator(db, migrations.NewMigratorConfig())
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.NewMigrator") {
 		return
 	}
-	lError = lMigrator.RevertLastAppliedMigration()
-	if !testutils.AssertNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
+	err = migrator.RevertLastAppliedMigration()
+	if !testutils.AssertNilError(t, err, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
 }
 
 func TestRevertLastAppliedMigrationFailsWhenDownFails(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M004_Bad_Migration_Fails_To_Revert{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
 
-	lError = lMigrator.RevertLastAppliedMigration()
-	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
+	err = migrator.RevertLastAppliedMigration()
+	if !testutils.AssertNotNilError(t, err, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to revert migration \"M004_Bad_Migration_Fails_To_Revert\": intentionally failed to Down", lError, "Migrator.RevertLastAppliedMigration")
+	testutils.AssertErrorMessage(t, "failed to revert migration \"M004_Bad_Migration_Fails_To_Revert\": intentionally failed to Down", err, "Migrator.RevertLastAppliedMigration")
 }
 
 func TestRevertLastAppliedMigrationFailsWhenDeletingFails(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.NewMigrator(lDB, migrations.NewMigratorConfig())
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.NewMigrator") {
+	migrator, err := migrations.NewMigrator(db, migrations.NewMigratorConfig())
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.NewMigrator") {
 		return
 	}
-	lMigrator.Add(testutils.M005_Blank_Migration{})
-	lError = lMigrator.ApplyAllMigrations()
-	if !testutils.AssertNilError(t, lError, "Migrator.ApplyAllMigrations") {
+	migrator.Add(testutils.M005_Blank_Migration{})
+	err = migrator.ApplyAllMigrations()
+	if !testutils.AssertNilError(t, err, "Migrator.ApplyAllMigrations") {
 		return
 	}
 
-	_ = lDB.Close()
+	_ = db.Close()
 
-	lError = lMigrator.RevertLastAppliedMigration()
-	if !testutils.AssertNotNilError(t, lError, "Migrator.RevertLastAppliedMigration") {
+	err = migrator.RevertLastAppliedMigration()
+	if !testutils.AssertNotNilError(t, err, "Migrator.RevertLastAppliedMigration") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to delete applied migration \"M005_Blank_Migration\": sql: database is closed", lError, "Migrator.RevertLastAppliedMigration")
+	testutils.AssertErrorMessage(t, "failed to delete applied migration \"M005_Blank_Migration\": sql: database is closed", err, "Migrator.RevertLastAppliedMigration")
 }

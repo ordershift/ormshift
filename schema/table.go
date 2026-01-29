@@ -27,15 +27,15 @@ func (t *Table) Columns() []Column {
 }
 
 func (t *Table) AddColumns(pParams ...NewColumnParams) error {
-	for _, lColParams := range pParams {
-		lColumn := NewColumn(lColParams)
-		lColumnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
-			return strings.EqualFold(lColumn.Name(), c.Name())
+	for _, colParams := range pParams {
+		column := NewColumn(colParams)
+		columnAlreadyExists := slices.ContainsFunc(t.columns, func(c Column) bool {
+			return strings.EqualFold(column.Name(), c.Name())
 		})
-		if lColumnAlreadyExists {
-			return fmt.Errorf("column %q already exists in table %q", lColumn.Name(), t.Name())
+		if columnAlreadyExists {
+			return fmt.Errorf("column %q already exists in table %q", column.Name(), t.Name())
 		}
-		t.columns = append(t.columns, lColumn)
+		t.columns = append(t.columns, column)
 	}
 	return nil
 }

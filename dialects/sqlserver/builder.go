@@ -21,30 +21,30 @@ func newSQLServerBuilder() ormshift.SQLBuilder {
 }
 
 func (sb *sqlserverBuilder) CreateTable(pTable schema.Table) string {
-	lColumns := ""
-	lPKColumns := ""
-	for _, lColumn := range pTable.Columns() {
-		if lColumns != "" {
-			lColumns += ","
+	columns := ""
+	pkColumns := ""
+	for _, column := range pTable.Columns() {
+		if columns != "" {
+			columns += ","
 		}
-		lColumns += sb.columnDefinition(lColumn)
+		columns += sb.columnDefinition(column)
 
-		if lColumn.PrimaryKey() {
-			if lPKColumns != "" {
-				lPKColumns += ","
+		if column.PrimaryKey() {
+			if pkColumns != "" {
+				pkColumns += ","
 			}
-			lPKColumns += sb.QuoteIdentifier(lColumn.Name())
+			pkColumns += sb.QuoteIdentifier(column.Name())
 		}
 	}
 
-	if lPKColumns != "" {
-		if lColumns != "" {
-			lColumns += ","
+	if pkColumns != "" {
+		if columns != "" {
+			columns += ","
 		}
-		lPKConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
-		lColumns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", lPKConstraintName, lPKColumns)
+		pkConstraintName := sb.QuoteIdentifier("PK_" + pTable.Name())
+		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), lColumns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(pTable.Name()), columns)
 }
 
 func (sb *sqlserverBuilder) DropTable(pTableName string) string {
@@ -81,19 +81,19 @@ func (sb *sqlserverBuilder) ColumnTypeAsString(pColumnType schema.ColumnType) st
 }
 
 func (sb *sqlserverBuilder) columnDefinition(pColumn schema.Column) string {
-	lColumnDef := sb.QuoteIdentifier(pColumn.Name())
+	columnDef := sb.QuoteIdentifier(pColumn.Name())
 	if pColumn.Type() == schema.Varchar {
-		lColumnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
+		columnDef += fmt.Sprintf(" %s(%d)", sb.ColumnTypeAsString(pColumn.Type()), pColumn.Size())
 	} else {
-		lColumnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
+		columnDef += fmt.Sprintf(" %s", sb.ColumnTypeAsString(pColumn.Type()))
 	}
 	if pColumn.NotNull() {
-		lColumnDef += " NOT NULL"
+		columnDef += " NOT NULL"
 	}
 	if pColumn.AutoIncrement() {
-		lColumnDef += " IDENTITY (1, 1)"
+		columnDef += " IDENTITY (1, 1)"
 	}
-	return lColumnDef
+	return columnDef
 }
 
 func (sb *sqlserverBuilder) Insert(pTableName string, pColumns []string) string {
@@ -129,15 +129,15 @@ func (sb *sqlserverBuilder) SelectWithValues(pTableName string, pColumns []strin
 }
 
 func (sb *sqlserverBuilder) SelectWithPagination(pSQLSelectCommand string, pRowsPerPage, pPageNumber uint) string {
-	lSelectWithPagination := pSQLSelectCommand
+	selectWithPagination := pSQLSelectCommand
 	if pRowsPerPage > 0 {
-		lOffSet := uint(0)
+		offSet := uint(0)
 		if pPageNumber > 1 {
-			lOffSet = pRowsPerPage * (pPageNumber - 1)
+			offSet = pRowsPerPage * (pPageNumber - 1)
 		}
-		lSelectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", lOffSet, pRowsPerPage)
+		selectWithPagination += fmt.Sprintf(" OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offSet, pRowsPerPage)
 	}
-	return lSelectWithPagination
+	return selectWithPagination
 }
 
 func (sb *sqlserverBuilder) QuoteIdentifier(pIdentifier string) string {

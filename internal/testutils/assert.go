@@ -22,27 +22,27 @@ func AssertErrorMessage(t *testing.T, pExpectedErrorMessage string, pError error
 }
 
 func AssertNotNilResultAndNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
-	lResult := true
+	result := true
 	if pResult == nil {
 		t.Errorf("%s cannot return nil Result", pFunctionName)
-		lResult = false
+		result = false
 	}
 	if !AssertNilError(t, pError, pFunctionName) {
-		lResult = false
+		result = false
 	}
-	return lResult
+	return result
 }
 
 func AssertNilResultAndNotNilError[R any](t *testing.T, pResult *R, pError error, pFunctionName string) bool {
-	lResult := true
+	result := true
 	if pResult != nil {
 		t.Errorf("%s should return nil Result", pFunctionName)
-		lResult = false
+		result = false
 	}
 	if !AssertNotNilError(t, pError, pFunctionName) {
-		lResult = false
+		result = false
 	}
-	return lResult
+	return result
 }
 
 func AssertNilError(t *testing.T, pError error, pFunctionName string) bool {

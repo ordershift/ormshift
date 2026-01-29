@@ -26,15 +26,15 @@ func (d *postgresqlDriver) Name() string {
 }
 
 func (d *postgresqlDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
-	lHost := pParams.Host
-	if lHost == "" {
-		lHost = "localhost"
+	host := pParams.Host
+	if host == "" {
+		host = "localhost"
 	}
-	lPort := pParams.Port
-	if lPort == 0 {
-		lPort = 5432
+	port := pParams.Port
+	if port == 0 {
+		port = 5432
 	}
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", lHost, lPort, pParams.User, pParams.Password, pParams.Database)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, pParams.User, pParams.Password, pParams.Database)
 }
 
 func (d *postgresqlDriver) SQLBuilder() ormshift.SQLBuilder {

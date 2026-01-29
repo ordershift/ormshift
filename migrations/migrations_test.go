@@ -10,93 +10,93 @@ import (
 )
 
 func TestMigrate(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNilError(t, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
-	lUserTableName := "user"
-	lUpdatedAtColumnName := "updated_at"
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
+	userTableName := "user"
+	updatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, true, db.DBSchema().HasColumn(userTableName, updatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(migrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 
 func TestMigrateTwice(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNilError(t, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
 
-	lMigrator, lError = migrations.Migrate(
-		lDB,
+	migrator, err = migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNotNilResultAndNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNotNilResultAndNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
 
-	lUserTableName := "user"
-	lUpdatedAtColumnName := "updated_at"
-	testutils.AssertEqualWithLabel(t, true, lDB.DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
-	testutils.AssertEqualWithLabel(t, 2, len(lMigrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
+	userTableName := "user"
+	updatedAtColumnName := "updated_at"
+	testutils.AssertEqualWithLabel(t, true, db.DBSchema().HasColumn(userTableName, updatedAtColumnName), "Migrator.DBSchema.HasColumn[user.updated_at]")
+	testutils.AssertEqualWithLabel(t, 2, len(migrator.AppliedMigrations()), "len(Migrator.AppliedMigrations)")
 }
 
 func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNilError(t, err, "ormshift.OpenDatabase") {
 		return
 	}
-	_ = lDB.Close()
+	_ = db.Close()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M001_Create_Table_User{},
 		testutils.M002_Alter_Table_User_Add_Column_UpdatedAt{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to get applied migration names: sql: database is closed", lError, "migrations.Migrate")
+	testutils.AssertErrorMessage(t, "failed to get applied migration names: sql: database is closed", err, "migrations.Migrate")
 }
 
 func TestMigrateFailsWhenMigrationUpFails(t *testing.T) {
-	lDB, lError := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
-	if !testutils.AssertNilError(t, lError, "ormshift.OpenDatabase") {
+	db, err := ormshift.OpenDatabase(sqlite.Driver(), ormshift.ConnectionParams{InMemory: true})
+	if !testutils.AssertNilError(t, err, "ormshift.OpenDatabase") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lMigrator, lError := migrations.Migrate(
-		lDB,
+	migrator, err := migrations.Migrate(
+		db,
 		migrations.NewMigratorConfig(),
 		testutils.M003_Bad_Migration_Fails_To_Apply{},
 	)
-	if !testutils.AssertNilResultAndNotNilError(t, lMigrator, lError, "migrations.Migrate") {
+	if !testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to apply migration \"M003_Bad_Migration_Fails_To_Apply\": intentionally failed to Up", lError, "migrations.Migrate")
+	testutils.AssertErrorMessage(t, "failed to apply migration \"M003_Bad_Migration_Fails_To_Apply\": intentionally failed to Up", err, "migrations.Migrate")
 }

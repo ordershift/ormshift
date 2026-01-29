@@ -10,47 +10,47 @@ import (
 )
 
 func TestName(t *testing.T) {
-	lDriver := sqlite.Driver()
-	testutils.AssertEqualWithLabel(t, "sqlite", lDriver.Name(), "lDriver.Name")
+	driver := sqlite.Driver()
+	testutils.AssertEqualWithLabel(t, "sqlite", driver.Name(), "driver.Name")
 }
 
 func TestConnectionString(t *testing.T) {
-	lDriver := sqlite.Driver()
-	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{
+	driver := sqlite.Driver()
+	returnedConnectionString := driver.ConnectionString(ormshift.ConnectionParams{
 		User:     "user",
 		Password: "123456",
 		Database: "my-db",
 	})
-	lExpectedConnectionString := "file:my-db.db?_auth&_auth_user=user&_auth_pass=123456&_locking=NORMAL"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
+	expectedConnectionString := "file:my-db.db?_auth&_auth_user=user&_auth_pass=123456&_locking=NORMAL"
+	testutils.AssertEqualWithLabel(t, expectedConnectionString, returnedConnectionString, "driver.ConnectionString")
 }
 
 func TestConnectionStringInMemory(t *testing.T) {
-	lDriver := sqlite.Driver()
-	lReturnedConnectionString := lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true})
-	lExpectedConnectionString := ":memory:"
-	testutils.AssertEqualWithLabel(t, lExpectedConnectionString, lReturnedConnectionString, "lDriver.ConnectionString")
+	driver := sqlite.Driver()
+	returnedConnectionString := driver.ConnectionString(ormshift.ConnectionParams{InMemory: true})
+	expectedConnectionString := ":memory:"
+	testutils.AssertEqualWithLabel(t, expectedConnectionString, returnedConnectionString, "driver.ConnectionString")
 }
 
 func TestDBSchema(t *testing.T) {
-	lDriver := sqlite.Driver()
-	lDB, lError := sql.Open(lDriver.Name(), lDriver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
-	if !testutils.AssertNotNilResultAndNilError(t, lDB, lError, "sql.Open") {
+	driver := sqlite.Driver()
+	db, err := sql.Open(driver.Name(), driver.ConnectionString(ormshift.ConnectionParams{InMemory: true}))
+	if !testutils.AssertNotNilResultAndNilError(t, db, err, "sql.Open") {
 		return
 	}
-	defer func() { _ = lDB.Close() }()
+	defer func() { _ = db.Close() }()
 
-	lSchema, lError := lDriver.DBSchema(lDB)
-	if !testutils.AssertNotNilResultAndNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	schema, err := driver.DBSchema(db)
+	if !testutils.AssertNotNilResultAndNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
 }
 
 func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
-	lDriver := sqlite.Driver()
-	lSchema, lError := lDriver.DBSchema(nil)
-	if !testutils.AssertNilResultAndNotNilError(t, lSchema, lError, "lDriver.DBSchema") {
+	driver := sqlite.Driver()
+	schema, err := driver.DBSchema(nil)
+	if !testutils.AssertNilResultAndNotNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", lError, "lDriver.DBSchema")
+	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "driver.DBSchema")
 }

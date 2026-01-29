@@ -8,13 +8,13 @@ type MigratorConfig struct {
 }
 
 func NewMigratorConfig() *MigratorConfig {
-	lConfig := MigratorConfig{
+	config := MigratorConfig{
 		tableName:              "__ormshift_migrations",
 		migrationNameColumn:    "name",
 		migrationNameMaxLength: 250,
 		appliedAtColumn:        "applied_at",
 	}
-	return &lConfig
+	return &config
 }
 
 func (mc *MigratorConfig) WithTableName(pTableName string) *MigratorConfig {

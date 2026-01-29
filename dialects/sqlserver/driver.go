@@ -26,14 +26,14 @@ func (d *sqlserverDriver) Name() string {
 }
 
 func (d *sqlserverDriver) ConnectionString(pParams ormshift.ConnectionParams) string {
-	lHostInstanceAndPort := pParams.Host
+	hostInstanceAndPort := pParams.Host
 	if pParams.Instance != "" {
-		lHostInstanceAndPort = fmt.Sprintf("%s\\%s", pParams.Host, pParams.Instance)
+		hostInstanceAndPort = fmt.Sprintf("%s\\%s", pParams.Host, pParams.Instance)
 	}
 	if pParams.Port > 0 {
-		lHostInstanceAndPort += fmt.Sprintf(";port=%d", pParams.Port)
+		hostInstanceAndPort += fmt.Sprintf(";port=%d", pParams.Port)
 	}
-	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", lHostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
+	return fmt.Sprintf("server=%s;user id=%s;password=%s;database=%s", hostInstanceAndPort, pParams.User, pParams.Password, pParams.Database)
 }
 
 func (d *sqlserverDriver) SQLBuilder() ormshift.SQLBuilder {

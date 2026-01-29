@@ -37,22 +37,22 @@ func OpenDatabase(pDriver DatabaseDriver, pParams ConnectionParams) (*Database, 
 	if pDriver == nil {
 		return nil, errors.New("DatabaseDriver cannot be nil")
 	}
-	lConnectionString := pDriver.ConnectionString(pParams)
-	lDB, lError := sql.Open(pDriver.Name(), lConnectionString)
-	if lError != nil {
-		return nil, fmt.Errorf("sql.Open failed: %w", lError)
+	connectionString := pDriver.ConnectionString(pParams)
+	db, err := sql.Open(pDriver.Name(), connectionString)
+	if err != nil {
+		return nil, fmt.Errorf("sql.Open failed: %w", err)
 	}
-	lDBSchema, lError := pDriver.DBSchema(lDB)
-	if lError != nil {
-		return nil, fmt.Errorf("failed to get DB schema: %w", lError)
+	dbSchema, err := pDriver.DBSchema(db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DB schema: %w", err)
 	}
 
 	return &Database{
 		driver:           pDriver,
-		db:               lDB,
-		connectionString: lConnectionString,
+		db:               db,
+		connectionString: connectionString,
 		sqlBuilder:       pDriver.SQLBuilder(),
-		dbSchema:         lDBSchema,
+		dbSchema:         dbSchema,
 	}, nil
 }
 

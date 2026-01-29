@@ -11,12 +11,12 @@ import (
 type M001_Create_Table_User struct{}
 
 func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
-	lUserTable := schema.NewTable("user")
-	if pMigrator.Database().DBSchema().HasTable(lUserTable.Name()) {
+	userTable := schema.NewTable("user")
+	if pMigrator.Database().DBSchema().HasTable(userTable.Name()) {
 		return nil
 	}
 
-	lError := lUserTable.AddColumns(
+	err := userTable.AddColumns(
 		schema.NewColumnParams{
 			Name:          "id",
 			Type:          schema.Integer,
@@ -63,48 +63,48 @@ func (m M001_Create_Table_User) Up(pMigrator *migrations.Migrator) error {
 			NotNull:    false,
 		},
 	)
-	if lError != nil {
-		return lError
+	if err != nil {
+		return err
 	}
 
-	_, lError = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().CreateTable(lUserTable))
-	return lError
+	_, err = pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().CreateTable(userTable))
+	return err
 }
 
 func (m M001_Create_Table_User) Down(pMigrator *migrations.Migrator) error {
-	lUserTableName := "user"
-	if !pMigrator.Database().DBSchema().HasTable(lUserTableName) {
+	userTableName := "user"
+	if !pMigrator.Database().DBSchema().HasTable(userTableName) {
 		return nil
 	}
 
-	_, lError := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().DropTable(lUserTableName))
-	return lError
+	_, err := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().DropTable(userTableName))
+	return err
 }
 
 // M002_Alter_Table_User_Add_Column_UpdatedAt adds the "updated_at" column to the "user" table.
 type M002_Alter_Table_User_Add_Column_UpdatedAt struct{}
 
 func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Up(pMigrator *migrations.Migrator) error {
-	lUserTableName := "user"
-	lUpdatedAtColumn := schema.NewColumn(schema.NewColumnParams{
+	userTableName := "user"
+	updatedAtColumn := schema.NewColumn(schema.NewColumnParams{
 		Name: "updated_at",
 		Type: schema.DateTime,
 	})
-	if pMigrator.Database().DBSchema().HasColumn(lUserTableName, lUpdatedAtColumn.Name()) {
+	if pMigrator.Database().DBSchema().HasColumn(userTableName, updatedAtColumn.Name()) {
 		return nil
 	}
-	_, lError := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableAddColumn(lUserTableName, lUpdatedAtColumn))
-	return lError
+	_, err := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableAddColumn(userTableName, updatedAtColumn))
+	return err
 }
 
 func (m M002_Alter_Table_User_Add_Column_UpdatedAt) Down(pMigrator *migrations.Migrator) error {
-	lUserTableName := "user"
-	lUpdatedAtColumnName := "updated_at"
-	if !pMigrator.Database().DBSchema().HasColumn(lUserTableName, lUpdatedAtColumnName) {
+	userTableName := "user"
+	updatedAtColumnName := "updated_at"
+	if !pMigrator.Database().DBSchema().HasColumn(userTableName, updatedAtColumnName) {
 		return nil
 	}
-	_, lError := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableDropColumn(lUserTableName, lUpdatedAtColumnName))
-	return lError
+	_, err := pMigrator.Database().SQLExecutor().Exec(pMigrator.Database().SQLBuilder().AlterTableDropColumn(userTableName, updatedAtColumnName))
+	return err
 }
 
 // M003_Bad_Migration_Fails_To_Apply is a migration that always fails to apply.
