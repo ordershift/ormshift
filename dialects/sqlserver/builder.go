@@ -116,16 +116,16 @@ func (sb *sqlserverBuilder) Delete(table string, where []string) string {
 	return sb.generic.Delete(table, where)
 }
 
-func (sb *sqlserverBuilder) DeleteWithValues(table string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.DeleteWithValues(table, whereColumnsValues)
+func (sb *sqlserverBuilder) DeleteWithValues(table string, where ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.DeleteWithValues(table, where)
 }
 
 func (sb *sqlserverBuilder) Select(table string, columns, where []string) string {
 	return sb.generic.Select(table, columns, where)
 }
 
-func (sb *sqlserverBuilder) SelectWithValues(table string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.SelectWithValues(table, columns, whereColumnsValues)
+func (sb *sqlserverBuilder) SelectWithValues(table string, columns []string, where ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.SelectWithValues(table, columns, where)
 }
 
 func (sb *sqlserverBuilder) SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string {

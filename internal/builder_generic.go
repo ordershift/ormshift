@@ -115,9 +115,9 @@ func (sb *genericSQLBuilder) Delete(table string, where []string) string {
 	return delete
 }
 
-func (sb *genericSQLBuilder) DeleteWithValues(table string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	deleteSQL := sb.Delete(table, whereColumnsValues.ToColumns())
-	deleteArgs := whereColumnsValues.ToNamedArgs()
+func (sb *genericSQLBuilder) DeleteWithValues(table string, where ormshift.ColumnsValues) (string, []any) {
+	deleteSQL := sb.Delete(table, where.ToColumns())
+	deleteArgs := where.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(deleteSQL, deleteArgs...)
 }
 
@@ -129,9 +129,9 @@ func (sb *genericSQLBuilder) Select(table string, columns, where []string) strin
 	return update
 }
 
-func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
-	selectSQL := sb.Select(table, columns, whereColumnsValues.ToColumns())
-	selectArgs := whereColumnsValues.ToNamedArgs()
+func (sb *genericSQLBuilder) SelectWithValues(table string, columns []string, where ormshift.ColumnsValues) (string, []any) {
+	selectSQL := sb.Select(table, columns, where.ToColumns())
+	selectArgs := where.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(selectSQL, selectArgs...)
 }
 
