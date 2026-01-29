@@ -103,24 +103,24 @@ func (sb *sqliteBuilder) InsertWithValues(table string, values ormshift.ColumnsV
 	return sb.generic.InsertWithValues(table, values)
 }
 
-func (sb *sqliteBuilder) Update(table string, columns, columnsWhere []string) string {
-	return sb.generic.Update(table, columns, columnsWhere)
+func (sb *sqliteBuilder) Update(table string, columns, where []string) string {
+	return sb.generic.Update(table, columns, where)
 }
 
-func (sb *sqliteBuilder) UpdateWithValues(table string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.UpdateWithValues(table, columns, columnsWhere, values)
+func (sb *sqliteBuilder) UpdateWithValues(table string, columns, where []string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(table, columns, where, values)
 }
 
-func (sb *sqliteBuilder) Delete(table string, columnsWhere []string) string {
-	return sb.generic.Delete(table, columnsWhere)
+func (sb *sqliteBuilder) Delete(table string, where []string) string {
+	return sb.generic.Delete(table, where)
 }
 
 func (sb *sqliteBuilder) DeleteWithValues(table string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.DeleteWithValues(table, whereColumnsValues)
 }
 
-func (sb *sqliteBuilder) Select(table string, columns, columnsWhere []string) string {
-	return sb.generic.Select(table, columns, columnsWhere)
+func (sb *sqliteBuilder) Select(table string, columns, where []string) string {
+	return sb.generic.Select(table, columns, where)
 }
 
 func (sb *sqliteBuilder) SelectWithValues(table string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {

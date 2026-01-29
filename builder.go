@@ -52,11 +52,11 @@ func (cv *ColumnsValues) ToColumns() []string {
 type DMLSQLBuilder interface {
 	Insert(table string, columns []string) string
 	InsertWithValues(table string, values ColumnsValues) (string, []any)
-	Update(table string, columns, columnsWhere []string) string
-	UpdateWithValues(table string, columns, columnsWhere []string, values ColumnsValues) (string, []any)
-	Delete(table string, columnsWhere []string) string
+	Update(table string, columns, where []string) string
+	UpdateWithValues(table string, columns, where []string, values ColumnsValues) (string, []any)
+	Delete(table string, where []string) string
 	DeleteWithValues(table string, whereColumnsValues ColumnsValues) (string, []any)
-	Select(table string, columns, columnsWhere []string) string
+	Select(table string, columns, where []string) string
 	SelectWithValues(table string, columns []string, whereColumnsValues ColumnsValues) (string, []any)
 	SelectWithPagination(sqlSelectCommand string, rowsPerPage, pageNumber uint) string
 

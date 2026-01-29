@@ -83,24 +83,24 @@ func (sb *postgresqlBuilder) InsertWithValues(table string, values ormshift.Colu
 	return sb.generic.InsertWithValues(table, values)
 }
 
-func (sb *postgresqlBuilder) Update(table string, columns, columnsWhere []string) string {
-	return sb.generic.Update(table, columns, columnsWhere)
+func (sb *postgresqlBuilder) Update(table string, columns, where []string) string {
+	return sb.generic.Update(table, columns, where)
 }
 
-func (sb *postgresqlBuilder) UpdateWithValues(table string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
-	return sb.generic.UpdateWithValues(table, columns, columnsWhere, values)
+func (sb *postgresqlBuilder) UpdateWithValues(table string, columns, where []string, values ormshift.ColumnsValues) (string, []any) {
+	return sb.generic.UpdateWithValues(table, columns, where, values)
 }
 
-func (sb *postgresqlBuilder) Delete(table string, columnsWhere []string) string {
-	return sb.generic.Delete(table, columnsWhere)
+func (sb *postgresqlBuilder) Delete(table string, where []string) string {
+	return sb.generic.Delete(table, where)
 }
 
 func (sb *postgresqlBuilder) DeleteWithValues(table string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {
 	return sb.generic.DeleteWithValues(table, whereColumnsValues)
 }
 
-func (sb *postgresqlBuilder) Select(table string, columns, columnsWhere []string) string {
-	return sb.generic.Select(table, columns, columnsWhere)
+func (sb *postgresqlBuilder) Select(table string, columns, where []string) string {
+	return sb.generic.Select(table, columns, where)
 }
 
 func (sb *postgresqlBuilder) SelectWithValues(table string, columns []string, whereColumnsValues ormshift.ColumnsValues) (string, []any) {

@@ -93,24 +93,24 @@ func (sb *genericSQLBuilder) InsertWithValues(table string, values ormshift.Colu
 	return sb.InteroperateSQLCommandWithNamedArgs(insertSQL, insertArgs...)
 }
 
-func (sb *genericSQLBuilder) Update(table string, columns, columnsWhere []string) string {
+func (sb *genericSQLBuilder) Update(table string, columns, where []string) string {
 	update := fmt.Sprintf("update %s set %s ", sb.QuoteIdentifier(table), sb.columnEqualNameList(columns, ","))
-	if len(columnsWhere) > 0 {
-		update += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+	if len(where) > 0 {
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return update
 }
 
-func (sb *genericSQLBuilder) UpdateWithValues(table string, columns, columnsWhere []string, values ormshift.ColumnsValues) (string, []any) {
-	updateSQL := sb.Update(table, columns, columnsWhere)
+func (sb *genericSQLBuilder) UpdateWithValues(table string, columns, where []string, values ormshift.ColumnsValues) (string, []any) {
+	updateSQL := sb.Update(table, columns, where)
 	updateArgs := values.ToNamedArgs()
 	return sb.InteroperateSQLCommandWithNamedArgs(updateSQL, updateArgs...)
 }
 
-func (sb *genericSQLBuilder) Delete(table string, columnsWhere []string) string {
+func (sb *genericSQLBuilder) Delete(table string, where []string) string {
 	delete := fmt.Sprintf("delete from %s ", sb.QuoteIdentifier(table))
-	if len(columnsWhere) > 0 {
-		delete += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+	if len(where) > 0 {
+		delete += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return delete
 }
@@ -121,10 +121,10 @@ func (sb *genericSQLBuilder) DeleteWithValues(table string, whereColumnsValues o
 	return sb.InteroperateSQLCommandWithNamedArgs(deleteSQL, deleteArgs...)
 }
 
-func (sb *genericSQLBuilder) Select(table string, columns, columnsWhere []string) string {
+func (sb *genericSQLBuilder) Select(table string, columns, where []string) string {
 	update := fmt.Sprintf("select %s from %s ", sb.columnsList(columns), sb.QuoteIdentifier(table))
-	if len(columnsWhere) > 0 {
-		update += fmt.Sprintf("where %s", sb.columnEqualNameList(columnsWhere, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
+	if len(where) > 0 {
+		update += fmt.Sprintf("where %s", sb.columnEqualNameList(where, " and ")) // NOSONAR go:S1192 - duplicate tradeoff accepted
 	}
 	return update
 }
