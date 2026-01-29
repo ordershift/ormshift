@@ -111,8 +111,8 @@ func (m *Migrator) recordAppliedMigration(migrationName string) error {
 	q, p := m.database.SQLBuilder().InsertWithValues(
 		m.config.table,
 		ormshift.ColumnsValues{
-			m.config.migrationNameColumn: migrationName,
-			m.config.appliedAtColumn:     time.Now().UTC(),
+			m.config.nameCol:      migrationName,
+			m.config.appliedAtCol: time.Now().UTC(),
 		},
 	)
 	_, err := m.database.SQLExecutor().Exec(q, p...)
@@ -123,7 +123,7 @@ func (m *Migrator) deleteAppliedMigration(migrationName string) error {
 	q, p := m.database.SQLBuilder().DeleteWithValues(
 		m.config.table,
 		ormshift.ColumnsValues{
-			m.config.migrationNameColumn: migrationName,
+			m.config.nameCol: migrationName,
 		},
 	)
 	_, err := m.database.SQLExecutor().Exec(q, p...)
@@ -139,9 +139,9 @@ func getAppliedMigrationNames(database *ormshift.Database, config *MigratorConfi
 	q, p := database.SQLBuilder().InteroperateSQLCommandWithNamedArgs(
 		fmt.Sprintf(
 			"select %s from %s order by %s",
-			database.SQLBuilder().QuoteIdentifier(config.migrationNameColumn),
+			database.SQLBuilder().QuoteIdentifier(config.nameCol),
 			database.SQLBuilder().QuoteIdentifier(config.table),
-			database.SQLBuilder().QuoteIdentifier(config.migrationNameColumn),
+			database.SQLBuilder().QuoteIdentifier(config.nameCol),
 		),
 	)
 	migrationsRows, err := database.SQLExecutor().Query(q, p...)
