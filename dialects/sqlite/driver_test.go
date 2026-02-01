@@ -52,5 +52,5 @@ func TestDBSchemaFailsWhenDBIsNil(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, schema, err, "driver.DBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "driver.DBSchema")
+	testutils.AssertErrorMessage(t, "failed to get db schema: db cannot be nil", err, "driver.DBSchema")
 }
