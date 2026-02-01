@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"database/sql"
+	"errors"
 	"strings"
 	"testing"
 )
@@ -19,6 +20,18 @@ func AssertErrorMessage(t *testing.T, expectedErrorMessage string, err error, fu
 			err.Error(),
 		)
 	}
+}
+
+func AssertErrorType(t *testing.T, expectedErrorType, err error) bool {
+	if !errors.Is(err, expectedErrorType) {
+		t.Errorf(
+			"error with message [%s] has not expected type [%s]",
+			err.Error(),
+			expectedErrorType.Error(),
+		)
+		return false
+	}
+	return true
 }
 
 func AssertNotNilResultAndNilError[R any](t *testing.T, result *R, err error, functionName string) bool {
