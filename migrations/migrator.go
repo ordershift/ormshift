@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ordershift/ormshift"
+	"github.com/ordershift/ormshift/errs"
 	"github.com/ordershift/ormshift/schema"
 )
 
@@ -18,15 +19,18 @@ type Migrator struct {
 
 func NewMigrator(database *ormshift.Database, config *MigratorConfig) (*Migrator, error) {
 	if database == nil {
-		return nil, fmt.Errorf("database cannot be nil")
+		err := errs.Nil("database")
+		return nil, failedToMigrate(err)
 	}
 	if config == nil {
-		return nil, fmt.Errorf("migrator config cannot be nil")
+		err := errs.Nil("migrator config")
+		return nil, failedToMigrate(err)
 	}
 
 	appliedMigrationNames, err := getAppliedMigrationNames(database, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get applied migration names: %w", err)
+		err := errs.FailedTo("get applied migration names", err)
+		return nil, failedToMigrate(err)
 	}
 	appliedMigrations := make(map[string]bool, len(appliedMigrationNames))
 	for _, name := range appliedMigrationNames {
@@ -39,6 +43,10 @@ func NewMigrator(database *ormshift.Database, config *MigratorConfig) (*Migrator
 		migrations:        []Migration{},
 		appliedMigrations: appliedMigrations,
 	}, nil
+}
+
+func failedToMigrate(err error) error {
+	return errs.FailedTo("migrate", err)
 }
 
 func (m *Migrator) Add(migration Migration) {
