@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	ErrInvalid  = errors.New("invalid")
-	ErrNil      = errors.New("cannot be nil")
-	ErrFailedTo = errors.New("failed to")
+	ErrInvalid       = errors.New("invalid")
+	ErrNil           = errors.New("cannot be nil")
+	ErrFailedTo      = errors.New("failed to")
+	ErrAlreadyExists = errors.New("already exists")
 )
 
 // Invalid returns an error indicating that value is not valid for the given label.
@@ -31,4 +32,11 @@ func FailedTo(action string, err error) error {
 		return failedToErr
 	}
 	return fmt.Errorf("%w: %w", failedToErr, err)
+}
+
+// AlreadyExists returns an error indicating that the resource identified by label
+// already exists.
+// The error wraps ErrAlreadyExists, allowing it to be checked with errors.Is.
+func AlreadyExists(label string) error {
+	return fmt.Errorf("%s %w", label, ErrAlreadyExists)
 }

@@ -26,6 +26,11 @@ func TestErrors(t *testing.T) {
 			testedError:          errs.Nil("database driver"),
 		},
 		{
+			expectedMessageError: "column already exists",
+			expectedTypeError:    errs.ErrAlreadyExists,
+			testedError:          errs.AlreadyExists("column"),
+		},
+		{
 			expectedMessageError: "failed to get db schema",
 			expectedTypeError:    errs.ErrFailedTo,
 			testedError:          errs.FailedTo("get db schema", nil),
