@@ -21,19 +21,19 @@ func TestErrors(t *testing.T) {
 			testedError:          errs.Invalid("driver"),
 		},
 		{
-			expectedMessageError: "databasedriver cannot be nil",
+			expectedMessageError: "database driver cannot be nil",
 			expectedTypeError:    errs.ErrNil,
-			testedError:          errs.Nil("databasedriver"),
+			testedError:          errs.Nil("database driver"),
 		},
 		{
 			expectedMessageError: "failed to get db schema",
 			expectedTypeError:    errs.ErrFailedTo,
-			testedError:          errs.FailedTo("get db schema"),
+			testedError:          errs.FailedTo("get db schema", nil),
 		},
 		{
-			expectedMessageError: `on open database: failed to get db schema`,
+			expectedMessageError: "failed to get db schema: db cannot be nil",
 			expectedTypeError:    errs.ErrFailedTo,
-			testedError:          errs.WithContext("on open database", errs.FailedTo("get db schema")),
+			testedError:          errs.FailedTo("get db schema", errs.Nil("db")),
 		},
 	}
 	for _, tester := range testers {

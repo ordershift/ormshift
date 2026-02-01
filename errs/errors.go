@@ -23,15 +23,12 @@ func Nil(label string) error {
 	return fmt.Errorf("%s %w", label, ErrNil)
 }
 
-// Failed returns a generic failure error associated with the given label.
-// The error wraps ErrFailedTo, allowing it to be checked with errors.Is.
-func FailedTo(label string) error {
-	return fmt.Errorf("%w %s", ErrFailedTo, label)
-}
-
-// WithContext returns a new error that adds context to err.
-// The original error is wrapped using %w, so it can be
-// inspected with errors.Is and errors.As.
-func WithContext(msg string, err error) error {
-	return fmt.Errorf("%s: %w", msg, err)
+// FailedTo returns an error indicating a failure to perform the given action.
+// It wraps ErrFailedTo and optionally wraps the provided cause.
+func FailedTo(action string, err error) error {
+	failedToErr := fmt.Errorf("%w %s", ErrFailedTo, action)
+	if err == nil {
+		return failedToErr
+	}
+	return fmt.Errorf("%w: %w", failedToErr, err)
 }
