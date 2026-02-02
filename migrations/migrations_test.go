@@ -80,7 +80,7 @@ func TestMigrateFailsWhenDatabaseIsClosed(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.Migrate") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to get applied migration names: sql: database is closed", err, "migrations.Migrate")
+	testutils.AssertErrorMessage(t, "failed to migrate: failed to get applied migration names: sql: database is closed", err, "migrations.Migrate")
 }
 
 func TestMigrateFailsWhenMigrationUpFails(t *testing.T) {

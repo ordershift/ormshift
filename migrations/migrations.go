@@ -1,6 +1,8 @@
 package migrations
 
-import "github.com/ordershift/ormshift"
+import (
+	"github.com/ordershift/ormshift"
+)
 
 type Migration interface {
 	Up(migrator *Migrator) error

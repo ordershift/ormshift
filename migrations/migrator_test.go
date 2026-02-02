@@ -13,7 +13,7 @@ import (
 func TestNewMigratorWhenDatabaseIsNil(t *testing.T) {
 	migrator, err := migrations.NewMigrator(nil, migrations.NewMigratorConfig())
 	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[database=nil]")
-	testutils.AssertErrorMessage(t, "database cannot be nil", err, "migrations.NewMigrator[database=nil]")
+	testutils.AssertErrorMessage(t, "failed to migrate: database cannot be nil", err, "migrations.NewMigrator[database=nil]")
 }
 
 func TestNewMigratorWhenConfigIsNil(t *testing.T) {
@@ -25,7 +25,7 @@ func TestNewMigratorWhenConfigIsNil(t *testing.T) {
 
 	migrator, err := migrations.NewMigrator(db, nil)
 	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[config=nil]")
-	testutils.AssertErrorMessage(t, "migrator config cannot be nil", err, "migrations.NewMigrator[config=nil]")
+	testutils.AssertErrorMessage(t, "failed to migrate: migrator config cannot be nil", err, "migrations.NewMigrator[config=nil]")
 }
 
 func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
@@ -38,7 +38,7 @@ func TestNewMigratorWhenDatabaseIsInvalid(t *testing.T) {
 
 	migrator, err := migrations.NewMigrator(db, migrations.NewMigratorConfig())
 	testutils.AssertNilResultAndNotNilError(t, migrator, err, "migrations.NewMigrator[database=invalid]")
-	testutils.AssertErrorMessage(t, "failed to get applied migration names: missing \"=\" after \"invalid-connection-string\" in connection info string\"", err, "migrations.NewMigrator[database=invalid]")
+	testutils.AssertErrorMessage(t, "failed to migrate: failed to get applied migration names: missing \"=\" after \"invalid-connection-string\" in connection info string\"", err, "migrations.NewMigrator[database=invalid]")
 }
 
 func TestApplyAllMigrationsFailsWhenRecordingFails(t *testing.T) {

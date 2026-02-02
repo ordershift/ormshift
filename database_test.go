@@ -33,7 +33,7 @@ func TestOpenDatabaseWithNilDriver(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "DatabaseDriver cannot be nil", err, "ormshift.OpenDatabase")
+	testutils.AssertErrorMessage(t, "failed to open database: database driver cannot be nil", err, "ormshift.OpenDatabase")
 }
 
 func TestOpenDatabaseWithBadDriver(t *testing.T) {
@@ -42,7 +42,7 @@ func TestOpenDatabaseWithBadDriver(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.Open failed: sql: unknown driver \"bad-driver-name\" (forgotten import?)", err, "ormshift.OpenDatabase")
+	testutils.AssertErrorMessage(t, "failed to open database: sql: unknown driver \"bad-driver-name\" (forgotten import?)", err, "ormshift.OpenDatabase")
 }
 
 func TestOpenDatabaseWithBadSchema(t *testing.T) {
@@ -51,7 +51,7 @@ func TestOpenDatabaseWithBadSchema(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, db, err, "ormshift.OpenDatabase") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "failed to get DB schema: intentionally bad schema", err, "ormshift.OpenDatabase")
+	testutils.AssertErrorMessage(t, "failed to open database: intentionally bad schema", err, "ormshift.OpenDatabase")
 }
 
 func TestClose(t *testing.T) {

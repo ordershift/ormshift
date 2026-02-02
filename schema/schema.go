@@ -2,9 +2,10 @@ package schema
 
 import (
 	"database/sql"
-	"errors"
 	"slices"
 	"strings"
+
+	"github.com/ordershift/ormshift/errs"
 )
 
 type DBSchema struct {
@@ -21,13 +22,18 @@ func NewDBSchema(
 	columnTypesQueryFunc ColumnTypesQueryFunc,
 ) (*DBSchema, error) {
 	if db == nil {
-		return nil, errors.New("sql.DB cannot be nil")
+		err := errs.Nil("db")
+		return nil, failedToGetDBSchema(err)
 	}
 	return &DBSchema{
 		db:                   db,
 		tableNamesQuery:      tableNamesQuery,
 		columnTypesQueryFunc: columnTypesQueryFunc,
 	}, nil
+}
+
+func failedToGetDBSchema(err error) error {
+	return errs.FailedTo("get db schema", err)
 }
 
 func (s *DBSchema) HasTable(table string) bool {
