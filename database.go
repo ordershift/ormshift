@@ -2,9 +2,8 @@ package ormshift
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 
+	"github.com/ordershift/ormshift/errs"
 	"github.com/ordershift/ormshift/schema"
 )
 
@@ -35,16 +34,17 @@ type Database struct {
 
 func OpenDatabase(driver DatabaseDriver, params ConnectionParams) (*Database, error) {
 	if driver == nil {
-		return nil, errors.New("DatabaseDriver cannot be nil")
+		err := errs.Nil("database driver")
+		return nil, failedToOpenDatabase(err)
 	}
 	connectionString := driver.ConnectionString(params)
 	db, err := sql.Open(driver.Name(), connectionString)
 	if err != nil {
-		return nil, fmt.Errorf("sql.Open failed: %w", err)
+		return nil, failedToOpenDatabase(err)
 	}
 	dbSchema, err := driver.DBSchema(db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get DB schema: %w", err)
+		return nil, failedToOpenDatabase(err)
 	}
 
 	return &Database{
@@ -54,6 +54,10 @@ func OpenDatabase(driver DatabaseDriver, params ConnectionParams) (*Database, er
 		sqlBuilder:       driver.SQLBuilder(),
 		dbSchema:         dbSchema,
 	}, nil
+}
+
+func failedToOpenDatabase(err error) error {
+	return errs.FailedTo("open database", err)
 }
 
 func (d *Database) Close() error {

@@ -32,7 +32,7 @@ func TestNewDBSchemaFailsWhenDBIsNil(t *testing.T) {
 	if !testutils.AssertNilResultAndNotNilError(t, dbSchema, err, "schema.NewDBSchema") {
 		return
 	}
-	testutils.AssertErrorMessage(t, "sql.DB cannot be nil", err, "schema.NewDBSchema")
+	testutils.AssertErrorMessage(t, "failed to get db schema: db cannot be nil", err, "schema.NewDBSchema")
 }
 
 func TestHasColumn(t *testing.T) {

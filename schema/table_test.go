@@ -17,5 +17,5 @@ func TestAddColumnFailsWhenAlreadyExists(t *testing.T) {
 	if !testutils.AssertNotNilError(t, err, "Table.AddColumns") {
 		return
 	}
-	testutils.AssertErrorMessage(t, fmt.Sprintf("column %q already exists in table %q", "value", "product_attribute"), err, "Table.AddColumns")
+	testutils.AssertErrorMessage(t, fmt.Sprintf("failed to add column %q in table %q: column already exists", "value", "product_attribute"), err, "Table.AddColumns")
 }
