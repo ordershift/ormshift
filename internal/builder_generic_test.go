@@ -39,9 +39,30 @@ func TestAlterTableAddColumn(t *testing.T) {
 	sqlBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	userTableName := testutils.FakeUserTableName(t)
+
 	updatedAtColumn := testutils.FakeUpdatedAtColumn(t)
 	expectedSQL := "ALTER TABLE \"user\" ADD COLUMN \"updated_at\" <<TYPE_3>>;"
 	returnedSQL := sqlBuilder.AlterTableAddColumn(userTableName, updatedAtColumn)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	createdAtColumn := testutils.FakeCreatedAtColumn(t)
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" <<TYPE_7>> DEFAULT CURRENT_TIMESTAMP;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, createdAtColumn)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	priceColumn := testutils.FakePriceColumn(t)
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"price\" <<TYPE_2>> DEFAULT 0.0;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, priceColumn)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	scoreColumn := testutils.FakeScoreColumn(t)
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"score\" <<TYPE_0>> DEFAULT 0;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, scoreColumn)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	nameColumn := testutils.FakeNameColumn(t)
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" <<TYPE_1>> DEFAULT '';"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 }
 
