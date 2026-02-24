@@ -70,10 +70,12 @@ func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Col
 		switch column.Type() {
 		case schema.Boolean, schema.Integer:
 			defaultValue += "0"
-		case schema.DateTime, schema.DateTimeOffSet:
-			defaultValue += "'1900-01-01 00:00:00.000000 +00:00'"
+		case schema.DateTime:
+			defaultValue += "'1900-01-01 00:00:00.000000'"
 		case schema.Monetary, schema.Decimal:
 			defaultValue += "0.0"
+		case schema.DateTimeOffSet:
+			defaultValue += "'1900-01-01 00:00:00.000000 +00:00'"
 		default:
 			defaultValue += "''"
 		}

@@ -167,6 +167,16 @@ func FakeCreatedAtColumn(t *testing.T) schema.Column {
 	})
 }
 
+func FakeActivatedAtColumn(t *testing.T) schema.Column {
+	return schema.NewColumn(schema.NewColumnParams{
+		Name:          "activated_at",
+		Type:          schema.DateTime,
+		PrimaryKey:    false,
+		NotNull:       true,
+		AutoIncrement: false,
+	})
+}
+
 func FakeScoreColumn(t *testing.T) schema.Column {
 	return schema.NewColumn(schema.NewColumnParams{
 		Name:          "score",
