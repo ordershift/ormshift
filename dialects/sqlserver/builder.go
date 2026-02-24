@@ -75,6 +75,8 @@ func (sb *sqlserverBuilder) ColumnTypeAsString(columnType schema.ColumnType) str
 		return "FLOAT"
 	case schema.Binary:
 		return "VARBINARY(MAX)"
+	case schema.DateTimeOffSet:
+		return "DATETIMEOFFSET(6)"
 	default:
 		return "VARCHAR"
 	}

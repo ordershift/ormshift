@@ -10,6 +10,7 @@ const (
 	Decimal
 	Boolean
 	Binary
+	DateTimeOffSet
 )
 
 type NewColumnParams struct {

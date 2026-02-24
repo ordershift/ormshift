@@ -53,6 +53,8 @@ func (sb *postgresqlBuilder) ColumnTypeAsString(columnType schema.ColumnType) st
 		return "DOUBLE PRECISION"
 	case schema.Binary:
 		return "BYTEA"
+	case schema.DateTimeOffSet:
+		return "TIMESTAMPZ(6)"
 	default:
 		return "VARCHAR"
 	}
