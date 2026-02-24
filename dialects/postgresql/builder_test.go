@@ -77,6 +77,11 @@ func TestAlterTableAddColumn(t *testing.T) {
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, createdAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
+	activatedAtColumn := testutils.FakeActivatedAtColumn(t)
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"activated_at\" TIMESTAMP(6) NOT NULL DEFAULT '1900-01-01 00:00:00.000000';"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, activatedAtColumn)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
 	priceColumn := testutils.FakePriceColumn(t)
 	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"price\" NUMERIC(17,2) NOT NULL DEFAULT 0.0;"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, priceColumn)
