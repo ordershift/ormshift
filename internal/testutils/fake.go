@@ -157,6 +157,47 @@ func FakeUpdatedAtColumn(t *testing.T) schema.Column {
 	return updatedAtColumn
 }
 
+func FakeCreatedAtColumn(t *testing.T) schema.Column {
+	return schema.NewColumn(schema.NewColumnParams{
+		Name:          "created_at",
+		Type:          schema.DateTimeOffSet,
+		PrimaryKey:    false,
+		NotNull:       true,
+		AutoIncrement: false,
+	})
+}
+
+func FakeScoreColumn(t *testing.T) schema.Column {
+	return schema.NewColumn(schema.NewColumnParams{
+		Name:          "score",
+		Type:          schema.Integer,
+		PrimaryKey:    false,
+		NotNull:       true,
+		AutoIncrement: false,
+	})
+}
+
+func FakePriceColumn(t *testing.T) schema.Column {
+	return schema.NewColumn(schema.NewColumnParams{
+		Name:          "price",
+		Type:          schema.Monetary,
+		PrimaryKey:    false,
+		NotNull:       true,
+		AutoIncrement: false,
+	})
+}
+
+func FakeNameColumn(t *testing.T) schema.Column {
+	return schema.NewColumn(schema.NewColumnParams{
+		Name:          "name",
+		Type:          schema.Varchar,
+		Size:          50,
+		PrimaryKey:    false,
+		NotNull:       true,
+		AutoIncrement: false,
+	})
+}
+
 func FakeUpdatedAtColumnName(t *testing.T) string {
 	return "updated_at"
 }

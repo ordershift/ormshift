@@ -64,7 +64,21 @@ func (sb *genericSQLBuilder) DropTable(table string) string {
 }
 
 func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Column) string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", sb.QuoteIdentifier(table), sb.columnDefinition(column))
+	defaultValue := ""
+	if column.NotNull() {
+		defaultValue = " DEFAULT "
+		switch column.Type() {
+		case schema.Boolean, schema.Integer:
+			defaultValue += "0"
+		case schema.DateTime, schema.DateTimeOffSet:
+			defaultValue += "CURRENT_TIMESTAMP"
+		case schema.Monetary, schema.Decimal:
+			defaultValue += "0.0"
+		default:
+			defaultValue += "''"
+		}
+	}
+	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s%s;", sb.QuoteIdentifier(table), sb.columnDefinition(column), defaultValue)
 }
 
 func (sb *genericSQLBuilder) AlterTableDropColumn(table, column string) string {
