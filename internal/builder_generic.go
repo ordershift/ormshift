@@ -71,7 +71,7 @@ func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Col
 		case schema.Boolean, schema.Integer:
 			defaultValue += "0"
 		case schema.DateTime, schema.DateTimeOffSet:
-			defaultValue += "CURRENT_TIMESTAMP"
+			defaultValue += "'1900-01-01 00:00:00.000000 +00:00'"
 		case schema.Monetary, schema.Decimal:
 			defaultValue += "0.0"
 		default:

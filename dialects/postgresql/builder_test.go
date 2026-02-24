@@ -73,7 +73,7 @@ func TestAlterTableAddColumn(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	createdAtColumn := testutils.FakeCreatedAtColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" TIMESTAMPZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP;"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" TIMESTAMPZ(6) NOT NULL DEFAULT '1900-01-01 00:00:00.000000 +00:00';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, createdAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
