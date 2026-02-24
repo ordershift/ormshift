@@ -91,6 +91,7 @@ func TestAlterTableAddColumn(t *testing.T) {
 	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" VARCHAR(50) NOT NULL DEFAULT '';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
 }
 
 func TestAlterTableDropColumn(t *testing.T) {
