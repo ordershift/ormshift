@@ -79,6 +79,8 @@ func (sb *sqliteBuilder) ColumnTypeAsString(columnType schema.ColumnType) string
 		return "REAL"
 	case schema.Binary:
 		return "BLOB"
+	case schema.DateTimeOffSet:
+		return "DATETIME"
 	default:
 		return "TEXT"
 	}

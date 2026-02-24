@@ -87,6 +87,13 @@ func FakeUserTable(t *testing.T) schema.Table {
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
+			Name:          "updated_at",
+			Type:          schema.DateTimeOffSet,
+			PrimaryKey:    false,
+			NotNull:       false,
+			AutoIncrement: false,
+		},
+		schema.NewColumnParams{
 			Name:          "user_master",
 			Type:          schema.Integer,
 			PrimaryKey:    false,

@@ -23,7 +23,8 @@ func TestCreateTable(t *testing.T) {
 
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\"email\" TEXT NOT NULL,\"name\" TEXT NOT NULL," +
-		"\"password_hash\" TEXT,\"active\" INTEGER,\"created_at\" DATETIME,\"user_master\" INTEGER,\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT);"
+		"\"password_hash\" TEXT,\"active\" INTEGER,\"created_at\" DATETIME,\"updated_at\" DATETIME,\"user_master\" INTEGER," +
+		"\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT);"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
