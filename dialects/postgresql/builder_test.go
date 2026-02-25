@@ -43,7 +43,7 @@ func TestCreateTable(t *testing.T) {
 
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" BIGSERIAL NOT NULL,\"email\" VARCHAR(80) NOT NULL,\"name\" VARCHAR(50) NOT NULL," +
-		"\"password_hash\" VARCHAR(256),\"active\" SMALLINT,\"created_at\" TIMESTAMP(6),\"updated_at\" TIMESTAMPZ(6),\"user_master\" BIGINT,\"master_user_id\" BIGINT," +
+		"\"password_hash\" VARCHAR(256),\"active\" SMALLINT,\"created_at\" TIMESTAMP(6),\"updated_at\" TIMESTAMPTZ(6),\"user_master\" BIGINT,\"master_user_id\" BIGINT," +
 		"\"licence_price\" NUMERIC(17,2),\"relevance\" DOUBLE PRECISION,\"photo\" BYTEA,\"any\" VARCHAR,PRIMARY KEY (\"id\",\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
@@ -73,7 +73,7 @@ func TestAlterTableAddColumn(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	createdAtColumn := testutils.FakeCreatedAtColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" TIMESTAMPZ(6) NOT NULL DEFAULT '1900-01-01 00:00:00.000000 +00:00';"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" TIMESTAMPTZ(6) NOT NULL DEFAULT '1900-01-01 00:00:00.000000 +00:00';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, createdAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
