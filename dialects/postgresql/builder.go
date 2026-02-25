@@ -54,7 +54,7 @@ func (sb *postgresqlBuilder) ColumnTypeAsString(columnType schema.ColumnType) st
 	case schema.Binary:
 		return "BYTEA"
 	case schema.DateTimeOffSet:
-		return "TIMESTAMPZ(6)"
+		return "TIMESTAMPTZ(6)"
 	default:
 		return "VARCHAR"
 	}
