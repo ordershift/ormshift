@@ -3,6 +3,8 @@ package migrations
 import (
 	"fmt"
 	"reflect"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/ordershift/ormshift"
@@ -50,7 +52,14 @@ func failedToMigrate(err error) error {
 }
 
 func (m *Migrator) Add(migration Migration) {
-	m.migrations = append(m.migrations, migration)
+	migrationName := reflect.TypeOf(migration).Name()
+	contains := slices.ContainsFunc(m.migrations, func(m Migration) bool {
+		name := reflect.TypeOf(m).Name()
+		return strings.EqualFold(migrationName, name)
+	})
+	if !contains {
+		m.migrations = append(m.migrations, migration)
+	}
 }
 
 func (m *Migrator) ApplyAllMigrations() error {
