@@ -2,8 +2,10 @@ package ormshift
 
 import (
 	"database/sql"
+	"errors"
 	"slices"
 
+	"github.com/ordershift/ormshift/errs"
 	"github.com/ordershift/ormshift/schema"
 )
 
@@ -18,6 +20,22 @@ type DDLSQLBuilder interface {
 
 // ColumnsValues represents a mapping between column names and their corresponding values.
 type ColumnsValues map[string]any
+
+// NewColumnsValues helps to initialize a pointer for ColumnsValues map​, with given columns and values slices params.
+func NewColumnsValues(columns []string, values []any) (*ColumnsValues, error) {
+	if len(columns) != len(values) {
+		return nil, failedToGetColumnsValues(errors.New("columns len must be equal to values len"))
+	}
+	cv := ColumnsValues{}
+	for i, c := range columns {
+		cv[c] = values[i]
+	}
+	return &cv, nil
+}
+
+func failedToGetColumnsValues(err error) error {
+	return errs.FailedTo("get columns values", err)
+}
 
 // ToNamedArgs transforms ColumnsValues to a sql.NamedArg array ordered by name, e.g.:
 //
