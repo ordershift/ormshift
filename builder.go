@@ -21,6 +21,7 @@ type DDLSQLBuilder interface {
 // ColumnsValues represents a mapping between column names and their corresponding values.
 type ColumnsValues map[string]any
 
+// NewColumnsValues helps to initialize a pointer for ColumnsValues map​, with given columns and values slices params.
 func NewColumnsValues(columns []string, values []any) (*ColumnsValues, error) {
 	if len(columns) != len(values) {
 		return nil, failedToGetColumnsValues(errors.New("columns len must be equal to values len"))
