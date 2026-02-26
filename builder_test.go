@@ -26,3 +26,25 @@ func TestColumnsValuesToColumns(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, columns[0], "id", "ColumnsValues.ToColumns[0]")
 	testutils.AssertEqualWithLabel(t, columns[1], "sku", "ColumnsValues.ToColumns[1]")
 }
+
+func TestNewColumnsValues(t *testing.T) {
+	columns := []string{"id", "sku"}
+	values := []any{1, "ABC1234"}
+	cv, err := ormshift.NewColumnsValues(columns, values)
+	if !testutils.AssertNotNilResultAndNilError(t, cv, err, "ormshift.NewColumnsValues") {
+		return
+	}
+	testutils.AssertEqualWithLabel(t, 2, len(*cv), "len(ColumnsValues)")
+	testutils.AssertEqualWithLabel(t, (*cv)["id"], 1, "id")
+	testutils.AssertEqualWithLabel(t, (*cv)["sku"], "ABC1234", "sku")
+}
+
+func TestNewColumnsValuesFailsWhenIncompatibleLengths(t *testing.T) {
+	columns := []string{"id", "sku"}
+	values := []any{1}
+	cv, err := ormshift.NewColumnsValues(columns, values)
+	if !testutils.AssertNilResultAndNotNilError(t, cv, err, "ormshift.NewColumnsValues") {
+		return
+	}
+	testutils.AssertErrorMessage(t, "failed to get columns values: columns len must be equal to values len", err, "ormshift.NewColumnsValues")
+}
