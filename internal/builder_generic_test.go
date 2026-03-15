@@ -25,6 +25,11 @@ func TestCreateTable(t *testing.T) {
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
+	tableWithCompositeFKAndUC := testutils.FakeTableWithCompositeFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"booking\" (\"resource_id\" <<TYPE_1>>,\"slot_date\" <<TYPE_2>>,\"slot_hour\" <<TYPE_1>>,\"guest_id\" <<TYPE_1>>, CONSTRAINT \"PK_booking\" PRIMARY KEY (\"resource_id\",\"slot_date\",\"slot_hour\"), CONSTRAINT \"FK_booking_resource_schedule\" FOREIGN KEY (\"resource_id\",\"slot_date\") REFERENCES \"resource_schedule\" (\"resource_id\",\"schedule_date\"), CONSTRAINT \"UC_booking_resource_id_slot_date_slot_hour\" UNIQUE (\"resource_id\",\"slot_date\",\"slot_hour\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCompositeFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with composite FK and UC")
+
 	tableWithDefault := schema.NewTable("config")
 	_ = tableWithDefault.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, Default: "'default'"})
 	_ = tableWithDefault.PrimaryKey("key")

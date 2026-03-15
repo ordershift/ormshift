@@ -42,6 +42,11 @@ func TestCreateTable(t *testing.T) {
 	expectedSQL = "CREATE TABLE \"config\" (\"key\" TEXT NOT NULL,CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
 	returnedSQL = sqlBuilder.CreateTable(tbl)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable single non-integer PK")
+
+	tableWithCompositeFKAndUC := testutils.FakeTableWithCompositeFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"booking\" (\"resource_id\" INTEGER NOT NULL,\"slot_date\" TEXT NOT NULL,\"slot_hour\" INTEGER NOT NULL,\"guest_id\" INTEGER,CONSTRAINT \"PK_booking\" PRIMARY KEY (\"resource_id\",\"slot_date\",\"slot_hour\"),CONSTRAINT \"FK_booking_resource_schedule\" FOREIGN KEY (\"resource_id\",\"slot_date\") REFERENCES \"resource_schedule\" (\"resource_id\",\"schedule_date\"),CONSTRAINT \"UC_booking_resource_id_slot_date_slot_hour\" UNIQUE (\"resource_id\",\"slot_date\",\"slot_hour\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCompositeFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with composite FK and UC")
 }
 
 func TestDropTable(t *testing.T) {

@@ -51,6 +51,35 @@ func FakeProductAttributeTable(t *testing.T) schema.Table {
 	return productAttributeTable
 }
 
+// FakeTableWithCompositeFKAndUC returns a table "booking" with resource_id, slot_date, slot_hour, guest_id;
+// PK (resource_id, slot_date, slot_hour); composite FK (resource_id, slot_date) -> resource_schedule(resource_id, schedule_date);
+// composite UC (resource_id, slot_date, slot_hour).
+func FakeTableWithCompositeFKAndUC(t *testing.T) schema.Table {
+	tbl := schema.NewTable("booking")
+	err := tbl.AddColumns(
+		schema.NewColumnParams{Name: "resource_id", Type: schema.Integer, NotNull: true},
+		schema.NewColumnParams{Name: "slot_date", Type: schema.Varchar, Size: 10, NotNull: true},
+		schema.NewColumnParams{Name: "slot_hour", Type: schema.Integer, NotNull: true},
+		schema.NewColumnParams{Name: "guest_id", Type: schema.Integer, NotNull: false},
+	)
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.AddColumns") {
+		panic(err)
+	}
+	err = tbl.PrimaryKey("resource_id", "slot_date", "slot_hour")
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.PrimaryKey") {
+		panic(err)
+	}
+	err = tbl.AddForeignKey([]string{"resource_id", "slot_date"}, "resource_schedule", []string{"resource_id", "schedule_date"})
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.AddForeignKey") {
+		panic(err)
+	}
+	err = tbl.AddUniqueConstraint("resource_id", "slot_date", "slot_hour")
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.AddUniqueConstraint") {
+		panic(err)
+	}
+	return tbl
+}
+
 func FakeUserTable(t *testing.T) schema.Table {
 	userTable := schema.NewTable("user")
 	err := userTable.AddColumns(
