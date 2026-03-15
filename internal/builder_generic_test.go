@@ -24,6 +24,25 @@ func TestCreateTable(t *testing.T) {
 	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" <<TYPE_1>>,\"attribute_id\" <<TYPE_1>>,\"value\" <<TYPE_2>>,\"position\" <<TYPE_1>>, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
+
+	tableWithFKAndUC := testutils.FakeTableWithFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"item\" (\"id\" <<TYPE_1>>,\"ref_id\" <<TYPE_1>>,\"name\" <<TYPE_2>>, CONSTRAINT \"PK_item\" PRIMARY KEY (\"id\"), CONSTRAINT \"FK_item_other\" FOREIGN KEY (\"ref_id\") REFERENCES \"other\" (\"id\"), CONSTRAINT \"UC_item_name\" UNIQUE (\"name\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with FK and UC")
+
+	tableWithDefault := schema.NewTable("config")
+	_ = tableWithDefault.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, Default: "'default'"})
+	_ = tableWithDefault.PrimaryKey("key")
+	expectedSQL = "CREATE TABLE \"config\" (\"key\" <<TYPE_2>> DEFAULT 'default', CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Default")
+
+	tableWithCheck := schema.NewTable("product")
+	_ = tableWithCheck.AddColumns(schema.NewColumnParams{Name: "price", Type: schema.Monetary, Check: "price >= 0"})
+	_ = tableWithCheck.PrimaryKey("price")
+	expectedSQL = "CREATE TABLE \"product\" (\"price\" <<TYPE_3>> CHECK (price >= 0), CONSTRAINT \"PK_product\" PRIMARY KEY (\"price\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCheck)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Check")
 }
 
 func TestDropTable(t *testing.T) {
@@ -69,6 +88,11 @@ func TestAlterTableAddColumn(t *testing.T) {
 	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" <<TYPE_2>> DEFAULT '';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	columnWithDefault := schema.NewColumn(schema.NewColumnParams{Name: "quantity", Type: schema.Integer, Default: "42"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"quantity\" <<TYPE_1>> DEFAULT 42;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Default")
 }
 
 func TestAlterTableDropColumn(t *testing.T) {

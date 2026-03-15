@@ -16,3 +16,11 @@ func newUniqueConstraint(table string, columns []string) UniqueConstraint {
 		columns: columns,
 	}
 }
+
+func (uc *UniqueConstraint) Name() string {
+	return uc.name
+}
+
+func (uc *UniqueConstraint) Columns() []string {
+	return uc.columns
+}

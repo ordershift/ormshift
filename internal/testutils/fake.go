@@ -42,6 +42,32 @@ func FakeProductAttributeTable(t *testing.T) schema.Table {
 	return productAttributeTable
 }
 
+// FakeTableWithFKAndUC returns a table "item" with id, ref_id, name; PK id; FK ref_id -> other(id); UC on name.
+func FakeTableWithFKAndUC(t *testing.T) schema.Table {
+	table := schema.NewTable("item")
+	err := table.AddColumns(
+		schema.NewColumnParams{Name: "id", Type: schema.Integer, NotNull: true, AutoIncrement: true},
+		schema.NewColumnParams{Name: "ref_id", Type: schema.Integer, NotNull: false},
+		schema.NewColumnParams{Name: "name", Type: schema.Varchar, Size: 80, NotNull: false},
+	)
+	if !AssertNilError(t, err, "TableWithFKAndUC.AddColumns") {
+		panic(err)
+	}
+	err = table.PrimaryKey("id")
+	if !AssertNilError(t, err, "TableWithFKAndUC.PrimaryKey") {
+		panic(err)
+	}
+	err = table.AddForeignKey([]string{"ref_id"}, "other", []string{"id"})
+	if !AssertNilError(t, err, "TableWithFKAndUC.AddForeignKey") {
+		panic(err)
+	}
+	err = table.AddUniqueConstraint("name")
+	if !AssertNilError(t, err, "TableWithFKAndUC.AddUniqueConstraint") {
+		panic(err)
+	}
+	return table
+}
+
 func FakeUserTable(t *testing.T) schema.Table {
 	userTable := schema.NewTable("user")
 	err := userTable.AddColumns(

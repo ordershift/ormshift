@@ -54,6 +54,35 @@ func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
 		columns += fmt.Sprintf(", CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), pkColumns)
 	}
 
+	for _, fk := range table.FKs() {
+		fromCols := ""
+		for i, col := range fk.FromColumns() {
+			if i > 0 {
+				fromCols += ","
+			}
+			fromCols += sb.QuoteIdentifier(col)
+		}
+		toCols := ""
+		for i, col := range fk.ToColumns() {
+			if i > 0 {
+				toCols += ","
+			}
+			toCols += sb.QuoteIdentifier(col)
+		}
+		columns += fmt.Sprintf(", CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)", sb.QuoteIdentifier(fk.Name()), fromCols, sb.QuoteIdentifier(fk.ToTable()), toCols)
+	}
+
+	for _, uc := range table.UCs() {
+		ucCols := ""
+		for i, col := range uc.Columns() {
+			if i > 0 {
+				ucCols += ","
+			}
+			ucCols += sb.QuoteIdentifier(col)
+		}
+		columns += fmt.Sprintf(", CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), ucCols)
+	}
+
 	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 
@@ -62,8 +91,10 @@ func (sb *genericSQLBuilder) DropTable(table string) string {
 }
 
 func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Column) string {
+	// When column has no user default, columnDefinition does not add DEFAULT; for NotNull we add a hardcoded default here.
+	// When column has Default() set, columnDefinition (generic or dialect) already includes " DEFAULT ..." in the column def.
 	defaultValue := ""
-	if column.NotNull() {
+	if column.Default() == "" && column.NotNull() {
 		defaultValue = " DEFAULT "
 		switch column.Type() {
 		case schema.Boolean, schema.Integer:
@@ -94,7 +125,14 @@ func (sb *genericSQLBuilder) columnDefinition(column schema.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
 		return sb.ColumnDefinitionFunc(column)
 	}
-	return fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
+	columnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
+	}
+	return columnDef
 }
 
 func (sb *genericSQLBuilder) Insert(table string, columns []string) string {

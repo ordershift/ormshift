@@ -74,6 +74,12 @@ func (sb *postgresqlBuilder) columnDefinition(column schema.Column) string {
 	if column.NotNull() {
 		columnDef += " NOT NULL"
 	}
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
+	}
 	return columnDef
 }
 

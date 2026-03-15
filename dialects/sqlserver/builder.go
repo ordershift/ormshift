@@ -72,6 +72,12 @@ func (sb *sqlserverBuilder) columnDefinition(column schema.Column) string {
 	if column.AutoIncrement() {
 		columnDef += " IDENTITY (1, 1)"
 	}
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
+	}
 	return columnDef
 }
 

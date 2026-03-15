@@ -20,6 +20,8 @@ type NewColumnParams struct {
 	Size          uint
 	NotNull       bool
 	AutoIncrement bool
+	Default       string // SQL expression for DEFAULT (e.g. "0", "'hello'", "now()"). Empty means no default.
+	Check         string // SQL expression for CHECK (e.g. "price >= 0"). Empty means no check.
 }
 
 type Column struct {
@@ -28,6 +30,8 @@ type Column struct {
 	size          uint
 	notNull       bool
 	autoIncrement bool
+	defaultExpr   string
+	checkExpr     string
 }
 
 func NewColumn(params NewColumnParams) Column {
@@ -37,6 +41,8 @@ func NewColumn(params NewColumnParams) Column {
 		size:          params.Size,
 		notNull:       params.NotNull,
 		autoIncrement: params.AutoIncrement,
+		defaultExpr:   params.Default,
+		checkExpr:     params.Check,
 	}
 }
 
@@ -58,4 +64,12 @@ func (c *Column) NotNull() bool {
 
 func (c *Column) AutoIncrement() bool {
 	return c.autoIncrement
+}
+
+func (c *Column) Default() string {
+	return c.defaultExpr
+}
+
+func (c *Column) Check() string {
+	return c.checkExpr
 }

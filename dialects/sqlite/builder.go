@@ -56,6 +56,35 @@ func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
 		parts = append(parts, fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), pkColumns))
 	}
 
+	for _, fk := range table.FKs() {
+		fromCols := ""
+		for i, col := range fk.FromColumns() {
+			if i > 0 {
+				fromCols += ","
+			}
+			fromCols += sb.QuoteIdentifier(col)
+		}
+		toCols := ""
+		for i, col := range fk.ToColumns() {
+			if i > 0 {
+				toCols += ","
+			}
+			toCols += sb.QuoteIdentifier(col)
+		}
+		parts = append(parts, fmt.Sprintf("CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)", sb.QuoteIdentifier(fk.Name()), fromCols, sb.QuoteIdentifier(fk.ToTable()), toCols))
+	}
+
+	for _, uc := range table.UCs() {
+		ucCols := ""
+		for i, col := range uc.Columns() {
+			if i > 0 {
+				ucCols += ","
+			}
+			ucCols += sb.QuoteIdentifier(col)
+		}
+		parts = append(parts, fmt.Sprintf("CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), ucCols))
+	}
+
 	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), strings.Join(parts, ","))
 }
 
@@ -101,6 +130,12 @@ func (sb *sqliteBuilder) columnDefinition(column schema.Column) string {
 	}
 	if column.AutoIncrement() {
 		columnDef += " AUTOINCREMENT"
+	}
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
 	}
 	return columnDef
 }

@@ -17,3 +17,19 @@ func newForeignKey(fromTable string, fromColumns []string, toTable string, toCol
 		toColumns:   toColumns,
 	}
 }
+
+func (fk *ForeignKey) Name() string {
+	return fk.name
+}
+
+func (fk *ForeignKey) FromColumns() []string {
+	return fk.fromColumns
+}
+
+func (fk *ForeignKey) ToTable() string {
+	return fk.toTable
+}
+
+func (fk *ForeignKey) ToColumns() []string {
+	return fk.toColumns
+}
