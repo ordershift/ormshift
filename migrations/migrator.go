@@ -203,7 +203,9 @@ func ensureMigrationsTableExists(database *ormshift.Database, config *MigratorCo
 		return err
 	}
 
-	migrationsTable.PrimaryKey(config.MigrationNameColumn())
+	if err = migrationsTable.PrimaryKey(config.MigrationNameColumn()); err != nil {
+		return err
+	}
 
 	_, err = database.SQLExecutor().Exec(database.SQLBuilder().CreateTable(migrationsTable))
 	return err

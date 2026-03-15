@@ -60,7 +60,9 @@ func (m M001_Create_Table_User) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	userTable.PrimaryKey("id")
+	if err = userTable.PrimaryKey("id"); err != nil {
+		return err
+	}
 
 	_, err = migrator.Database().SQLExecutor().Exec(migrator.Database().SQLBuilder().CreateTable(userTable))
 	return err
