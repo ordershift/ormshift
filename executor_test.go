@@ -48,7 +48,7 @@ func TestExecutor(t *testing.T) {
 		"email":      "jonh.doe@mail.com",
 		"updated_at": time.Date(2026, time.January, 9, 12, 15, 52, 100952002, time.UTC),
 		"active":     true,
-		"ammount":    5000.00,
+		"amount":     5000.00,
 		"percent":    25.54325,
 	}
 	sql, args := sqlBuilder.InsertWithValues("user", values)
@@ -69,7 +69,7 @@ func TestExecutor(t *testing.T) {
 	//SELECT
 	sql, args = sqlBuilder.SelectWithValues(
 		"user",
-		[]string{"id", "name", "email", "updated_at", "active", "ammount", "percent", "photo"},
+		[]string{"id", "name", "email", "updated_at", "active", "amount", "percent", "photo"},
 		ormshift.ColumnsValues{"id": i},
 	)
 	userRows, err := sqlExecutor.Query(sql, args...)
@@ -101,7 +101,7 @@ func TestExecutor(t *testing.T) {
 	testutils.AssertEqualWithLabel(t, "jonh.doe@mail.com", userRow.Email.String, "user.email")
 	testutils.AssertEqualWithLabel(t, time.Date(2026, time.January, 9, 12, 15, 52, 100952002, time.UTC), userRow.UpdatedAt.Time, "user.updated_at")
 	testutils.AssertEqualWithLabel(t, 1, userRow.Active.Byte, "user.active")
-	testutils.AssertEqualWithLabel(t, 5000.00, userRow.Ammount.Float64, "user.ammount")
+	testutils.AssertEqualWithLabel(t, 5000.00, userRow.Ammount.Float64, "user.amount")
 	testutils.AssertEqualWithLabel(t, 25.54325, userRow.Percent.Float64, "user.percent")
 	testutils.AssertEqualWithLabel(t, nil, userRow.Photo, "user.photo")
 }

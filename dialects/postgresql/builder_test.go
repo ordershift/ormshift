@@ -7,6 +7,7 @@ import (
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/dialects/postgresql"
 	"github.com/ordershift/ormshift/internal/testutils"
+	"github.com/ordershift/ormshift/schema"
 )
 
 func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
@@ -44,14 +45,19 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" BIGSERIAL NOT NULL,\"email\" VARCHAR(80) NOT NULL,\"name\" VARCHAR(50) NOT NULL," +
 		"\"password_hash\" VARCHAR(256),\"active\" SMALLINT,\"created_at\" TIMESTAMP(6),\"updated_at\" TIMESTAMPTZ(6),\"user_master\" BIGINT,\"master_user_id\" BIGINT," +
-		"\"licence_price\" NUMERIC(17,2),\"relevance\" DOUBLE PRECISION,\"photo\" BYTEA,\"any\" VARCHAR,PRIMARY KEY (\"id\",\"email\"));"
+		"\"licence_price\" NUMERIC(17,2),\"relevance\" DOUBLE PRECISION,\"photo\" BYTEA,\"any\" VARCHAR, CONSTRAINT \"PK_user\" PRIMARY KEY (\"id\"), CONSTRAINT \"UC_user_email\" UNIQUE (\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" BIGINT NOT NULL,\"attribute_id\" BIGINT NOT NULL,\"value\" VARCHAR(75),\"position\" BIGINT,PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" BIGINT NOT NULL,\"attribute_id\" BIGINT NOT NULL,\"value\" VARCHAR(75),\"position\" BIGINT, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"), CONSTRAINT \"FK_product_attribute_product\" FOREIGN KEY (\"product_id\") REFERENCES \"product\" (\"id\"), CONSTRAINT \"FK_product_attribute_attribute\" FOREIGN KEY (\"attribute_id\") REFERENCES \"attribute\" (\"id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
+
+	tableWithCompositeFKAndUC := testutils.FakeTableWithCompositeFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"booking\" (\"resource_id\" BIGINT NOT NULL,\"slot_date\" VARCHAR(10) NOT NULL,\"slot_hour\" BIGINT NOT NULL,\"guest_id\" BIGINT, CONSTRAINT \"PK_booking\" PRIMARY KEY (\"resource_id\",\"slot_date\",\"slot_hour\"), CONSTRAINT \"FK_booking_resource_schedule\" FOREIGN KEY (\"resource_id\",\"slot_date\") REFERENCES \"resource_schedule\" (\"resource_id\",\"schedule_date\"), CONSTRAINT \"UC_booking_resource_id_slot_date_slot_hour\" UNIQUE (\"resource_id\",\"slot_date\",\"slot_hour\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCompositeFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with composite FK and UC")
 }
 
 func TestDropTable(t *testing.T) {
@@ -97,6 +103,15 @@ func TestAlterTableAddColumn(t *testing.T) {
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
+	columnWithDefault := schema.NewColumn(schema.NewColumnParams{Name: "quantity", Type: schema.Integer, Default: "0"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"quantity\" BIGINT DEFAULT 0;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Default")
+
+	columnWithCheck := schema.NewColumn(schema.NewColumnParams{Name: "score", Type: schema.Integer, Check: "score >= 0 AND score <= 100"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"score\" BIGINT CHECK (score >= 0 AND score <= 100);"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithCheck)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Check")
 }
 
 func TestAlterTableDropColumn(t *testing.T) {

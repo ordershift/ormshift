@@ -7,6 +7,7 @@ import (
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/dialects/sqlite"
 	"github.com/ordershift/ormshift/internal/testutils"
+	"github.com/ordershift/ormshift/schema"
 )
 
 func TestInteroperateSQLCommandWithNamedArgs(t *testing.T) {
@@ -24,14 +25,28 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\"email\" TEXT NOT NULL,\"name\" TEXT NOT NULL," +
 		"\"password_hash\" TEXT,\"active\" INTEGER,\"created_at\" DATETIME,\"updated_at\" DATETIME,\"user_master\" INTEGER," +
-		"\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT);"
+		"\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT,CONSTRAINT \"UC_user_email\" UNIQUE (\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" INTEGER NOT NULL,\"attribute_id\" INTEGER NOT NULL,\"value\" TEXT,\"position\" INTEGER,CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" INTEGER NOT NULL,\"attribute_id\" INTEGER NOT NULL,\"value\" TEXT," +
+		"\"position\" INTEGER,CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"),CONSTRAINT \"FK_product_attribute_product\" FOREIGN KEY (\"product_id\") REFERENCES \"product\" (\"id\"),CONSTRAINT \"FK_product_attribute_attribute\" FOREIGN KEY (\"attribute_id\") REFERENCES \"attribute\" (\"id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
+
+	// Single-column PK that is not integer autoincrement uses table-level CONSTRAINT (not inline).
+	tbl := schema.NewTable("config")
+	_ = tbl.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, NotNull: true})
+	_ = tbl.PrimaryKey("key")
+	expectedSQL = "CREATE TABLE \"config\" (\"key\" TEXT NOT NULL,CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
+	returnedSQL = sqlBuilder.CreateTable(tbl)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable single non-integer PK")
+
+	tableWithCompositeFKAndUC := testutils.FakeTableWithCompositeFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"booking\" (\"resource_id\" INTEGER NOT NULL,\"slot_date\" TEXT NOT NULL,\"slot_hour\" INTEGER NOT NULL,\"guest_id\" INTEGER,CONSTRAINT \"PK_booking\" PRIMARY KEY (\"resource_id\",\"slot_date\",\"slot_hour\"),CONSTRAINT \"FK_booking_resource_schedule\" FOREIGN KEY (\"resource_id\",\"slot_date\") REFERENCES \"resource_schedule\" (\"resource_id\",\"schedule_date\"),CONSTRAINT \"UC_booking_resource_id_slot_date_slot_hour\" UNIQUE (\"resource_id\",\"slot_date\",\"slot_hour\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCompositeFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with composite FK and UC")
 }
 
 func TestDropTable(t *testing.T) {
@@ -76,6 +91,16 @@ func TestAlterTableAddColumn(t *testing.T) {
 	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" TEXT NOT NULL DEFAULT '';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	columnWithDefault := schema.NewColumn(schema.NewColumnParams{Name: "quantity", Type: schema.Integer, Default: "0"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"quantity\" INTEGER DEFAULT 0;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Default")
+
+	columnWithCheck := schema.NewColumn(schema.NewColumnParams{Name: "score", Type: schema.Integer, Check: "score >= 0 AND score <= 100"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"score\" INTEGER CHECK (score >= 0 AND score <= 100);"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithCheck)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Check")
 }
 
 func TestAlterTableDropColumn(t *testing.T) {
