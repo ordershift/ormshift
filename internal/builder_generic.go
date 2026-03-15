@@ -34,6 +34,14 @@ func NewGenericSQLBuilder(
 }
 
 func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
+	columns := sb.buildCreateTableColumnDefs(table)
+	columns = sb.appendPKConstraint(columns, table)
+	columns = sb.appendFKConstraints(columns, table)
+	columns = sb.appendUCConstraints(columns, table)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+}
+
+func (sb *genericSQLBuilder) buildCreateTableColumnDefs(table schema.Table) string {
 	columns := ""
 	for _, column := range table.Columns() {
 		if columns != "" {
@@ -41,49 +49,38 @@ func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
 		}
 		columns += sb.columnDefinition(column)
 	}
+	return columns
+}
 
-	if pk := table.PK(); pk != nil {
-		pkColumns := ""
-		for _, col := range pk.Columns() {
-			if pkColumns != "" {
-				pkColumns += ","
-			}
-			pkColumns += sb.QuoteIdentifier(col)
-		}
-
-		columns += fmt.Sprintf(", CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), pkColumns)
+func (sb *genericSQLBuilder) appendPKConstraint(columns string, table schema.Table) string {
+	pk := table.PK()
+	if pk == nil {
+		return columns
 	}
+	return columns + fmt.Sprintf(", CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), sb.quotedColumnList(pk.Columns()))
+}
 
+func (sb *genericSQLBuilder) appendFKConstraints(columns string, table schema.Table) string {
 	for _, fk := range table.FKs() {
-		fromCols := ""
-		for i, col := range fk.FromColumns() {
-			if i > 0 {
-				fromCols += ","
-			}
-			fromCols += sb.QuoteIdentifier(col)
-		}
-		toCols := ""
-		for i, col := range fk.ToColumns() {
-			if i > 0 {
-				toCols += ","
-			}
-			toCols += sb.QuoteIdentifier(col)
-		}
-		columns += fmt.Sprintf(", CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)", sb.QuoteIdentifier(fk.Name()), fromCols, sb.QuoteIdentifier(fk.ToTable()), toCols)
+		columns += fmt.Sprintf(", CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
+			sb.QuoteIdentifier(fk.Name()), sb.quotedColumnList(fk.FromColumns()), sb.QuoteIdentifier(fk.ToTable()), sb.quotedColumnList(fk.ToColumns()))
 	}
+	return columns
+}
 
+func (sb *genericSQLBuilder) appendUCConstraints(columns string, table schema.Table) string {
 	for _, uc := range table.UCs() {
-		ucCols := ""
-		for i, col := range uc.Columns() {
-			if i > 0 {
-				ucCols += ","
-			}
-			ucCols += sb.QuoteIdentifier(col)
-		}
-		columns += fmt.Sprintf(", CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), ucCols)
+		columns += fmt.Sprintf(", CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), sb.quotedColumnList(uc.Columns()))
 	}
+	return columns
+}
 
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+func (sb *genericSQLBuilder) quotedColumnList(cols []string) string {
+	parts := make([]string, len(cols))
+	for i, col := range cols {
+		parts[i] = sb.QuoteIdentifier(col)
+	}
+	return strings.Join(parts, ",")
 }
 
 func (sb *genericSQLBuilder) DropTable(table string) string {
