@@ -24,13 +24,13 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\"email\" TEXT NOT NULL,\"name\" TEXT NOT NULL," +
 		"\"password_hash\" TEXT,\"active\" INTEGER,\"created_at\" DATETIME,\"updated_at\" DATETIME,\"user_master\" INTEGER," +
-		"\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT);"
+		"\"master_user_id\" INTEGER,\"licence_price\" REAL,\"relevance\" REAL,\"photo\" BLOB,\"any\" TEXT,CONSTRAINT \"UC_user_email\" UNIQUE (\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
 	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" INTEGER NOT NULL,\"attribute_id\" INTEGER NOT NULL,\"value\" TEXT," +
-		"\"position\" INTEGER,CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+		"\"position\" INTEGER,CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"),CONSTRAINT \"FK_product_attribute_product\" FOREIGN KEY (\"product_id\") REFERENCES \"product\" (\"id\"),CONSTRAINT \"FK_product_attribute_attribute\" FOREIGN KEY (\"attribute_id\") REFERENCES \"attribute\" (\"id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 }

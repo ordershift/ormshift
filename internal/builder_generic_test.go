@@ -16,19 +16,14 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" <<TYPE_1>>,\"email\" <<TYPE_2>>,\"name\" <<TYPE_2>>,\"password_hash\" <<TYPE_2>>," +
 		"\"active\" <<TYPE_6>>,\"created_at\" <<TYPE_4>>,\"updated_at\" <<TYPE_8>>,\"user_master\" <<TYPE_1>>,\"master_user_id\" <<TYPE_1>>," +
-		"\"licence_price\" <<TYPE_3>>,\"relevance\" <<TYPE_5>>,\"photo\" <<TYPE_7>>,\"any\" <<TYPE_-1>>, CONSTRAINT \"PK_user\" PRIMARY KEY (\"id\"));"
+		"\"licence_price\" <<TYPE_3>>,\"relevance\" <<TYPE_5>>,\"photo\" <<TYPE_7>>,\"any\" <<TYPE_-1>>, CONSTRAINT \"PK_user\" PRIMARY KEY (\"id\"), CONSTRAINT \"UC_user_email\" UNIQUE (\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" <<TYPE_1>>,\"attribute_id\" <<TYPE_1>>,\"value\" <<TYPE_2>>,\"position\" <<TYPE_1>>, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" <<TYPE_1>>,\"attribute_id\" <<TYPE_1>>,\"value\" <<TYPE_2>>,\"position\" <<TYPE_1>>, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"), CONSTRAINT \"FK_product_attribute_product\" FOREIGN KEY (\"product_id\") REFERENCES \"product\" (\"id\"), CONSTRAINT \"FK_product_attribute_attribute\" FOREIGN KEY (\"attribute_id\") REFERENCES \"attribute\" (\"id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
-
-	tableWithFKAndUC := testutils.FakeTableWithFKAndUC(t)
-	expectedSQL = "CREATE TABLE \"item\" (\"id\" <<TYPE_1>>,\"ref_id\" <<TYPE_1>>,\"name\" <<TYPE_2>>, CONSTRAINT \"PK_item\" PRIMARY KEY (\"id\"), CONSTRAINT \"FK_item_other\" FOREIGN KEY (\"ref_id\") REFERENCES \"other\" (\"id\"), CONSTRAINT \"UC_item_name\" UNIQUE (\"name\"));"
-	returnedSQL = sqlBuilder.CreateTable(tableWithFKAndUC)
-	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with FK and UC")
 
 	tableWithDefault := schema.NewTable("config")
 	_ = tableWithDefault.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, Default: "'default'"})

@@ -24,12 +24,12 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE [user] ([id] BIGINT NOT NULL IDENTITY (1, 1),[email] VARCHAR(80) NOT NULL,[name] VARCHAR(50) NOT NULL," +
 		"[password_hash] VARCHAR(256),[active] BIT,[created_at] DATETIME2(6),[updated_at] DATETIMEOFFSET(6),[user_master] BIGINT,[master_user_id] BIGINT," +
-		"[licence_price] MONEY,[relevance] FLOAT,[photo] VARBINARY(MAX),[any] VARCHAR, CONSTRAINT [PK_user] PRIMARY KEY ([id]));"
+		"[licence_price] MONEY,[relevance] FLOAT,[photo] VARBINARY(MAX),[any] VARCHAR, CONSTRAINT [PK_user] PRIMARY KEY ([id]), CONSTRAINT [UC_user_email] UNIQUE ([email]));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE [product_attribute] ([product_id] BIGINT NOT NULL,[attribute_id] BIGINT NOT NULL,[value] VARCHAR(75),[position] BIGINT, CONSTRAINT [PK_product_attribute] PRIMARY KEY ([product_id],[attribute_id]));"
+	expectedSQL = "CREATE TABLE [product_attribute] ([product_id] BIGINT NOT NULL,[attribute_id] BIGINT NOT NULL,[value] VARCHAR(75),[position] BIGINT, CONSTRAINT [PK_product_attribute] PRIMARY KEY ([product_id],[attribute_id]), CONSTRAINT [FK_product_attribute_product] FOREIGN KEY ([product_id]) REFERENCES [product] ([id]), CONSTRAINT [FK_product_attribute_attribute] FOREIGN KEY ([attribute_id]) REFERENCES [attribute] ([id]));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 }
