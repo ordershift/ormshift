@@ -188,11 +188,10 @@ func ensureMigrationsTableExists(database *ormshift.Database, config *MigratorCo
 	}
 	err := migrationsTable.AddColumns(
 		schema.NewColumnParams{
-			Name:       config.MigrationNameColumn(),
-			Type:       schema.Varchar,
-			Size:       config.MigrationNameMaxLength(),
-			PrimaryKey: true,
-			NotNull:    true,
+			Name:    config.MigrationNameColumn(),
+			Type:    schema.Varchar,
+			Size:    config.MigrationNameMaxLength(),
+			NotNull: true,
 		},
 		schema.NewColumnParams{
 			Name:    config.AppliedAtColumn(),
@@ -203,6 +202,8 @@ func ensureMigrationsTableExists(database *ormshift.Database, config *MigratorCo
 	if err != nil {
 		return err
 	}
+
+	migrationsTable.PrimaryKey(config.MigrationNameColumn())
 
 	_, err = database.SQLExecutor().Exec(database.SQLBuilder().CreateTable(migrationsTable))
 	return err

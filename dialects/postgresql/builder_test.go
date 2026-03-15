@@ -44,12 +44,12 @@ func TestCreateTable(t *testing.T) {
 	userTable := testutils.FakeUserTable(t)
 	expectedSQL := "CREATE TABLE \"user\" (\"id\" BIGSERIAL NOT NULL,\"email\" VARCHAR(80) NOT NULL,\"name\" VARCHAR(50) NOT NULL," +
 		"\"password_hash\" VARCHAR(256),\"active\" SMALLINT,\"created_at\" TIMESTAMP(6),\"updated_at\" TIMESTAMPTZ(6),\"user_master\" BIGINT,\"master_user_id\" BIGINT," +
-		"\"licence_price\" NUMERIC(17,2),\"relevance\" DOUBLE PRECISION,\"photo\" BYTEA,\"any\" VARCHAR,PRIMARY KEY (\"id\",\"email\"));"
+		"\"licence_price\" NUMERIC(17,2),\"relevance\" DOUBLE PRECISION,\"photo\" BYTEA,\"any\" VARCHAR, CONSTRAINT \"PK_user\" PRIMARY KEY (\"id\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" BIGINT NOT NULL,\"attribute_id\" BIGINT NOT NULL,\"value\" VARCHAR(75),\"position\" BIGINT,PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" BIGINT NOT NULL,\"attribute_id\" BIGINT NOT NULL,\"value\" VARCHAR(75),\"position\" BIGINT, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 }

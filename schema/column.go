@@ -3,7 +3,8 @@ package schema
 type ColumnType int
 
 const (
-	Integer ColumnType = iota
+	_ ColumnType = iota
+	Integer
 	Varchar
 	Monetary
 	DateTime
@@ -17,7 +18,6 @@ type NewColumnParams struct {
 	Name          string
 	Type          ColumnType
 	Size          uint
-	PrimaryKey    bool
 	NotNull       bool
 	AutoIncrement bool
 }
@@ -26,7 +26,6 @@ type Column struct {
 	name          string
 	columnType    ColumnType
 	size          uint
-	primaryKey    bool
 	notNull       bool
 	autoIncrement bool
 }
@@ -36,7 +35,6 @@ func NewColumn(params NewColumnParams) Column {
 		name:          params.Name,
 		columnType:    params.Type,
 		size:          params.Size,
-		primaryKey:    params.PrimaryKey,
 		notNull:       params.NotNull,
 		autoIncrement: params.AutoIncrement,
 	}
@@ -52,10 +50,6 @@ func (c *Column) Type() ColumnType {
 
 func (c *Column) Size() uint {
 	return c.size
-}
-
-func (c *Column) PrimaryKey() bool {
-	return c.primaryKey
 }
 
 func (c *Column) NotNull() bool {

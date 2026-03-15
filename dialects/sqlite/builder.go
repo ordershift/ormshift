@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
@@ -20,35 +21,42 @@ func newSQLiteBuilder() ormshift.SQLBuilder {
 }
 
 func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
-	columns := ""
-	pkColumns := ""
-	autoInc := false
-	for _, column := range table.Columns() {
-		if columns != "" {
-			columns += ","
+	pk := table.PK()
+	useInlinePK := pk != nil && len(pk.Columns()) == 1
+	var pkColName string
+	if useInlinePK {
+		pkColName = pk.Columns()[0]
+		for _, col := range table.Columns() {
+			if strings.EqualFold(col.Name(), pkColName) {
+				if col.Type() != schema.Integer || !col.AutoIncrement() {
+					useInlinePK = false
+				}
+				break
+			}
 		}
-		columns += sb.columnDefinition(column)
+	}
 
-		if column.PrimaryKey() {
-			if pkColumns != "" {
+	var parts []string
+	for _, column := range table.Columns() {
+		if useInlinePK && strings.EqualFold(column.Name(), pkColName) {
+			parts = append(parts, fmt.Sprintf("%s INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT", sb.QuoteIdentifier(column.Name())))
+		} else {
+			parts = append(parts, sb.columnDefinition(column))
+		}
+	}
+
+	if pk != nil && !useInlinePK {
+		pkColumns := ""
+		for i, col := range pk.Columns() {
+			if i > 0 {
 				pkColumns += ","
 			}
-			pkColumns += sb.QuoteIdentifier(column.Name())
+			pkColumns += sb.QuoteIdentifier(col)
 		}
-
-		if !autoInc {
-			autoInc = column.AutoIncrement()
-		}
+		parts = append(parts, fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), pkColumns))
 	}
 
-	if !autoInc && pkColumns != "" {
-		if columns != "" {
-			columns += ","
-		}
-		pkConstraintName := sb.QuoteIdentifier("PK_" + table.Name())
-		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
-	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), strings.Join(parts, ","))
 }
 
 func (sb *sqliteBuilder) DropTable(table string) string {
@@ -92,7 +100,7 @@ func (sb *sqliteBuilder) columnDefinition(column schema.Column) string {
 		columnDef += " NOT NULL"
 	}
 	if column.AutoIncrement() {
-		columnDef += " PRIMARY KEY AUTOINCREMENT"
+		columnDef += " AUTOINCREMENT"
 	}
 	return columnDef
 }

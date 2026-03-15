@@ -35,27 +35,25 @@ func NewGenericSQLBuilder(
 
 func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
 	columns := ""
-	pkColumns := ""
 	for _, column := range table.Columns() {
 		if columns != "" {
 			columns += ","
 		}
 		columns += sb.columnDefinition(column)
+	}
 
-		if column.PrimaryKey() {
+	if pk := table.PK(); pk != nil {
+		pkColumns := ""
+		for _, col := range pk.Columns() {
 			if pkColumns != "" {
 				pkColumns += ","
 			}
-			pkColumns += sb.QuoteIdentifier(column.Name())
+			pkColumns += sb.QuoteIdentifier(col)
 		}
+
+		columns += fmt.Sprintf(", CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), pkColumns)
 	}
 
-	if pkColumns != "" {
-		if columns != "" {
-			columns += ","
-		}
-		columns += fmt.Sprintf("PRIMARY KEY (%s)", pkColumns)
-	}
 	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
 }
 

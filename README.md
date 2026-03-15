@@ -123,14 +123,14 @@ defer db.Close()
 table := schema.NewTable("users")
 
 err := table.AddColumns(
-	schema.NewColumnParams{Name: "id", Type: schema.Integer, PrimaryKey: true, AutoIncrement: true},
+	schema.NewColumnParams{Name: "id", Type: schema.Integer, NotNull: true, AutoIncrement: true},
 	schema.NewColumnParams{Name: "name", Type: schema.Varchar, Size: 50, NotNull: false},
 )
-
 if err != nil {
 	// handle error
 }
 
+_ = table.PrimaryKey("id")
 db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 ```
 
@@ -212,7 +212,7 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 	}
 
 	err := table.AddColumns(
-		schema.NewColumnParams{Name: "id", Type: schema.Integer, PrimaryKey: true, AutoIncrement: true},
+		schema.NewColumnParams{Name: "id", Type: schema.Integer, NotNull: true, AutoIncrement: true},
 		schema.NewColumnParams{Name: "name", Type: schema.Varchar, Size: 50, NotNull: false},
 		schema.NewColumnParams{Name: "email", Type: schema.Varchar, Size: 120, NotNull: false},
 		schema.NewColumnParams{Name: "is_active", Type: schema.Boolean, NotNull: false},
@@ -221,6 +221,7 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
+	_ = table.PrimaryKey("id")
 	_, err = db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 	return err
 }
