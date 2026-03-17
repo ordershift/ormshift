@@ -34,29 +34,53 @@ func NewGenericSQLBuilder(
 }
 
 func (sb *genericSQLBuilder) CreateTable(table schema.Table) string {
+	columns := sb.buildCreateTableColumnDefs(table)
+	columns = sb.appendPKConstraint(columns, table)
+	columns = sb.appendFKConstraints(columns, table)
+	columns = sb.appendUCConstraints(columns, table)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+}
+
+func (sb *genericSQLBuilder) buildCreateTableColumnDefs(table schema.Table) string {
 	columns := ""
-	pkColumns := ""
 	for _, column := range table.Columns() {
 		if columns != "" {
 			columns += ","
 		}
 		columns += sb.columnDefinition(column)
-
-		if column.PrimaryKey() {
-			if pkColumns != "" {
-				pkColumns += ","
-			}
-			pkColumns += sb.QuoteIdentifier(column.Name())
-		}
 	}
+	return columns
+}
 
-	if pkColumns != "" {
-		if columns != "" {
-			columns += ","
-		}
-		columns += fmt.Sprintf("PRIMARY KEY (%s)", pkColumns)
+func (sb *genericSQLBuilder) appendPKConstraint(columns string, table schema.Table) string {
+	pk := table.PrimaryKey()
+	if pk == nil {
+		return columns
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+	return columns + fmt.Sprintf(", CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), sb.quotedColumnList(pk.Columns()))
+}
+
+func (sb *genericSQLBuilder) appendFKConstraints(columns string, table schema.Table) string {
+	for _, fk := range table.ForeignKeys() {
+		columns += fmt.Sprintf(", CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
+			sb.QuoteIdentifier(fk.Name()), sb.quotedColumnList(fk.FromColumns()), sb.QuoteIdentifier(fk.ToTable()), sb.quotedColumnList(fk.ToColumns()))
+	}
+	return columns
+}
+
+func (sb *genericSQLBuilder) appendUCConstraints(columns string, table schema.Table) string {
+	for _, uc := range table.UniqueConstraints() {
+		columns += fmt.Sprintf(", CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), sb.quotedColumnList(uc.Columns()))
+	}
+	return columns
+}
+
+func (sb *genericSQLBuilder) quotedColumnList(cols []string) string {
+	parts := make([]string, len(cols))
+	for i, col := range cols {
+		parts[i] = sb.QuoteIdentifier(col)
+	}
+	return strings.Join(parts, ",")
 }
 
 func (sb *genericSQLBuilder) DropTable(table string) string {
@@ -64,8 +88,10 @@ func (sb *genericSQLBuilder) DropTable(table string) string {
 }
 
 func (sb *genericSQLBuilder) AlterTableAddColumn(table string, column schema.Column) string {
+	// When column has no user default, columnDefinition does not add DEFAULT; for NotNull we add a hardcoded default here.
+	// When column has Default() set, columnDefinition (generic or dialect) already includes " DEFAULT ..." in the column def.
 	defaultValue := ""
-	if column.NotNull() {
+	if column.Default() == "" && column.NotNull() {
 		defaultValue = " DEFAULT "
 		switch column.Type() {
 		case schema.Boolean, schema.Integer:
@@ -96,7 +122,14 @@ func (sb *genericSQLBuilder) columnDefinition(column schema.Column) string {
 	if sb.ColumnDefinitionFunc != nil {
 		return sb.ColumnDefinitionFunc(column)
 	}
-	return fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
+	columnDef := fmt.Sprintf("%s %s", sb.QuoteIdentifier(column.Name()), sb.ColumnTypeAsString(column.Type()))
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
+	}
+	return columnDef
 }
 
 func (sb *genericSQLBuilder) Insert(table string, columns []string) string {

@@ -21,49 +21,46 @@ func (m M001_Create_Table_User) Up(migrator *migrations.Migrator) error {
 			Name:          "id",
 			Type:          schema.Integer,
 			AutoIncrement: true,
-			PrimaryKey:    true,
 			NotNull:       true,
 		},
 		schema.NewColumnParams{
-			Name:       "name",
-			Type:       schema.Varchar,
-			Size:       50,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "name",
+			Type:    schema.Varchar,
+			Size:    50,
+			NotNull: false,
 		},
 		schema.NewColumnParams{
-			Name:       "email",
-			Type:       schema.Varchar,
-			Size:       120,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "email",
+			Type:    schema.Varchar,
+			Size:    120,
+			NotNull: false,
 		},
 		schema.NewColumnParams{
-			Name:       "active",
-			Type:       schema.Boolean,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "active",
+			Type:    schema.Boolean,
+			NotNull: false,
 		},
 		schema.NewColumnParams{
-			Name:       "ammount",
-			Type:       schema.Monetary,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "amount",
+			Type:    schema.Monetary,
+			NotNull: false,
 		},
 		schema.NewColumnParams{
-			Name:       "percent",
-			Type:       schema.Decimal,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "percent",
+			Type:    schema.Decimal,
+			NotNull: false,
 		},
 		schema.NewColumnParams{
-			Name:       "photo",
-			Type:       schema.Binary,
-			PrimaryKey: false,
-			NotNull:    false,
+			Name:    "photo",
+			Type:    schema.Binary,
+			NotNull: false,
 		},
 	)
 	if err != nil {
+		return err
+	}
+
+	if err = userTable.HasPrimaryKey("id"); err != nil {
 		return err
 	}
 

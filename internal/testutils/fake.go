@@ -11,16 +11,14 @@ func FakeProductAttributeTable(t *testing.T) schema.Table {
 	productAttributeTable := schema.NewTable("product_attribute")
 	err := productAttributeTable.AddColumns(
 		schema.NewColumnParams{
-			Name:       "product_id",
-			Type:       schema.Integer,
-			PrimaryKey: true,
-			NotNull:    true,
+			Name:    "product_id",
+			Type:    schema.Integer,
+			NotNull: true,
 		},
 		schema.NewColumnParams{
-			Name:       "attribute_id",
-			Type:       schema.Integer,
-			PrimaryKey: true,
-			NotNull:    true,
+			Name:    "attribute_id",
+			Type:    schema.Integer,
+			NotNull: true,
 		},
 		schema.NewColumnParams{
 			Name: "value",
@@ -35,7 +33,51 @@ func FakeProductAttributeTable(t *testing.T) schema.Table {
 	if !AssertNilError(t, err, "ProductAttributeTable.AddColumns") {
 		panic(err)
 	}
+
+	err = productAttributeTable.HasPrimaryKey("product_id", "attribute_id")
+	if !AssertNilError(t, err, "ProductAttributeTable.HasPrimaryKey") {
+		panic(err)
+	}
+
+	err = productAttributeTable.HasForeignKey([]string{"product_id"}, "product", []string{"id"})
+	if !AssertNilError(t, err, "ProductAttributeTable.HasForeignKey product_id") {
+		panic(err)
+	}
+	err = productAttributeTable.HasForeignKey([]string{"attribute_id"}, "attribute", []string{"id"})
+	if !AssertNilError(t, err, "ProductAttributeTable.HasForeignKey attribute_id") {
+		panic(err)
+	}
+
 	return productAttributeTable
+}
+
+// FakeTableWithCompositeFKAndUC returns a table "booking" with resource_id, slot_date, slot_hour, guest_id;
+// PK (resource_id, slot_date, slot_hour); composite FK (resource_id, slot_date) -> resource_schedule(resource_id, schedule_date);
+// composite UC (resource_id, slot_date, slot_hour).
+func FakeTableWithCompositeFKAndUC(t *testing.T) schema.Table {
+	tbl := schema.NewTable("booking")
+	err := tbl.AddColumns(
+		schema.NewColumnParams{Name: "resource_id", Type: schema.Integer, NotNull: true},
+		schema.NewColumnParams{Name: "slot_date", Type: schema.Varchar, Size: 10, NotNull: true},
+		schema.NewColumnParams{Name: "slot_hour", Type: schema.Integer, NotNull: true},
+		schema.NewColumnParams{Name: "guest_id", Type: schema.Integer, NotNull: false},
+	)
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.AddColumns") {
+		panic(err)
+	}
+	err = tbl.HasPrimaryKey("resource_id", "slot_date", "slot_hour")
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.HasPrimaryKey") {
+		panic(err)
+	}
+	err = tbl.HasForeignKey([]string{"resource_id", "slot_date"}, "resource_schedule", []string{"resource_id", "schedule_date"})
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.HasForeignKey") {
+		panic(err)
+	}
+	err = tbl.HasUniqueConstraint("resource_id", "slot_date", "slot_hour")
+	if !AssertNilError(t, err, "TableWithCompositeFKAndUC.HasUniqueConstraint") {
+		panic(err)
+	}
+	return tbl
 }
 
 func FakeUserTable(t *testing.T) schema.Table {
@@ -44,7 +86,6 @@ func FakeUserTable(t *testing.T) schema.Table {
 		schema.NewColumnParams{
 			Name:          "id",
 			Type:          schema.Integer,
-			PrimaryKey:    true,
 			NotNull:       true,
 			AutoIncrement: true,
 		},
@@ -52,7 +93,6 @@ func FakeUserTable(t *testing.T) schema.Table {
 			Name:          "email",
 			Type:          schema.Varchar,
 			Size:          80,
-			PrimaryKey:    true,
 			NotNull:       true,
 			AutoIncrement: false,
 		},
@@ -60,7 +100,6 @@ func FakeUserTable(t *testing.T) schema.Table {
 			Name:          "name",
 			Type:          schema.Varchar,
 			Size:          50,
-			PrimaryKey:    false,
 			NotNull:       true,
 			AutoIncrement: false,
 		},
@@ -68,70 +107,60 @@ func FakeUserTable(t *testing.T) schema.Table {
 			Name:          "password_hash",
 			Type:          schema.Varchar,
 			Size:          256,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "active",
 			Type:          schema.Boolean,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "created_at",
 			Type:          schema.DateTime,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "updated_at",
 			Type:          schema.DateTimeOffSet,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "user_master",
 			Type:          schema.Integer,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "master_user_id",
 			Type:          schema.Integer,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "licence_price",
 			Type:          schema.Monetary,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "relevance",
 			Type:          schema.Decimal,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "photo",
 			Type:          schema.Binary,
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
 		schema.NewColumnParams{
 			Name:          "any",
 			Type:          schema.ColumnType(-1),
-			PrimaryKey:    false,
 			NotNull:       false,
 			AutoIncrement: false,
 		},
@@ -139,6 +168,17 @@ func FakeUserTable(t *testing.T) schema.Table {
 	if !AssertNilError(t, err, "UserTable.AddColumns") {
 		panic(err)
 	}
+
+	err = userTable.HasPrimaryKey("id")
+	if !AssertNilError(t, err, "UserTable.HasPrimaryKey") {
+		panic(err)
+	}
+
+	err = userTable.HasUniqueConstraint("email")
+	if !AssertNilError(t, err, "UserTable.HasUniqueConstraint email") {
+		panic(err)
+	}
+
 	return userTable
 }
 
@@ -150,7 +190,6 @@ func FakeUpdatedAtColumn(t *testing.T) schema.Column {
 	updatedAtColumn := schema.NewColumn(schema.NewColumnParams{
 		Name:          "updated_at",
 		Type:          schema.DateTime,
-		PrimaryKey:    false,
 		NotNull:       false,
 		AutoIncrement: false,
 	})
@@ -161,7 +200,6 @@ func FakeCreatedAtColumn(t *testing.T) schema.Column {
 	return schema.NewColumn(schema.NewColumnParams{
 		Name:          "created_at",
 		Type:          schema.DateTimeOffSet,
-		PrimaryKey:    false,
 		NotNull:       true,
 		AutoIncrement: false,
 	})
@@ -171,7 +209,6 @@ func FakeActivatedAtColumn(t *testing.T) schema.Column {
 	return schema.NewColumn(schema.NewColumnParams{
 		Name:          "activated_at",
 		Type:          schema.DateTime,
-		PrimaryKey:    false,
 		NotNull:       true,
 		AutoIncrement: false,
 	})
@@ -181,7 +218,6 @@ func FakeScoreColumn(t *testing.T) schema.Column {
 	return schema.NewColumn(schema.NewColumnParams{
 		Name:          "score",
 		Type:          schema.Integer,
-		PrimaryKey:    false,
 		NotNull:       true,
 		AutoIncrement: false,
 	})
@@ -191,7 +227,6 @@ func FakePriceColumn(t *testing.T) schema.Column {
 	return schema.NewColumn(schema.NewColumnParams{
 		Name:          "price",
 		Type:          schema.Monetary,
-		PrimaryKey:    false,
 		NotNull:       true,
 		AutoIncrement: false,
 	})
@@ -202,7 +237,6 @@ func FakeNameColumn(t *testing.T) schema.Column {
 		Name:          "name",
 		Type:          schema.Varchar,
 		Size:          50,
-		PrimaryKey:    false,
 		NotNull:       true,
 		AutoIncrement: false,
 	})

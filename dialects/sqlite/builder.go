@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/ordershift/ormshift"
 	"github.com/ordershift/ormshift/internal"
@@ -20,35 +21,69 @@ func newSQLiteBuilder() ormshift.SQLBuilder {
 }
 
 func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
-	columns := ""
-	pkColumns := ""
-	autoInc := false
+	useInlinePK, pkColName := sb.useInlineSingleIntegerAutoIncrementPK(table)
+	parts := sb.buildCreateTableColumnParts(table, useInlinePK, pkColName)
+	parts = sb.appendPKConstraintPart(parts, table, useInlinePK)
+	parts = sb.appendFKConstraintParts(parts, table)
+	parts = sb.appendUCConstraintParts(parts, table)
+	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), strings.Join(parts, ","))
+}
+
+func (sb *sqliteBuilder) useInlineSingleIntegerAutoIncrementPK(table schema.Table) (bool, string) {
+	pk := table.PrimaryKey()
+	if pk == nil || len(pk.Columns()) != 1 {
+		return false, ""
+	}
+	pkColName := pk.Columns()[0]
+	for _, col := range table.Columns() {
+		if strings.EqualFold(col.Name(), pkColName) {
+			return col.Type() == schema.Integer && col.AutoIncrement(), pkColName
+		}
+	}
+	return false, pkColName
+}
+
+func (sb *sqliteBuilder) buildCreateTableColumnParts(table schema.Table, useInlinePK bool, pkColName string) []string {
+	var parts []string
 	for _, column := range table.Columns() {
-		if columns != "" {
-			columns += ","
-		}
-		columns += sb.columnDefinition(column)
-
-		if column.PrimaryKey() {
-			if pkColumns != "" {
-				pkColumns += ","
-			}
-			pkColumns += sb.QuoteIdentifier(column.Name())
-		}
-
-		if !autoInc {
-			autoInc = column.AutoIncrement()
+		if useInlinePK && strings.EqualFold(column.Name(), pkColName) {
+			parts = append(parts, fmt.Sprintf("%s INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT", sb.QuoteIdentifier(column.Name())))
+		} else {
+			parts = append(parts, sb.columnDefinition(column))
 		}
 	}
+	return parts
+}
 
-	if !autoInc && pkColumns != "" {
-		if columns != "" {
-			columns += ","
-		}
-		pkConstraintName := sb.QuoteIdentifier("PK_" + table.Name())
-		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
+func (sb *sqliteBuilder) appendPKConstraintPart(parts []string, table schema.Table, useInlinePK bool) []string {
+	pk := table.PrimaryKey()
+	if pk == nil || useInlinePK {
+		return parts
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+	return append(parts, fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", sb.QuoteIdentifier(pk.Name()), sb.quotedColumnList(pk.Columns())))
+}
+
+func (sb *sqliteBuilder) appendFKConstraintParts(parts []string, table schema.Table) []string {
+	for _, fk := range table.ForeignKeys() {
+		parts = append(parts, fmt.Sprintf("CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
+			sb.QuoteIdentifier(fk.Name()), sb.quotedColumnList(fk.FromColumns()), sb.QuoteIdentifier(fk.ToTable()), sb.quotedColumnList(fk.ToColumns())))
+	}
+	return parts
+}
+
+func (sb *sqliteBuilder) appendUCConstraintParts(parts []string, table schema.Table) []string {
+	for _, uc := range table.UniqueConstraints() {
+		parts = append(parts, fmt.Sprintf("CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), sb.quotedColumnList(uc.Columns())))
+	}
+	return parts
+}
+
+func (sb *sqliteBuilder) quotedColumnList(cols []string) string {
+	parts := make([]string, len(cols))
+	for i, col := range cols {
+		parts[i] = sb.QuoteIdentifier(col)
+	}
+	return strings.Join(parts, ",")
 }
 
 func (sb *sqliteBuilder) DropTable(table string) string {
@@ -92,7 +127,13 @@ func (sb *sqliteBuilder) columnDefinition(column schema.Column) string {
 		columnDef += " NOT NULL"
 	}
 	if column.AutoIncrement() {
-		columnDef += " PRIMARY KEY AUTOINCREMENT"
+		columnDef += " AUTOINCREMENT"
+	}
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
 	}
 	return columnDef
 }

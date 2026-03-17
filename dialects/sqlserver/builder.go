@@ -21,30 +21,7 @@ func newSQLServerBuilder() ormshift.SQLBuilder {
 }
 
 func (sb *sqlserverBuilder) CreateTable(table schema.Table) string {
-	columns := ""
-	pkColumns := ""
-	for _, column := range table.Columns() {
-		if columns != "" {
-			columns += ","
-		}
-		columns += sb.columnDefinition(column)
-
-		if column.PrimaryKey() {
-			if pkColumns != "" {
-				pkColumns += ","
-			}
-			pkColumns += sb.QuoteIdentifier(column.Name())
-		}
-	}
-
-	if pkColumns != "" {
-		if columns != "" {
-			columns += ","
-		}
-		pkConstraintName := sb.QuoteIdentifier("PK_" + table.Name())
-		columns += fmt.Sprintf("CONSTRAINT %s PRIMARY KEY (%s)", pkConstraintName, pkColumns)
-	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", sb.QuoteIdentifier(table.Name()), columns)
+	return sb.generic.CreateTable(table)
 }
 
 func (sb *sqlserverBuilder) DropTable(table string) string {
@@ -94,6 +71,12 @@ func (sb *sqlserverBuilder) columnDefinition(column schema.Column) string {
 	}
 	if column.AutoIncrement() {
 		columnDef += " IDENTITY (1, 1)"
+	}
+	if column.Default() != "" {
+		columnDef += " DEFAULT " + column.Default()
+	}
+	if column.Check() != "" {
+		columnDef += " CHECK (" + column.Check() + ")"
 	}
 	return columnDef
 }

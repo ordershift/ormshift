@@ -14,16 +14,35 @@ func TestCreateTable(t *testing.T) {
 	sqlBuilder := internal.NewGenericSQLBuilder(nil, nil, nil)
 
 	userTable := testutils.FakeUserTable(t)
-	expectedSQL := "CREATE TABLE \"user\" (\"id\" <<TYPE_0>>,\"email\" <<TYPE_1>>,\"name\" <<TYPE_1>>,\"password_hash\" <<TYPE_1>>," +
-		"\"active\" <<TYPE_5>>,\"created_at\" <<TYPE_3>>,\"updated_at\" <<TYPE_7>>,\"user_master\" <<TYPE_0>>,\"master_user_id\" <<TYPE_0>>," +
-		"\"licence_price\" <<TYPE_2>>,\"relevance\" <<TYPE_4>>,\"photo\" <<TYPE_6>>,\"any\" <<TYPE_-1>>,PRIMARY KEY (\"id\",\"email\"));"
+	expectedSQL := "CREATE TABLE \"user\" (\"id\" <<TYPE_1>>,\"email\" <<TYPE_2>>,\"name\" <<TYPE_2>>,\"password_hash\" <<TYPE_2>>," +
+		"\"active\" <<TYPE_6>>,\"created_at\" <<TYPE_4>>,\"updated_at\" <<TYPE_8>>,\"user_master\" <<TYPE_1>>,\"master_user_id\" <<TYPE_1>>," +
+		"\"licence_price\" <<TYPE_3>>,\"relevance\" <<TYPE_5>>,\"photo\" <<TYPE_7>>,\"any\" <<TYPE_-1>>, CONSTRAINT \"PK_user\" PRIMARY KEY (\"id\"), CONSTRAINT \"UC_user_email\" UNIQUE (\"email\"));"
 	returnedSQL := sqlBuilder.CreateTable(userTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
 
 	productAttributeTable := testutils.FakeProductAttributeTable(t)
-	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" <<TYPE_0>>,\"attribute_id\" <<TYPE_0>>,\"value\" <<TYPE_1>>,\"position\" <<TYPE_0>>,PRIMARY KEY (\"product_id\",\"attribute_id\"));"
+	expectedSQL = "CREATE TABLE \"product_attribute\" (\"product_id\" <<TYPE_1>>,\"attribute_id\" <<TYPE_1>>,\"value\" <<TYPE_2>>,\"position\" <<TYPE_1>>, CONSTRAINT \"PK_product_attribute\" PRIMARY KEY (\"product_id\",\"attribute_id\"), CONSTRAINT \"FK_product_attribute_product\" FOREIGN KEY (\"product_id\") REFERENCES \"product\" (\"id\"), CONSTRAINT \"FK_product_attribute_attribute\" FOREIGN KEY (\"attribute_id\") REFERENCES \"attribute\" (\"id\"));"
 	returnedSQL = sqlBuilder.CreateTable(productAttributeTable)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable")
+
+	tableWithCompositeFKAndUC := testutils.FakeTableWithCompositeFKAndUC(t)
+	expectedSQL = "CREATE TABLE \"booking\" (\"resource_id\" <<TYPE_1>>,\"slot_date\" <<TYPE_2>>,\"slot_hour\" <<TYPE_1>>,\"guest_id\" <<TYPE_1>>, CONSTRAINT \"PK_booking\" PRIMARY KEY (\"resource_id\",\"slot_date\",\"slot_hour\"), CONSTRAINT \"FK_booking_resource_schedule\" FOREIGN KEY (\"resource_id\",\"slot_date\") REFERENCES \"resource_schedule\" (\"resource_id\",\"schedule_date\"), CONSTRAINT \"UC_booking_resource_id_slot_date_slot_hour\" UNIQUE (\"resource_id\",\"slot_date\",\"slot_hour\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCompositeFKAndUC)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with composite FK and UC")
+
+	tableWithDefault := schema.NewTable("config")
+	_ = tableWithDefault.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, Default: "'default'"})
+	_ = tableWithDefault.HasPrimaryKey("key")
+	expectedSQL = "CREATE TABLE \"config\" (\"key\" <<TYPE_2>> DEFAULT 'default', CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Default")
+
+	tableWithCheck := schema.NewTable("product")
+	_ = tableWithCheck.AddColumns(schema.NewColumnParams{Name: "price", Type: schema.Monetary, Check: "price >= 0"})
+	_ = tableWithCheck.HasPrimaryKey("price")
+	expectedSQL = "CREATE TABLE \"product\" (\"price\" <<TYPE_3>> CHECK (price >= 0), CONSTRAINT \"PK_product\" PRIMARY KEY (\"price\"));"
+	returnedSQL = sqlBuilder.CreateTable(tableWithCheck)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Check")
 }
 
 func TestDropTable(t *testing.T) {
@@ -41,34 +60,39 @@ func TestAlterTableAddColumn(t *testing.T) {
 	userTableName := testutils.FakeUserTableName(t)
 
 	updatedAtColumn := testutils.FakeUpdatedAtColumn(t)
-	expectedSQL := "ALTER TABLE \"user\" ADD COLUMN \"updated_at\" <<TYPE_3>>;"
+	expectedSQL := "ALTER TABLE \"user\" ADD COLUMN \"updated_at\" <<TYPE_4>>;"
 	returnedSQL := sqlBuilder.AlterTableAddColumn(userTableName, updatedAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	createdAtColumn := testutils.FakeCreatedAtColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" <<TYPE_7>> DEFAULT '1900-01-01 00:00:00.000000 +00:00';"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"created_at\" <<TYPE_8>> DEFAULT '1900-01-01 00:00:00.000000 +00:00';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, createdAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	activatedAtColumn := testutils.FakeActivatedAtColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"activated_at\" <<TYPE_3>> DEFAULT '1900-01-01 00:00:00.000000';"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"activated_at\" <<TYPE_4>> DEFAULT '1900-01-01 00:00:00.000000';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, activatedAtColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	priceColumn := testutils.FakePriceColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"price\" <<TYPE_2>> DEFAULT 0.0;"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"price\" <<TYPE_3>> DEFAULT 0.0;"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, priceColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	scoreColumn := testutils.FakeScoreColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"score\" <<TYPE_0>> DEFAULT 0;"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"score\" <<TYPE_1>> DEFAULT 0;"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, scoreColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
 
 	nameColumn := testutils.FakeNameColumn(t)
-	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" <<TYPE_1>> DEFAULT '';"
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"name\" <<TYPE_2>> DEFAULT '';"
 	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, nameColumn)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn")
+
+	columnWithDefault := schema.NewColumn(schema.NewColumnParams{Name: "quantity", Type: schema.Integer, Default: "42"})
+	expectedSQL = "ALTER TABLE \"user\" ADD COLUMN \"quantity\" <<TYPE_1>> DEFAULT 42;"
+	returnedSQL = sqlBuilder.AlterTableAddColumn(userTableName, columnWithDefault)
+	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.AlterTableAddColumn with Default")
 }
 
 func TestAlterTableDropColumn(t *testing.T) {
@@ -188,5 +212,5 @@ func TestQuoteIdentifier(t *testing.T) {
 	column := schema.NewColumn(schema.NewColumnParams{Name: "column_name", Type: schema.Integer, Size: 0})
 	table := "test_table"
 	returnedSQL := sqlBuilder.AlterTableAddColumn(table, column)
-	testutils.AssertEqualWithLabel(t, "ALTER TABLE quoted_test_table ADD COLUMN quoted_column_name <<TYPE_0>>;", returnedSQL, "SQLBuilder.QuoteIdentifier")
+	testutils.AssertEqualWithLabel(t, "ALTER TABLE quoted_test_table ADD COLUMN quoted_column_name <<TYPE_1>>;", returnedSQL, "SQLBuilder.QuoteIdentifier")
 }
