@@ -32,14 +32,14 @@ func TestCreateTable(t *testing.T) {
 
 	tableWithDefault := schema.NewTable("config")
 	_ = tableWithDefault.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, Default: "'default'"})
-	_ = tableWithDefault.PrimaryKey("key")
+	_ = tableWithDefault.HasPrimaryKey("key")
 	expectedSQL = "CREATE TABLE \"config\" (\"key\" <<TYPE_2>> DEFAULT 'default', CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
 	returnedSQL = sqlBuilder.CreateTable(tableWithDefault)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Default")
 
 	tableWithCheck := schema.NewTable("product")
 	_ = tableWithCheck.AddColumns(schema.NewColumnParams{Name: "price", Type: schema.Monetary, Check: "price >= 0"})
-	_ = tableWithCheck.PrimaryKey("price")
+	_ = tableWithCheck.HasPrimaryKey("price")
 	expectedSQL = "CREATE TABLE \"product\" (\"price\" <<TYPE_3>> CHECK (price >= 0), CONSTRAINT \"PK_product\" PRIMARY KEY (\"price\"));"
 	returnedSQL = sqlBuilder.CreateTable(tableWithCheck)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable with column Check")

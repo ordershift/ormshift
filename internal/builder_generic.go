@@ -53,7 +53,7 @@ func (sb *genericSQLBuilder) buildCreateTableColumnDefs(table schema.Table) stri
 }
 
 func (sb *genericSQLBuilder) appendPKConstraint(columns string, table schema.Table) string {
-	pk := table.PK()
+	pk := table.PrimaryKey()
 	if pk == nil {
 		return columns
 	}
@@ -61,7 +61,7 @@ func (sb *genericSQLBuilder) appendPKConstraint(columns string, table schema.Tab
 }
 
 func (sb *genericSQLBuilder) appendFKConstraints(columns string, table schema.Table) string {
-	for _, fk := range table.FKs() {
+	for _, fk := range table.ForeignKeys() {
 		columns += fmt.Sprintf(", CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
 			sb.QuoteIdentifier(fk.Name()), sb.quotedColumnList(fk.FromColumns()), sb.QuoteIdentifier(fk.ToTable()), sb.quotedColumnList(fk.ToColumns()))
 	}
@@ -69,7 +69,7 @@ func (sb *genericSQLBuilder) appendFKConstraints(columns string, table schema.Ta
 }
 
 func (sb *genericSQLBuilder) appendUCConstraints(columns string, table schema.Table) string {
-	for _, uc := range table.UCs() {
+	for _, uc := range table.UniqueConstraints() {
 		columns += fmt.Sprintf(", CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), sb.quotedColumnList(uc.Columns()))
 	}
 	return columns

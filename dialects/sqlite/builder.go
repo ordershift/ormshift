@@ -30,7 +30,7 @@ func (sb *sqliteBuilder) CreateTable(table schema.Table) string {
 }
 
 func (sb *sqliteBuilder) useInlineSingleIntegerAutoIncrementPK(table schema.Table) (bool, string) {
-	pk := table.PK()
+	pk := table.PrimaryKey()
 	if pk == nil || len(pk.Columns()) != 1 {
 		return false, ""
 	}
@@ -56,7 +56,7 @@ func (sb *sqliteBuilder) buildCreateTableColumnParts(table schema.Table, useInli
 }
 
 func (sb *sqliteBuilder) appendPKConstraintPart(parts []string, table schema.Table, useInlinePK bool) []string {
-	pk := table.PK()
+	pk := table.PrimaryKey()
 	if pk == nil || useInlinePK {
 		return parts
 	}
@@ -64,7 +64,7 @@ func (sb *sqliteBuilder) appendPKConstraintPart(parts []string, table schema.Tab
 }
 
 func (sb *sqliteBuilder) appendFKConstraintParts(parts []string, table schema.Table) []string {
-	for _, fk := range table.FKs() {
+	for _, fk := range table.ForeignKeys() {
 		parts = append(parts, fmt.Sprintf("CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
 			sb.QuoteIdentifier(fk.Name()), sb.quotedColumnList(fk.FromColumns()), sb.QuoteIdentifier(fk.ToTable()), sb.quotedColumnList(fk.ToColumns())))
 	}
@@ -72,7 +72,7 @@ func (sb *sqliteBuilder) appendFKConstraintParts(parts []string, table schema.Ta
 }
 
 func (sb *sqliteBuilder) appendUCConstraintParts(parts []string, table schema.Table) []string {
-	for _, uc := range table.UCs() {
+	for _, uc := range table.UniqueConstraints() {
 		parts = append(parts, fmt.Sprintf("CONSTRAINT %s UNIQUE (%s)", sb.QuoteIdentifier(uc.Name()), sb.quotedColumnList(uc.Columns())))
 	}
 	return parts

@@ -60,7 +60,7 @@ func (m M001_Create_Table_User) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	if err = userTable.PrimaryKey("id"); err != nil {
+	if err = userTable.HasPrimaryKey("id"); err != nil {
 		return err
 	}
 

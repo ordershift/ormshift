@@ -130,7 +130,7 @@ if err != nil {
 	// handle error
 }
 
-_ = table.PrimaryKey("id")
+_ = table.HasPrimaryKey("id")
 db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 ```
 
@@ -221,7 +221,7 @@ func (m M0001CreateUserTable) Up(migrator *migrations.Migrator) error {
 		return err
 	}
 
-	_ = table.PrimaryKey("id")
+	_ = table.HasPrimaryKey("id")
 	_, err = db.SQLExecutor().Exec(db.SQLBuilder().CreateTable(table))
 	return err
 }

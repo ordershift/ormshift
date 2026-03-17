@@ -34,15 +34,15 @@ func (t *Table) Columns() []Column {
 	return t.columns
 }
 
-func (t *Table) PK() *PrimaryKey {
+func (t *Table) PrimaryKey() *PrimaryKey {
 	return t.pk
 }
 
-func (t *Table) FKs() []ForeignKey {
+func (t *Table) ForeignKeys() []ForeignKey {
 	return t.fks
 }
 
-func (t *Table) UCs() []UniqueConstraint {
+func (t *Table) UniqueConstraints() []UniqueConstraint {
 	return t.ucs
 }
 
@@ -65,7 +65,7 @@ func failedToAddColumnInTable(table Table, column Column, err error) error {
 	return errs.FailedTo(msg, err)
 }
 
-func (t *Table) PrimaryKey(columns ...string) error {
+func (t *Table) HasPrimaryKey(columns ...string) error {
 	if t.pk != nil {
 		return fmt.Errorf("primary key already set for table %q", t.Name())
 	}
@@ -87,7 +87,7 @@ func (t *Table) PrimaryKey(columns ...string) error {
 	return nil
 }
 
-func (t *Table) AddForeignKey(fromColumns []string, toTable string, toColumns []string) error {
+func (t *Table) HasForeignKey(fromColumns []string, toTable string, toColumns []string) error {
 	for _, col := range fromColumns {
 		found := false
 		for _, tcol := range t.columns {
@@ -105,7 +105,7 @@ func (t *Table) AddForeignKey(fromColumns []string, toTable string, toColumns []
 	return nil
 }
 
-func (t *Table) AddUniqueConstraint(columns ...string) error {
+func (t *Table) HasUniqueConstraint(columns ...string) error {
 	for _, col := range columns {
 		found := false
 		for _, tcol := range t.columns {

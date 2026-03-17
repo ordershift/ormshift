@@ -38,7 +38,7 @@ func TestCreateTable(t *testing.T) {
 	// Single-column PK that is not integer autoincrement uses table-level CONSTRAINT (not inline).
 	tbl := schema.NewTable("config")
 	_ = tbl.AddColumns(schema.NewColumnParams{Name: "key", Type: schema.Varchar, Size: 50, NotNull: true})
-	_ = tbl.PrimaryKey("key")
+	_ = tbl.HasPrimaryKey("key")
 	expectedSQL = "CREATE TABLE \"config\" (\"key\" TEXT NOT NULL,CONSTRAINT \"PK_config\" PRIMARY KEY (\"key\"));"
 	returnedSQL = sqlBuilder.CreateTable(tbl)
 	testutils.AssertEqualWithLabel(t, expectedSQL, returnedSQL, "SQLBuilder.CreateTable single non-integer PK")
